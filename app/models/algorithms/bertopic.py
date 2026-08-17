@@ -18,9 +18,16 @@ class BERTopicAlgorithm(BaseAlgorithm):
         return "BERTopic"
 
     def get_default_params(self) -> Dict[str, Any]:
+        # Mirrors the defaults shown in the BERTopic/UMAP/HDBSCAN UI sections so
+        # "Default Settings" (wizard) and the main-window retrain path agree.
         return {
-            'bertopic_min_topic_size': 10,
+            'bertopic_language': 'english',
             'bertopic_embedding_model': 'all-MiniLM-L6-v2',
+            'bertopic_top_n_words': 10,
+            'bertopic_ngram_range': (1, 2),
+            'bertopic_min_topic_size': 10,
+            'bertopic_nr_topics': 'auto',
+            'bertopic_low_memory': False,
             'bertopic_calculate_probabilities': True,
             'umap_n_neighbors': 15,
             'umap_n_components': 5,
@@ -69,15 +76,47 @@ class BERTopicAlgorithm(BaseAlgorithm):
                 prediction_data=True
             )
 
-            # 3. Configure Vectorizer and CT-IDF
-            vectorizer = CountVectorizer(stop_words="english")
+            # 3. Configure Vectorizer and CT-IDF.
+            # Wire the language (stop-word selection) and n-gram range from the
+            # UI so these hyperparameters actually take effect (audit H3).
+            language = str(params.get('bertopic_language', 'english')).lower()
+            stop_words = "english" if language == "english" else None
+
+            if 'bertopic_ngram_range' in params and params['bertopic_ngram_range']:
+                ngram_range = tuple(params['bertopic_ngram_range'])
+            else:
+                # Legacy individual keys written by older trace bindings
+                ngram_range = (
+                    int(params.get('bertopic_ngram_start', 1)),
+                    int(params.get('bertopic_ngram_end', 2))
+                )
+            ngram_start, ngram_end = ngram_range
+            if ngram_start > ngram_end:
+                ngram_start, ngram_end = ngram_end, ngram_start  # guard invalid UI input
+
+            vectorizer = CountVectorizer(stop_words=stop_words, ngram_range=(ngram_start, ngram_end))
             ctfidf_model = ClassTfidfTransformer(bm25_weighting=True, reduce_frequent_words=True)
 
             # 4. Initialize BERTopic
+            # Normalize the UI's nr_topics ("auto", "None", or an int as a string)
+            nr_topics = params.get('bertopic_nr_topics', 'auto')
+            if isinstance(nr_topics, str):
+                nr_topics_lower = nr_topics.strip().lower()
+                if nr_topics_lower == 'none':
+                    nr_topics = None
+                elif nr_topics_lower != 'auto':
+                    try:
+                        nr_topics = int(nr_topics)
+                    except (TypeError, ValueError):
+                        nr_topics = None  # unrecognized input -> no reduction
+
             model = BERTopic(
                 min_topic_size=int(params.get('bertopic_min_topic_size', 10)),
                 embedding_model=params.get('bertopic_embedding_model', 'all-MiniLM-L6-v2'),
                 calculate_probabilities=bool(params.get('bertopic_calculate_probabilities', True)),
+                top_n_words=int(params.get('bertopic_top_n_words', 10)),
+                nr_topics=nr_topics,
+                low_memory=bool(params.get('bertopic_low_memory', False)),
                 umap_model=umap_model,
                 hdbscan_model=clusterer,
                 vectorizer_model=vectorizer,
@@ -88,13 +127,12 @@ class BERTopicAlgorithm(BaseAlgorithm):
             topics, probs = model.fit_transform(texts)
 
             # 1. Extract Topics (term -> weight)
-            # BERTopic stores topics as (word, weight) tuples in get_topic()
+            # Topic -1 is the outliers topic; exclude it. Iterate the actual
+            # topic ids rather than assuming they are contiguous integers, which
+            # breaks once nr_topics reduction is used (audit H3 robustness).
+            topic_ids = sorted(t for t in model.get_topics().keys() if t != -1)
             topics_list = []
-            # Topic -1 is outliers, we usually exclude it from the top topics list
-            # here we substract - 1 because topic id always start with - 1, thus the usable topic id is len - 1
-            for topic_id in range(len(model.get_topics().keys())-1):
-                if topic_id == -1: continue
-
+            for topic_id in topic_ids:
                 topic_data = model.get_topic(topic_id)
                 # Convert [(word, weight), ...] to {word: weight, ...}
                 topics_list.append({word: weight for word, weight in topic_data})
@@ -107,17 +145,22 @@ class BERTopicAlgorithm(BaseAlgorithm):
                 if probs.ndim == 1:
                     probs = probs.reshape(-1, 1)
 
-                # Map each doc to a dict of {topic_id: probability}
                 # BERTopic's probs array corresponds to the topics in model.get_topics()
                 # Topic -1 is not usually in the probs array
                 topic_names = list(model.get_topics().keys())
-                # Filter out -1 for probability mapping
                 filtered_topics = [t for t in topic_names if t != -1]
 
-                for doc_prob in probs:
-                    # Map prob index to actual topic_id
-                    doc_map = {filtered_topics[i]: prob for i, prob in enumerate(doc_prob)}
-                    doc_topics.append(doc_map)
+                if probs.shape[1] != len(filtered_topics):
+                    # Column count no longer aligns with topic ids (e.g. topics
+                    # were reduced after probabilities were computed) -> fall
+                    # back to hard assignments rather than mislabel documents.
+                    for t in topics:
+                        doc_topics.append({t: 1.0})
+                else:
+                    for doc_prob in probs:
+                        # Map prob index to actual topic_id
+                        doc_map = {filtered_topics[i]: float(prob) for i, prob in enumerate(doc_prob)}
+                        doc_topics.append(doc_map)
             else:
                 # Fallback to hard assignment
                 for t in topics:
@@ -127,7 +170,7 @@ class BERTopicAlgorithm(BaseAlgorithm):
             metadata = {
                 'model': model,
                 'texts': texts,
-                'num_topics': len(model.get_topics()) - 1 # exclude -1
+                'num_topics': len(topic_ids)  # excludes the -1 outliers topic
             }
 
             model_info = {
@@ -135,10 +178,8 @@ class BERTopicAlgorithm(BaseAlgorithm):
                 'version': bertopic.__version__,
                 'params': str(params),
                 'num_documents': str(len(texts)),
-                'num_topics': str(len(model.get_topics()) - 1)
+                'num_topics': str(len(topic_ids))
             }
-            print(f"topic list: {topics_list}")
-            print(f"doc_topics : {doc_topics}")
 
             return TopicResult(
                 topics=topics_list,

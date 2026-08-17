@@ -83,6 +83,9 @@ class MainWindow(ttk.Window):
 
     def _poll_state_events(self):
         """Check the AppState event queue and update views."""
-        self.appState.process_events()
-        # Poll every 100ms
-        self.after(100, self._poll_state_events)
+        try:
+            self.appState.process_events()
+        finally:
+            # Always re-schedule, even if process_events raises, so a single
+            # bad callback cannot freeze all future UI updates (audit H5).
+            self.after(100, self._poll_state_events)

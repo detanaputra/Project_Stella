@@ -123,12 +123,15 @@ class TopicModelWizard(Toplevel):
         self.appState.selected_algorithm = vals["algorithm"]
         self.appState.selected_file_path = vals["file_path"]
 
-        # Sync hyperparameters from the hyperparam panel to state
-        # If the user skipped the hyperparam panel (Default settings),
-        # the algorithm defaults are already in appState.
-        if self.current_step != 2 or self.panel_algo.get_current_values()["settings_mode"] == "custom":
+        # Sync hyperparameters from the hyperparam panel to state.
+        # "Custom Settings" applies the panel values; "Default Settings"
+        # resets to the algorithm's defaults so both entry points (wizard and
+        # main-window retrain) train with identical parameters (audit H2).
+        if vals["settings_mode"] == "custom":
             custom_params = self.panel_hyper.get_current_params()
             self.appState.algorithm_params.update(custom_params)
+        else:
+            self.app_controller.on_algorithm_changed(vals["algorithm"])
 
         # 1. Show Loading Panel via MainWindow
         if hasattr(self.parent, 'show_loading_panel'):

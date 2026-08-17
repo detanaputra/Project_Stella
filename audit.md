@@ -36,6 +36,8 @@ Every hyperparameter widget binds a `trace_add("write", …)` that calls `AppCon
 ### H2 — Wizard "Default Settings" silently applies different parameters than the algorithm's defaults
 `app/views/wizard/wizard_main.py:101-105, 119-131`
 
+> **Status: FIXED** (commit on `worktree-code-audit`). `_handle_train` now applies `get_current_params()` only when `settings_mode == "custom"`; otherwise it calls `app_controller.on_algorithm_changed(...)`, resetting to the algorithm defaults.
+
 ```python
 if self.current_step != 2 or self.panel_algo.get_current_values()["settings_mode"] == "custom":
     custom_params = self.panel_hyper.get_current_params()
@@ -49,6 +51,8 @@ Train only happens from step 3, so `current_step != 2` is **always True at train
 ### H3 — Documented BERTopic hyperparameters are collected but never used
 `app/views/panels/hyperparams/bertopic_section.py:124-134` vs `app/models/algorithms/bertopic.py:56-88` and `BERTopicHyperparams.md`
 
+> **Status: FIXED** (commit on `worktree-code-audit`). `train()` now consumes all documented params: `bertopic_ngram_range` → `CountVectorizer`, `bertopic_top_n_words`/`bertopic_nr_topics`/`bertopic_low_memory` → `BERTopic(...)`, `bertopic_language` → language-aware stop-words. `nr_topics` is normalized ("auto"/"None"/int-string). Topic extraction iterates actual topic ids and the probs mapping falls back to hard assignments if column counts don't align after reduction. `get_default_params()` mirrors the UI section defaults.
+
 The UI collects and stores (and the wizard serializes) `bertopic_language`, `bertopic_top_n_words`, `bertopic_ngram_range`, `bertopic_nr_topics`, `bertopic_low_memory` — but `train()` never reads any of them:
 - `CountVectorizer(stop_words="english")` has **no `ngram_range`** (bertopic.py:73).
 - `top_n_words`, `nr_topics`, `low_memory`, `language` are never passed to `BERTopic(...)`.
@@ -61,6 +65,8 @@ Only `bertopic_min_topic_size`, `bertopic_embedding_model`, `bertopic_calculate_
 
 ### H4 — Parameter UI is invisible until the first analysis completes
 `app/views/panels/algorithm_settings_panel.py:92-98`
+
+> **Status: FIXED** (commit on `worktree-code-audit`). The `if self.appState.current_result:` gate is removed — the BERTopic/UMAP/HDBSCAN sections now render on a fresh start, before any analysis.
 
 ```python
 if self.appState.selected_algorithm == "BERTopic":
@@ -77,6 +83,8 @@ On a fresh start (`current_result is None`) the right-hand settings pane is empt
 ### H5 — One bad observer callback permanently freezes the UI
 `app/views/main_window.py:84-88` + `app/models/app_state.py:61-83`
 
+> **Status: FIXED** (commit on `worktree-code-audit`). `process_events()` wraps each callback in `try/except` (traceback printed, other observers still notified) and `_poll_state_events` re-schedules the 100 ms timer in a `finally`.
+
 ```python
 def _poll_state_events(self):
     self.appState.process_events()        # ← exception here propagates
@@ -89,6 +97,8 @@ def _poll_state_events(self):
 
 ### H6 — `algorithm_params` is never initialized to defaults
 `app/models/algorithms/__init__.py` / `app/controllers/app_controller.py:32-41` / `main.py`
+
+> **Status: FIXED** (commit on `worktree-code-audit`). `AppController.__init__` seeds `algorithm_params` from the selected algorithm's `get_default_params()` when the dict is empty, so the main-window retrain path and the wizard share one set of defaults.
 
 `AppState.algorithm_params` starts `{}`. `on_algorithm_changed` (the only path that sets defaults) is only reachable from the dead `SettingsPanel` and wizard's combobox. So the main-window path trains with whatever is in state — `{}` on a fresh launch — relying on `train()`'s hard-coded fallbacks. There is no single source of truth for "current effective parameters".
 
@@ -126,8 +136,8 @@ def _poll_state_events(self):
 - `validate_file` calls `load_texts` which reads the **entire** file, then `load_preview` reads again.
 
 ### M7 — Debug prints left in production paths
-- `bertopic.py:140-141` prints the full `topics_list` and `doc_topics` **every training run** (for a 10k-corpus that's enormous stdout + a slow GIL-bound print in the worker).
-- `summary_panel.py:33` prints on every state change.
+- `bertopic.py:140-141` printed the full `topics_list` and `doc_topics` on **every training run** — **removed** in the H3 fix.
+- `summary_panel.py:33` still prints on every state change.
 - `analysis_controller.py:32,45,72,79,87` etc.
 
 ### M8 — HDBSCAN config inconsistent with the notebook & BERTopic defaults

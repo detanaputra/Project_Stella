@@ -91,14 +91,14 @@ class AlgorithmSettingsPanel(ttk.Frame):
         self.btn_retrain.config(state="normal" if can_retrain else "disabled")
 
         # Only rebuild the parameter form when the panel's *structure* changes
-        # (algorithm, file, or result availability). Rebuilding on every
-        # notify() would destroy the widgets while the user is editing them:
-        # each keystroke fires a trace -> on_param_changed -> notify -> _render,
-        # so the form would rebuild itself mid-entry and steal focus (audit H1).
+        # (algorithm or file). Rebuilding on every notify() would destroy the
+        # widgets while the user is editing them: each keystroke fires a trace
+        # -> on_param_changed -> notify -> _render, so the form would rebuild
+        # itself mid-entry and steal focus (audit H1). The form is independent
+        # of the analysis result, so result arrival does not rebuild it.
         render_key = (
             self.appState.selected_algorithm,
             self.appState.selected_file_path,
-            self.appState.current_result is not None,
         )
         if render_key == self._last_render_key:
             return
@@ -109,12 +109,11 @@ class AlgorithmSettingsPanel(ttk.Frame):
             widget.destroy()
 
         if self.appState.selected_algorithm == "BERTopic":
-            # Use modular sections for BERTopic
-            # display only if we have the result from training
-            if self.appState.current_result:
-                BERTopicSection(self.scrollable_frame, self.appState, self.controller).pack(fill=X, pady=10)
-                UMAPSection(self.scrollable_frame, self.appState, self.controller).pack(fill=X, pady=10)
-                HDBSCANSection(self.scrollable_frame, self.appState, self.controller).pack(fill=X, pady=10)
+            # Use modular sections for BERTopic. Always shown so parameters can
+            # be inspected/tuned before the first run (audit H4).
+            BERTopicSection(self.scrollable_frame, self.appState, self.controller).pack(fill=X, pady=10)
+            UMAPSection(self.scrollable_frame, self.appState, self.controller).pack(fill=X, pady=10)
+            HDBSCANSection(self.scrollable_frame, self.appState, self.controller).pack(fill=X, pady=10)
         else:
             # Generic fallback for other algorithms
             try:

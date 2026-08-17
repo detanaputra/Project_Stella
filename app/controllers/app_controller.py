@@ -11,6 +11,14 @@ class AppController:
         self.appState: AppState = state
         self.loader = DataLoader()
         self.project_service = ProjectService()
+        # Ensure the current algorithm's defaults are present from startup so
+        # the main-window retrain path trains with the same parameters as the
+        # wizard's "Default Settings" (audit H2/H6).
+        if not state.algorithm_params:
+            try:
+                state.algorithm_params = get_algorithm(state.selected_algorithm).get_default_params()
+            except Exception:
+                pass  # leave empty; train() falls back to its own defaults
 
     def on_file_selected(self, file_path: str) -> None:
         """Handle file selection and update state with preview and guidance."""

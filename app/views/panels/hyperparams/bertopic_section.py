@@ -60,17 +60,29 @@ class BERTopicSection(BaseHyperparamSection):
         ngram_frame.pack(fill=X, pady=5)
         ttk.Label(ngram_frame, text="N-gram Range:", width=20).pack(side=LEFT)
 
-        self.ngram_start = ttk.IntVar(value=state.algorithm_params.get('bertopic_ngram_start', 1))
-        self._bind_param(self.ngram_start, 'bertopic_ngram_start')
+        ngram_default = state.algorithm_params.get('bertopic_ngram_range', (1, 2))
+        if not isinstance(ngram_default, (tuple, list)) or len(ngram_default) != 2:
+            ngram_default = (1, 2)
+        self.ngram_start = ttk.IntVar(value=int(ngram_default[0]))
+        self.ngram_end = ttk.IntVar(value=int(ngram_default[1]))
         self.ngram_start_spin = ttk.Spinbox(ngram_frame, from_=1, to=3, textvariable=self.ngram_start, width=2)
         self.ngram_start_spin.pack(side=LEFT)
 
         ttk.Label(ngram_frame, text=" to ").pack(side=LEFT)
 
-        self.ngram_end = ttk.IntVar(value=state.algorithm_params.get('bertopic_ngram_end', 2))
-        self._bind_param(self.ngram_end, 'bertopic_ngram_end')
         self.ngram_end_spin = ttk.Spinbox(ngram_frame, from_=1, to=3, textvariable=self.ngram_end, width=2)
         self.ngram_end_spin.pack(side=LEFT)
+
+        # Both spinboxes write a single (start, end) tuple so the trace-driven
+        # main-window path and the wizard's get_params() use the same key
+        # (audit H3).
+        def _update_ngram(*args):
+            self.controller.on_param_changed(
+                'bertopic_ngram_range',
+                (self.ngram_start.get(), self.ngram_end.get())
+            )
+        self.ngram_start.trace_add('write', _update_ngram)
+        self.ngram_end.trace_add('write', _update_ngram)
 
         # --- Min Topic Size ---
         min_size_frame = ttk.Frame(self.container)

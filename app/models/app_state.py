@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional, Dict, Any, List, Callable
 import queue
+import traceback
 import weakref
 from app.models.topic_result import TopicResult
 
@@ -71,9 +72,15 @@ class AppState:
                     live_observers = []
                     for ref in self._observers:
                         callback = ref() if isinstance(ref, weakref.WeakMethod) else ref
-                        if callback is not None:
+                        if callback is None:
+                            continue
+                        try:
                             callback(self)
-                            live_observers.append(ref)
+                        except Exception:
+                            # One panel's render error must not break event
+                            # polling for the rest of the app (audit H5).
+                            traceback.print_exc()
+                        live_observers.append(ref)
 
                     # Update observer list to remove dead references
                     self._observers = live_observers
