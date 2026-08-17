@@ -1,0 +1,6 @@
+flowchart TD
+    A[WizardMain] -->|_handle_train| B(AnalysisController)
+    B --> |run_analysis| C(Threading)
+    C --> |_execute_pipeline| D(TopicProcessor)
+    D --> |process| E(BaseAlgorithm)
+    E --> |return| F[TopicResult]
