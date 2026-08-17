@@ -26,6 +26,8 @@ The MVC skeleton is coherent and the code compiles cleanly, but the BERTopic pat
 ### H1 — Parameter form rebuilds itself on every keystroke (data entry broken)
 `app/views/panels/algorithm_settings_panel.py:77-98` + `app/views/panels/hyperparams/base_section.py:17-19`
 
+> **Status: FIXED** (commit on `worktree-code-audit`). `_render()` now rebuilds the form only when a structural render key changes (`selected_algorithm`, `selected_file_path`, `current_result` presence); parameter-value writes update state and the retrain button without destroying the widgets.
+
 Every hyperparameter widget binds a `trace_add("write", …)` that calls `AppController.on_param_changed` → `appState.notify()` → `AlgorithmSettingsPanel._on_state_changed` → `_render()` **destroys and recreates all three sections**. So typing a multi-digit value (e.g. "15" into N Neighbors) rebuilds the form after the first digit: the widget is destroyed mid-edit, focus is lost, and the remaining digits go nowhere.
 
 **Impact:** Users cannot reliably enter or adjust parameters — the primary reason the tool exists. Also makes every keystroke expensive (full rebuild).
