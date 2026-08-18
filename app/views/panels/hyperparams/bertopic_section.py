@@ -76,11 +76,22 @@ class BERTopicSection(BaseHyperparamSection):
         # Both spinboxes write a single (start, end) tuple so the trace-driven
         # main-window path and the wizard's get_params() use the same key
         # (audit H3).
+        # Guard against an invalid start > end range (audit L3).
+        self._suppress_ngram = False
+
         def _update_ngram(*args):
-            self.controller.on_param_changed(
-                'bertopic_ngram_range',
-                (self.ngram_start.get(), self.ngram_end.get())
-            )
+            if self._suppress_ngram:
+                return
+            start, end = self.ngram_start.get(), self.ngram_end.get()
+            if start > end:
+                # Swap the widgets themselves so the UI, state, and the
+                # wizard's get_params() always hold a valid range.
+                self._suppress_ngram = True
+                self.ngram_start.set(end)
+                self.ngram_end.set(start)
+                self._suppress_ngram = False
+                start, end = end, start
+            self.controller.on_param_changed('bertopic_ngram_range', (start, end))
         self.ngram_start.trace_add('write', _update_ngram)
         self.ngram_end.trace_add('write', _update_ngram)
 

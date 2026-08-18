@@ -47,6 +47,7 @@ class AnalysisController:
 
             # 2. Load Data
             self.appState.analysis_status = "Loading data from file..."
+            self.appState.analysis_progress = "10%"
             self.appState.notify()
             texts = self.loader.load_texts(self.appState.selected_file_path)
 
@@ -55,13 +56,23 @@ class AnalysisController:
 
             # 3. Initialize Processor
             self.appState.analysis_status = "Initializing algorithm..."
+            self.appState.analysis_progress = "25%"
             self.appState.notify()
             algo = get_algorithm(self.appState.selected_algorithm)
             processor = TopicProcessor(algo)
 
             # 4. Execute Training with progress updates
+            # Map the processor's stage messages to milestone percentages so
+            # the determinate bar does not jump straight 0% -> 100% (audit L8).
+            _STAGE_PROGRESS = {
+                "Preprocessing text...": "40%",
+                "Training model...": "70%",
+                "Training Done": "100%",
+            }
+
             def update_progress(status: str):
                 self.appState.analysis_status = status
+                self.appState.analysis_progress = _STAGE_PROGRESS.get(status, self.appState.analysis_progress)
                 self.appState.notify()
 
             # Preprocessing options

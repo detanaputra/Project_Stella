@@ -62,8 +62,13 @@ class BERTopicAlgorithm(BaseAlgorithm):
         """
         try:
             # 1. Configure UMAP
+            # Clamp n_neighbors to the corpus size: UMAP raises when
+            # n_neighbors >= n_samples, e.g. the UI default of 15 on a
+            # 5-document file (audit L3).
+            n_neighbors = int(params.get('umap_n_neighbors', 15))
+            n_neighbors = max(2, min(n_neighbors, len(texts) - 1))
             umap_model = UMAP(
-                n_neighbors=int(params.get('umap_n_neighbors', 15)),
+                n_neighbors=n_neighbors,
                 n_components=int(params.get('umap_n_components', 5)),
                 metric=params.get('umap_metric', 'cosine'),
                 low_memory=bool(params.get('umap_low_memory', False)),

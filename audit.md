@@ -119,7 +119,7 @@ def _poll_state_events(self):
 ### M2 — Matplotlib figure leak in results renderer
 `app/views/panels/results_panel.py:93-121` — `plt.subplots()` on every render, widget destroyed but `plt.close(fig)` never called → figures accumulate in memory. Dormant today (ResultsPanel is dead code, L1) but will bite the moment the panel is wired.
 
-> **Status: FIXED** (commit on `worktree-code-audit`). `ResultsPanel` now tracks `self._current_fig` and calls `plt.close(self._current_fig)` at the top of every `_render()` before building the next figure, so figures no longer accumulate across renders.
+> **Status: FIXED** (commit on `worktree-code-audit`). `ResultsPanel` was tracked/closed its matplotlib figure — but the panel was **dead code and has since been deleted** in the L1 cleanup, which supersedes this fix. No figure leak remains because the panel no longer exists; if a results panel is reintroduced, the `_current_fig` + `plt.close` pattern from the M2 fix should be carried over.
 
 ### M3 — SummaryPanel rebuilds a full per-document table on every notify
 `app/views/panels/summary_panel.py:36-72, 128-146` — `_render()` destroys and re-inserts a Treeview row **per document** on every state change (which fires on every parameter keystroke — see H1). With thousands of documents the UI stalls. `results_panel.py:84` caps at 10 topics; `summary_panel` does not cap `doc_topics`.
@@ -164,31 +164,47 @@ def _poll_state_events(self):
 ## LOW / hygiene
 
 ### L1 — Dead & duplicated views
-`app/views/main_window.py:10-13` imports `InputPanel`, `SettingsPanel`, `ProcessingPanel`, `ResultsPanel` — **none are instantiated** in `_build_ui`. `SettingsPanel` duplicates `AlgorithmSettingsPanel`, `EditMenu`/`ViewMenu`/`WindowMenu` are stubs, and the "Export"/"App Settings" tabs are mockups. Two parallel settings UIs already drift (one shows sections pre-result, the other hides them).
+`app/views/main_window.py:10-13` imports `InputPanel`, `SettingsPanel`, `ProcessingPanel`, `ResultsPanel` — **none are instantiated** in `_build_ui`. `SettingsPanel` duplicates `AlgorithmSettingsPanel`, `EditMenu`/`ViewMenu`/`WindowMenu` are stubs, and the "Export"/"App Settings" tabs are placeholders. Two parallel settings UIs already drift (one shows sections pre-result, the other hides them).
+
+> **Status: FIXED** (commit on `worktree-code-audit`). Dead imports removed and the unreachable panels deleted (`input_panel.py`, `settings_panel.py`, `processing_panel.py`, `results_panel.py`) — their functions are covered by ToolboxPanel, SummaryPanel, LoadingPanel, and the Export tab (M4). The print-only stub `ViewMenu`/`WindowMenu` were deleted; the menubar is now File/Edit only. The Edit menu forwards real `<<Cut>>/<<Copy>>/<<Paste>>/<<Undo>>/<<Redo>>` events to the focused widget instead of printing. The " App Settings " tab is now a real ttkbootstrap **theme switcher** instead of a mockup label. (Deleting `results_panel.py` supersedes the M2 figure-leak fix — see the M2 note.)
 
 ### L2 — Committed build artifacts & `.DS_Store`
-`git ls-files` includes dozens of `*.pyc` files and `.DS_Store`; `.gitignore` was added later and cannot untrack them — every source edit produces a spurious modified-`.pyc` in `git status` (visible right now). Remove with `git rm --cached`.
+`git ls-files` includes dozens of `*.pyc` files and `.DS_Store`; `.gitignore` was added later and cannot untrack them — every source edit produces a visible modified-`.pyc` in `git status` (visible right now). Remove with `git rm --cached`.
+
+> **Status: FIXED** (commits `d368334` and `f0573ff` on `main`). Compiled artifacts and `.DS_Store` removed from tracking; `git ls-files` reports zero `*.pyc`/`.DS_Store` and the working tree is clean.
 
 ### L3 — No parameter validation
 - `umap_n_neighbors` default 15 vs small corpora → UMAP raises (`n_neighbors` > `n_samples`); `validate_file` only warns. Clamp or error early.
-- `ngram start > end` (spinboxes allow 3→1) — currently harmless because H3 ignores it, but a crash once wired.
+- `ngram start > end` (spinboxes allow 3→1) — currently harmless because H2 ignores it, but a crash once wired.
 - `nr_topics` Combobox mixes `"auto"`, `"None"`, and ints (bertopic_section.py:93) — type instability.
+
+> **Status: FIXED** (commit on `worktree-code-audit`). `train()` clamps `umap_n_neighbors` to `max(2, len(texts)-1)` so the 15-neighbor default no longer crashes on a small corpus. The BERTopic n-gram spinboxes clamp `start ≤ end` (swapping both widgets so the UI, state, and the wizard's `get_params()` agree). The `nr_topics` type instability is covered by the existing normalization in `train()` ("auto"/"None"/int-string → int or `None`).
 
 ### L4 — `AppState.process_events` observer bookkeeping
 `app/models/app_state.py:71-80` — replaces `self._observers` with `live_observers` **after** iterating; an observer added during notify is kept; a dead-ref cleanup happens. Fine, but `notify()` no-ops if observers subscribe *after* the event is queued (a panel subscribing in its `__init__` then immediately expecting a notification — most panels call `_render()` themselves, so OK). Also `LoadingPanel` subscribes once per instance; multiple `show_loading_panel()` calls can stack modal dialogs.
 
+> **Status: FIXED** (commit on `worktree-code-audit`). The observer bookkeeping was already correct; the actionable defect — stacking modal `LoadingPanel`s — is fixed: `MainWindow.show_loading_panel` now reuses the open instance (lift/focus) instead of creating a new Toplevel on every call. Verified with a live-Tk test.
+
 ### L5 — Processor swallows `custom_stopwords_path=None`
 `processor.py:22-26` — `open(None)` raises `TypeError`, caught by the bare `except: pass`; it "works" but hides the fact that the option is never used from the UI (the controller always passes `None`).
+
+> **Status: FIXED** (commit on `worktree-code-audit`). `None`/empty path now means "no custom stop-words" and is skipped cleanly; a provided-but-missing path raises a clear `ValueError` instead of being silently swallowed; when a path is supplied, custom stop-words genuinely apply during preprocessing.
 
 ### L6 — Notebook bugs (notebooks/test_training.ipynb)
 - cell 3: `train(texts=df["Abstract"], params=params)` — `params` lands inside `**params` as the key `'params'`, so every configured default is silently ignored (trains with hard-coded defaults).
 - cell 2: `'algorithm': "self.algorithm_name"` — a literal string, not the attribute.
 
+> **Status: FIXED** (commit on `worktree-code-audit`). Cell 3 now calls `train(texts=df["Abstract"], **params)` so the configured defaults actually reach the model; the `model_info` `algorithm` is now the literal `'BERTopic'`. While rewriting the cell I also fixed a latent off-by-one in the topic-extraction loop (`range(len(keys)-1)` → iterate `sorted(keys)`, skipping `-1`) and removed a leftover commented-out HDBSCAN block.
+
 ### L7 — Project save/load incompleteness
 `project_service.py:26-38` — `load_project` sets `algorithm_params` from file but never validates `selected_algorithm` against `AVAILABLE_ALGORITHMS`; a stale/altered `.stella` can put the app in an error state at train time.
 
+> **Status: FIXED** (commit on `worktree-code-audit`). `load_project` now validates the algorithm name (unknown → falls back to BERTopic), merges any loaded params over `get_default_params()` so a partial/old `.stella` still trains with a complete set, and clears a recorded data path that no longer exists so the UI prompts for a fresh file instead of crashing confusingly at train time.
+
 ### L8 — Progress reporting is effectively binary
 `analysis_controller.py` sets `analysis_progress` only to `"0%"`/`"100%"`; `update_progress` updates status text only. The determinate bar in `processing_panel` jumps 0→100. Acceptable for MVP, but it's a visible gap to the user's promised "X%".
+
+> **Status: FIXED** (commit on `worktree-code-audit`). `analysis_progress` now follows pipeline milestones: 0% → 10% (load) → 25% (init) → 40% (preprocessing) → 70% (training) → 100% (done), mapped from the processor's stage callbacks. Still milestone-based (not per-document), but the determinate bar no longer jumps straight 0→100.
 
 ---
 
