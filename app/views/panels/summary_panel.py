@@ -8,16 +8,20 @@ from app.models.topic_result import TopicResult
 class SummaryPanel(ttk.Frame):
     """Panel for displaying summary information and key metrics."""
 
+    # Sentinel distinct from None: the first _render() (current_result is None
+    # on a fresh start) must not be mistaken for an already-rendered state, or
+    # the "[No model detected]" placeholder would never be drawn (M3 fix).
+    _NEVER_RENDERED = object()
+
     def __init__(self, parent, state: AppState, controller: AppController):
         super().__init__(parent, padding=10)
         self.appState: AppState = state
         self.controller: AppController = controller
+        # Must be set before _build_ui(): it calls _render(), which reads it.
+        self._last_result = self._NEVER_RENDERED
 
         self.appState.subscribe(self._on_state_changed)
         self._build_ui()
-        # Last TopicResult rendered; the panel only rebuilds when this changes
-        # so parameter writes do not re-insert the per-document table (M3).
-        self._last_result = None
         self._render()
 
     def _build_ui(self):
