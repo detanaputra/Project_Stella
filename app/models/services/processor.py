@@ -1,6 +1,7 @@
 from typing import List, Dict, Any, Optional, Callable
 from app.models.algorithms.base_algorithm import BaseAlgorithm
 from app.models.topic_result import TopicResult
+import os
 import re
 
 class TopicProcessor:
@@ -15,15 +16,16 @@ class TopicProcessor:
         """
         processed_texts = []
 
-        # Custom stop-words from file or list
+        # Custom stop-words from file or list. None/empty means "no custom
+        # stop-words"; a provided path that is missing raises a clear error
+        # instead of being silently swallowed (audit L5).
         stop_words = set()
-        if 'custom_stopwords_path' in options:
-            path = options['custom_stopwords_path']
-            try:
-                with open(path, 'r', encoding='utf-8') as f:
-                    stop_words = {line.strip().lower() for line in f if line.strip()}
-            except Exception:
-                pass # Fallback to empty if file fails
+        path = options.get('custom_stopwords_path')
+        if path:
+            if not os.path.exists(path):
+                raise ValueError(f"Custom stop-words file not found: {path}")
+            with open(path, 'r', encoding='utf-8') as f:
+                stop_words = {line.strip().lower() for line in f if line.strip()}
 
         for text in texts:
             t = text.lower()

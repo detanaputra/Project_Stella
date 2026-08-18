@@ -8,10 +8,17 @@ from app.models.topic_result import TopicResult
 class SummaryPanel(ttk.Frame):
     """Panel for displaying summary information and key metrics."""
 
+    # Sentinel distinct from None: the first _render() (current_result is None
+    # on a fresh start) must not be mistaken for an already-rendered state, or
+    # the "[No model detected]" placeholder would never be drawn (M3 fix).
+    _NEVER_RENDERED = object()
+
     def __init__(self, parent, state: AppState, controller: AppController):
         super().__init__(parent, padding=10)
         self.appState: AppState = state
         self.controller: AppController = controller
+        # Must be set before _build_ui(): it calls _render(), which reads it.
+        self._last_result = self._NEVER_RENDERED
 
         self.appState.subscribe(self._on_state_changed)
         self._build_ui()
@@ -29,16 +36,21 @@ class SummaryPanel(ttk.Frame):
         self._render()
 
     def _on_state_changed(self, state: AppState):
-        # Debug: Verify notification receipt
-        print(f"SummaryPanel: Received state change notification. current_result: {state.current_result is not None}")
         self._render()
 
     def _render(self):
+        result = self.appState.current_result
+        if result is self._last_result:
+            # No new result; skip the full rebuild (M3). The content depends
+            # only on the TopicResult, not on other state changes.
+            return
+        self._last_result = result
+
         # Clear current content
         for widget in self.content_frame.winfo_children():
             widget.destroy()
 
-        if not self.appState.current_result:
+        if not result:
             # Create a new placeholder since the old one was destroyed
             placeholder = ttk.Label(
                 self.content_frame,
@@ -47,8 +59,6 @@ class SummaryPanel(ttk.Frame):
             )
             placeholder.pack(pady=20)
             return
-
-        result = self.appState.current_result
 
         # 1. Basic Stats
         stats_frame = ttk.Frame(self.content_frame)
@@ -126,7 +136,10 @@ class SummaryPanel(ttk.Frame):
 
                 tree.insert("", END, values=(i, *row_values))
         else:
-            for i, doc_dict in enumerate(data):
+            # Cap the per-document table so a large corpus does not render
+            # tens of thousands of Treeview rows (audit M3).
+            max_rows = 200
+            for i, doc_dict in enumerate(data[:max_rows]):
                 if not doc_dict:
                     tree.insert("", END, values=(i, "N/A", "0.00", "N/A", "0.00", "N/A", "0.00"))
                     continue
@@ -144,3 +157,10 @@ class SummaryPanel(ttk.Frame):
                         row_values.extend(["N/A", "0.0000"])
 
                 tree.insert("", END, values=(i, *row_values))
+
+            if len(data) > max_rows:
+                ttk.Label(
+                    container,
+                    text=f"Showing first {max_rows} of {len(data)} documents.",
+                    bootstyle="secondary"
+                ).pack(pady=2)

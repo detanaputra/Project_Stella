@@ -2,8 +2,6 @@ import tkinter as tk
 from app.controllers.app_controller import AppController
 from app.views.menus.file_menu import FileMenu
 from app.views.menus.edit_menu import EditMenu
-from app.views.menus.view_menu import ViewMenu
-from app.views.menus.window_menu import WindowMenu
 
 class MenuManager:
     """
@@ -22,12 +20,12 @@ class MenuManager:
         # Create the main menu bar
         menubar = tk.Menu(self.root)
 
-        # Instantiate menu parents
+        # Instantiate menu parents. View/Window menus were removed: they only
+        # contained print()-placeholder "Zoom" commands with no real function
+        # (audit L1).
         menus = {
             "File": FileMenu(self.root, self.controller),
             "Edit": EditMenu(self.root, self.controller),
-            "View": ViewMenu(self.root, self.controller),
-            "Window": WindowMenu(self.root, self.controller),
         }
 
         # Build and add each menu to the menubar

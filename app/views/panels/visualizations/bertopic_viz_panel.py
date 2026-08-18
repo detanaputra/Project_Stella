@@ -119,21 +119,27 @@ class BERTopicVisualisation(ttk.Frame):
             # Retrieve BERTopic model from metadata
             model = self.appState.current_result.metadata.get('model')
             if model is None:
-                self.after(0, lambda: messagebox.showerror("Error", "BERTopic model not found in current results."))
+                self.appState.call_on_main(
+                    lambda: messagebox.showerror("Error", "BERTopic model not found in current results.")
+                )
                 return
 
             # Dynamically call the requested BERTopic visualization method
             viz_func = getattr(model, method_name, None)
             if viz_func is None:
-                self.after(0, lambda: messagebox.showerror("Error", f"Method {method_name} not available in this model."))
+                self.appState.call_on_main(
+                    lambda: messagebox.showerror("Error", f"Method {method_name} not available in this model.")
+                )
                 return
 
             # Generate the Plotly figure
             fig = viz_func()
 
-            # Convert Plotly figure to HTML with High DPI and responsiveness configurations
+            # Convert Plotly figure to HTML with High DPI and responsiveness
+            # configurations. plotly.js is embedded (not CDN) so the
+            # visualization works offline (audit M5).
             html_content = fig.to_html(
-                include_plotlyjs='cdn',
+                include_plotlyjs=True,
                 full_html=True,
                 config={
                     'plotGlPixelRatio': 2, # Forces higher resolution for WebGL (Retina fix)
@@ -157,7 +163,9 @@ class BERTopicVisualisation(ttk.Frame):
             p.start()
 
         except Exception as e:
-            self.after(0, lambda: messagebox.showerror("Visualization Error", f"An error occurred:\n{str(e)}"))
+            self.appState.call_on_main(
+                lambda: messagebox.showerror("Visualization Error", f"An error occurred:\n{str(e)}")
+            )
 
         finally:
             # 4. Dismiss loading state

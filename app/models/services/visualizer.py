@@ -4,38 +4,58 @@ from typing import Dict, Optional
 from app.models.topic_result import TopicResult
 
 class TopicVisualizer:
-    """Generate interactive visualizations for export to browser."""
+    """Generate interactive visualizations for export to browser (offline HTML)."""
+
+    # BERTopic model methods that take no extra arguments and produce a
+    # standalone Plotly figure. Real plots, not placeholders (audit M4).
+    _VIZ_METHODS = [
+        ("topics", "visualize_topics"),
+        ("heatmap", "visualize_heatmap"),
+        ("barchart", "visualize_barchart"),
+        ("hierarchy", "visualize_hierarchy"),
+    ]
 
     def __init__(self, output_dir: Optional[str] = None):
-        self.output_dir = output_dir or "exports/viz"
+        # Matches the documented default (~/.bertopic-gui/viz) so exports land
+        # in a stable, user-level location rather than a cwd-relative path.
+        self.output_dir = output_dir or os.path.join(os.path.expanduser("~"), ".bertopic-gui", "viz")
         os.makedirs(self.output_dir, exist_ok=True)
 
     def visualize(self, result: TopicResult, algorithm_name: str) -> Dict[str, str]:
         """
-        Generate visualizations for the given algorithm result.
+        Generate real Plotly visualizations as standalone, offline HTML files.
+
+        Args:
+            result: TopicResult
+            algorithm_name: "BERTopic", "LDA", etc.
+
+        Returns:
+            Dict mapping viz_type -> file_path. Empty if the algorithm or
+            model metadata does not support visualization. Visualizations that
+            fail individually are skipped.
         """
-        # BERTopic provides high-level visualization methods if the model is in metadata
-        if algorithm_name == "BERTopic" and 'model' in result.metadata:
-            model = result.metadata['model']
+        if algorithm_name != "BERTopic" or 'model' not in result.metadata:
+            return {}
 
-            # In a real implementation, we would call:
-            # fig = model.visualize_topics()
-            # fig.write_html(path)
+        model = result.metadata['model']
+        os.makedirs(self.output_dir, exist_ok=True)
 
-            # For now, we simulate the file creation to maintain the interface
-            viz_files = {
-                'topics': os.path.join(self.output_dir, 'topics.html'),
-                'documents': os.path.join(self.output_dir, 'documents.html'),
-                'heatmap': os.path.join(self.output_dir, 'heatmap.html')
-            }
+        viz_files = {}
+        for name, method in self._VIZ_METHODS:
+            viz_func = getattr(model, method, None)
+            if viz_func is None:
+                continue
+            try:
+                fig = viz_func()
+                path = os.path.join(self.output_dir, f"{name}.html")
+                # Embed plotly.js so the file works fully offline (audit M5).
+                fig.write_html(path, include_plotlyjs=True, full_html=True)
+                viz_files[name] = path
+            except Exception:
+                # Skip a single failing visualization rather than failing all.
+                continue
 
-            for path in viz_files.values():
-                with open(path, 'w', encoding='utf-8') as f:
-                    f.write(f"<html><body><h1>{algorithm_name} Visualization</h1><p>Interactive plot placeholder.</p></body></html>")
-
-            return viz_files
-
-        return {}
+        return viz_files
 
     def open_visualization(self, file_path: str) -> None:
         """Open a visualization file in the default browser."""

@@ -41,6 +41,6 @@ class SummaryPanel(ttk.Frame):
             f"Algorithm: {config.get('algorithm')}\n\n"
             f"Data File: {config.get('file_path')}\n\n"
             f"Settings: {config.get('settings_mode').capitalize()}\n\n"
-            f"Model: {config.get('params', {}).get('embedding_model', 'Default')}"
+            f"Model: {config.get('params', {}).get('bertopic_embedding_model', 'Default')}"
         )
         self.summary_text.config(text=summary)

@@ -18,6 +18,11 @@ class AlgorithmSettingsPanel(ttk.Frame):
         self.controller = controller
         self.analysis_controller = analysis_controller
 
+        # Structural state the parameter form depends on. When it changes the
+        # form is rebuilt; parameter value changes alone must NOT rebuild the
+        # form (see _render) or the widgets destroy themselves mid-edit.
+        self._last_render_key = None
+
         self.appState.subscribe(self._on_state_changed)
         self._build_ui()
         self._render()
@@ -78,24 +83,37 @@ class AlgorithmSettingsPanel(ttk.Frame):
         self._render()
 
     def _render(self):
-        # Update retrain button state
+        # Update retrain button state (cheap, always)
         can_retrain = (
             self.appState.selected_file_path is not None and
             not self.appState.analysis_in_progress
         )
         self.btn_retrain.config(state="normal" if can_retrain else "disabled")
 
+        # Only rebuild the parameter form when the panel's *structure* changes
+        # (algorithm or file). Rebuilding on every notify() would destroy the
+        # widgets while the user is editing them: each keystroke fires a trace
+        # -> on_param_changed -> notify -> _render, so the form would rebuild
+        # itself mid-entry and steal focus (audit H1). The form is independent
+        # of the analysis result, so result arrival does not rebuild it.
+        render_key = (
+            self.appState.selected_algorithm,
+            self.appState.selected_file_path,
+        )
+        if render_key == self._last_render_key:
+            return
+        self._last_render_key = render_key
+
         # Clear existing parameters in the scrollable frame
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
 
         if self.appState.selected_algorithm == "BERTopic":
-            # Use modular sections for BERTopic
-            # display only if we have the result from training
-            if self.appState.current_result:
-                BERTopicSection(self.scrollable_frame, self.appState, self.controller).pack(fill=X, pady=10)
-                UMAPSection(self.scrollable_frame, self.appState, self.controller).pack(fill=X, pady=10)
-                HDBSCANSection(self.scrollable_frame, self.appState, self.controller).pack(fill=X, pady=10)
+            # Use modular sections for BERTopic. Always shown so parameters can
+            # be inspected/tuned before the first run (audit H4).
+            BERTopicSection(self.scrollable_frame, self.appState, self.controller).pack(fill=X, pady=10)
+            UMAPSection(self.scrollable_frame, self.appState, self.controller).pack(fill=X, pady=10)
+            HDBSCANSection(self.scrollable_frame, self.appState, self.controller).pack(fill=X, pady=10)
         else:
             # Generic fallback for other algorithms
             try:
