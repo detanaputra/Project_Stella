@@ -15,6 +15,9 @@ class SummaryPanel(ttk.Frame):
 
         self.appState.subscribe(self._on_state_changed)
         self._build_ui()
+        # Last TopicResult rendered; the panel only rebuilds when this changes
+        # so parameter writes do not re-insert the per-document table (M3).
+        self._last_result = None
         self._render()
 
     def _build_ui(self):
@@ -29,16 +32,21 @@ class SummaryPanel(ttk.Frame):
         self._render()
 
     def _on_state_changed(self, state: AppState):
-        # Debug: Verify notification receipt
-        print(f"SummaryPanel: Received state change notification. current_result: {state.current_result is not None}")
         self._render()
 
     def _render(self):
+        result = self.appState.current_result
+        if result is self._last_result:
+            # No new result; skip the full rebuild (M3). The content depends
+            # only on the TopicResult, not on other state changes.
+            return
+        self._last_result = result
+
         # Clear current content
         for widget in self.content_frame.winfo_children():
             widget.destroy()
 
-        if not self.appState.current_result:
+        if not result:
             # Create a new placeholder since the old one was destroyed
             placeholder = ttk.Label(
                 self.content_frame,
@@ -47,8 +55,6 @@ class SummaryPanel(ttk.Frame):
             )
             placeholder.pack(pady=20)
             return
-
-        result = self.appState.current_result
 
         # 1. Basic Stats
         stats_frame = ttk.Frame(self.content_frame)
@@ -126,7 +132,10 @@ class SummaryPanel(ttk.Frame):
 
                 tree.insert("", END, values=(i, *row_values))
         else:
-            for i, doc_dict in enumerate(data):
+            # Cap the per-document table so a large corpus does not render
+            # tens of thousands of Treeview rows (audit M3).
+            max_rows = 200
+            for i, doc_dict in enumerate(data[:max_rows]):
                 if not doc_dict:
                     tree.insert("", END, values=(i, "N/A", "0.00", "N/A", "0.00", "N/A", "0.00"))
                     continue
@@ -144,3 +153,10 @@ class SummaryPanel(ttk.Frame):
                         row_values.extend(["N/A", "0.0000"])
 
                 tree.insert("", END, values=(i, *row_values))
+
+            if len(data) > max_rows:
+                ttk.Label(
+                    container,
+                    text=f"Showing first {max_rows} of {len(data)} documents.",
+                    bootstyle="secondary"
+                ).pack(pady=2)

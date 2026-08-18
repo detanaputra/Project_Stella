@@ -114,18 +114,28 @@ def _poll_state_events(self):
 - `app/controllers/analysis_controller.py:35-45, 57-59, 82-86`: mutates `AppState` fields from the worker thread while the main thread reads them in `process_events`. The queue *is* safe, but field reads/writes have no lock or barrier (works under CPython's GIL today, fragile tomorrow; also visible to `multiprocessing` code in the viz panel).
 - `analysis_controller.py:20-28`: no re-entrancy guard — two rapid "Run" clicks spawn two training threads.
 
+> **Status: FIXED** (commit on `worktree-code-audit`). `run_analysis` now has a re-entrancy guard: it returns early if `analysis_in_progress` and sets the flag **synchronously** before spawning the worker thread, so a rapid double-click is caught. Thread→UI marshaling is centralized in `AppState.call_on_main(callback)` (a second queue drained by `process_events` on the main thread); `bertopic_viz_panel` and the new `ExportPanel` route all `messagebox` calls through it instead of `self.after` from worker threads. Shared `AppState` field writes from the worker remain GIL-protected — acceptable for the single-worker design.
+
 ### M2 — Matplotlib figure leak in results renderer
 `app/views/panels/results_panel.py:93-121` — `plt.subplots()` on every render, widget destroyed but `plt.close(fig)` never called → figures accumulate in memory. Dormant today (ResultsPanel is dead code, L1) but will bite the moment the panel is wired.
 
+> **Status: FIXED** (commit on `worktree-code-audit`). `ResultsPanel` now tracks `self._current_fig` and calls `plt.close(self._current_fig)` at the top of every `_render()` before building the next figure, so figures no longer accumulate across renders.
+
 ### M3 — SummaryPanel rebuilds a full per-document table on every notify
 `app/views/panels/summary_panel.py:36-72, 128-146` — `_render()` destroys and re-inserts a Treeview row **per document** on every state change (which fires on every parameter keystroke — see H1). With thousands of documents the UI stalls. `results_panel.py:84` caps at 10 topics; `summary_panel` does not cap `doc_topics`.
+
+> **Status: FIXED** (commit on `worktree-code-audit`). `_render()` now early-returns when `result is self._last_result` — the panel depends only on the `TopicResult`, so parameter writes no longer re-insert the per-document table at all. The document-assignment table is additionally capped at 200 rows with a "Showing first 200 of N documents." label.
 
 ### M4 — `to_json` / interactive viz are unreachable; the only "browser export" writes fake HTML
 - `Exporter.to_json` (exporter.py:18) is never called anywhere — JSON export is a stated MVP success criterion (CLAUDE.md) but has no UI entry point.
 - `TopicVisualizer.visualize` (visualizer.py:13) is never called; the real BERTopic viz goes through the webview panel. If it *were* wired, it writes **"Interactive plot placeholder"** HTML pretending to be a real plot — misleading.
 
+> **Status: FIXED** (commit on `worktree-code-audit`). A real **Export tab** (`app/views/panels/export_panel.py`) replaces the mock-up label: Export CSV / JSON / Methodology Report plus "Open Visualizations in Browser". `AppController` gained `self.exporter`/`self.visualizer` and `export_csv`/`export_json`/`export_methodology_report`/`export_visualizations`. `TopicVisualizer.visualize` now calls the real BERTopic figure methods (`visualize_topics`, `visualize_heatmap`, `visualize_barchart`, `visualize_hierarchy`) and writes offline HTML to `~/.bertopic-gui/viz`; the "placeholder" branch is gone. The viz export runs off the main thread so the UI stays responsive while the ~4 plots build.
+
 ### M5 — Offline promise broken by CDN plotly
 `bertopic_viz_panel.py:142` — `include_plotlyjs='cdn'` requires internet; the app markets offline/privacy. Bundle plotly.js locally (`include_plotlyjs=True` or `'directory'`).
+
+> **Status: FIXED** (commit on `worktree-code-audit`). Both the webview panel and `TopicVisualizer` now write with `include_plotlyjs=True`, embedding plotly.js so the HTML works fully offline.
 
 ### M6 — DataLoader CSV edge cases
 `app/models/services/data_loader.py:56,69` — `df.select_dtypes(include=['object']).columns[0]`:
@@ -135,13 +145,19 @@ def _poll_state_events(self):
 - UTF-8 only for .txt (SPSS/Excel exports are often Latin-1) → `UnicodeDecodeError`.
 - `validate_file` calls `load_texts` which reads the **entire** file, then `load_preview` reads again.
 
+> **Status: FIXED** (commit on `worktree-code-audit`). `DataLoader` now raises a clear `ValueError` ("No text column found…") instead of an `IndexError` when the CSV has no object column; NaN cells and empty/whitespace rows are dropped before training (no more literal `"nan"` documents); `.txt` and CSV files try `utf-8` then fall back to `latin-1`. Shared `_read_csv`/`_read_text_file`/`_pick_text_column` helpers are used by both `load_texts` and `load_preview`.
+
 ### M7 — Debug prints left in production paths
 - `bertopic.py:140-141` printed the full `topics_list` and `doc_topics` on **every training run** — **removed** in the H3 fix.
 - `summary_panel.py:33` still prints on every state change.
 - `analysis_controller.py:32,45,72,79,87` etc.
 
+> **Status: FIXED** (commit on `worktree-code-audit`). All routine progress prints removed from `bertopic.py`, `summary_panel.py`, and `analysis_controller.py`. The only remaining `print` is the `traceback.print_exc()` in the failure path of `analysis_controller._execute_pipeline`, kept deliberately: `analysis_error` stores only `str(e)`, so the stderr traceback is the sole record of a failed run for support. (The `EditMenu`/`ViewMenu`/`WindowMenu` stub prints are intentional placeholders for unimplemented menu actions — tracked under L1.)
+
 ### M8 — HDBSCAN config inconsistent with the notebook & BERTopic defaults
 `bertopic.py:66-70` sets only `min_samples` (no `min_cluster_size`); the training notebook (notebooks/test_training.ipynb cell 2) sets `min_cluster_size=min_topic_size`. Two "same" training functions drift apart — cluster sizes / topics will differ. (The notebook also has its own bugs — see L6.)
+
+> **Status: FIXED** (commit on `worktree-code-audit`). The HDBSCAN clusterer now sets `min_cluster_size` (defaulting to the same value as `bertopic_min_topic_size`, i.e. 10), exposed in the UI as a new "Min Cluster Size" spinbox in the HDBSCAN section and wired through `get_default_params()` / `get_params()` / `train()`.
 
 ---
 

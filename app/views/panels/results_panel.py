@@ -17,6 +17,7 @@ class ResultsPanel(ttk.Frame):
 
         self.appState.subscribe(self._on_state_changed)
         self._build_ui()
+        self._current_fig = None  # track figures so we can close them (audit M2)
         self._render()
 
     def _build_ui(self):
@@ -73,6 +74,12 @@ class ResultsPanel(ttk.Frame):
         for widget in self.plot_frame.winfo_children():
             widget.destroy()
 
+        # Release the previous figure so it does not accumulate in memory
+        # across renders (audit M2).
+        if self._current_fig is not None:
+            plt.close(self._current_fig)
+            self._current_fig = None
+
         if not self.appState.current_result:
             ttk.Label(self.table_frame, text="No results yet. Run analysis to see topics.").pack()
             return
@@ -116,6 +123,7 @@ class ResultsPanel(ttk.Frame):
         ax.set_ylabel("Doc Count")
         plt.tight_layout()
 
+        self._current_fig = fig  # owned by this panel; closed on next render
         canvas = FigureCanvasTkAgg(fig, master=self.plot_frame)
         canvas.draw()
         canvas.get_tk_widget().pack()

@@ -20,6 +20,15 @@ class HDBSCANSection(BaseHyperparamSection):
         self.min_samp_spin = ttk.Spinbox(min_samp_frame, from_=1, to=100, textvariable=self.min_samp_var, width=10)
         self.min_samp_spin.pack(side=LEFT)
 
+        # --- Min Cluster Size ---
+        min_clust_frame = ttk.Frame(self.container)
+        min_clust_frame.pack(fill=X, pady=5)
+        ttk.Label(min_clust_frame, text="Min Cluster Size:", width=20).pack(side=LEFT)
+        self.min_clust_var = ttk.IntVar(value=state.algorithm_params.get('hdbscan_min_cluster_size', 10))
+        self._bind_param(self.min_clust_var, 'hdbscan_min_cluster_size')
+        self.min_clust_spin = ttk.Spinbox(min_clust_frame, from_=1, to=100, textvariable=self.min_clust_var, width=10)
+        self.min_clust_spin.pack(side=LEFT)
+
         # --- Metric ---
         metric_frame = ttk.Frame(self.container)
         metric_frame.pack(fill=X, pady=5)
@@ -37,5 +46,6 @@ class HDBSCANSection(BaseHyperparamSection):
     def get_params(self) -> dict:
         return {
             "hdbscan_min_samples": self.min_samp_var.get(),
+            "hdbscan_min_cluster_size": self.min_clust_var.get(),
             "hdbscan_metric": self.metric_var.get()
         }

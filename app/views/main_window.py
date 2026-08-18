@@ -12,6 +12,7 @@ from app.views.panels.settings_panel import SettingsPanel
 from app.views.panels.processing_panel import ProcessingPanel
 from app.views.panels.results_panel import ResultsPanel
 from app.views.panels.loading_panel import LoadingPanel
+from app.views.panels.export_panel import ExportPanel
 
 class MainWindow(ttk.Window):
     """
@@ -69,10 +70,12 @@ class MainWindow(ttk.Window):
         self.algo_settings_panel = AlgorithmSettingsPanel(self.content_pane, self.appState, self.app_controller, self.analysis_controller)
         self.content_pane.add(self.algo_settings_panel, weight=1)
 
-        # Add other tabs as placeholders for now
+        # Export tab: real CSV/JSON/report export and browser visualizations
+        # (audit M4 — previously a mock-up label).
         self.tab_export = ttk.Frame(self.main_notebook)
         self.main_notebook.add(self.tab_export, text=" Export ")
-        ttk.Label(self.tab_export, text="Export Options Mock-up").pack(pady=20)
+        self.export_panel = ExportPanel(self.tab_export, self.appState, self.app_controller)
+        self.export_panel.pack(fill=BOTH, expand=YES)
 
         self.tab_settings = ttk.Frame(self.main_notebook)
         self.main_notebook.add(self.tab_settings, text=" App Settings ")

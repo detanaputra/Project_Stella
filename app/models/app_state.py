@@ -41,6 +41,15 @@ class AppState:
         repr=False
     )
 
+    # Thread-safe queue of callables to run on the main thread. Worker threads
+    # must never call Tkinter directly; they schedule work here instead and
+    # process_events() executes it on the main thread (audit M1).
+    ui_callbacks: queue.Queue = field(
+        default_factory=queue.Queue,
+        init=False,
+        repr=False
+    )
+
     def subscribe(self, callback: Callable[['AppState'], None]) -> None:
         """Register a view callback to be notified on state changes."""
         if hasattr(callback, "__self__"):
@@ -59,11 +68,33 @@ class AppState:
         """
         self.event_queue.put("STATE_CHANGED")
 
+    def call_on_main(self, callback: Callable[[], None]) -> None:
+        """
+        Schedule a callable to run on the main thread.
+
+        Safe to call from worker threads; process_events() executes the
+        callable on the Tkinter main loop. Used to marshal Tkinter calls
+        (dialogs, widget updates) off worker threads (audit M1).
+        """
+        self.ui_callbacks.put(callback)
+
     def process_events(self) -> None:
         """
         Called by the main window on the main thread to trigger observers.
         Cleans up dead weak references during the process.
         """
+        # Run callables scheduled by worker threads on the main thread first
+        # (audit M1). A modal dialog here blocks, but that is user interaction.
+        try:
+            while True:
+                ui_callback = self.ui_callbacks.get_nowait()
+                try:
+                    ui_callback()
+                except Exception:
+                    traceback.print_exc()
+        except queue.Empty:
+            pass
+
         try:
             while True:
                 event = self.event_queue.get_nowait()

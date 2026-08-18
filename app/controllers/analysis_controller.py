@@ -18,10 +18,18 @@ class AnalysisController:
 
     def run_analysis(self) -> None:
         """Launch the analysis pipeline in a background thread to keep UI responsive."""
+        if self.appState.analysis_in_progress:
+            # Re-entrancy guard: prevent a second click from spawning another
+            # training thread while one is already running (audit M1).
+            return
         if not self.appState.selected_file_path:
             self.appState.analysis_error = "Please select a file first."
             self.appState.notify()
             return
+
+        # Set synchronously so a rapid double-click is caught by the guard
+        # above before the worker thread starts.
+        self.appState.analysis_in_progress = True
 
         # Start training in background
         thread = threading.Thread(target=self._execute_pipeline, daemon=True)
@@ -29,7 +37,6 @@ class AnalysisController:
 
     def _execute_pipeline(self) -> None:
         """The background worker process."""
-        print("AnalysisController: Starting pipeline execution...")
         try:
             # 1. Setup State
             self.appState.analysis_in_progress = True
@@ -42,7 +49,6 @@ class AnalysisController:
             self.appState.analysis_status = "Loading data from file..."
             self.appState.notify()
             texts = self.loader.load_texts(self.appState.selected_file_path)
-            print(f"AnalysisController: Loaded {len(texts) if texts else 0} documents.")
 
             if not texts:
                 raise ValueError("No text data found in the selected file.")
@@ -69,14 +75,12 @@ class AnalysisController:
             self.appState.analysis_status = "Preprocessing and training model (this may take a few minutes)..."
             self.appState.notify()
 
-            print("AnalysisController: Calling processor.process...")
             result = processor.process(
                 texts=texts,
                 preprocessing_options=preprocessing_options,
                 model_params=self.appState.algorithm_params,
                 progress_callback=update_progress
             )
-            print(f"AnalysisController: process() returned result: {result is not None}")
 
             # 5. Finalize
             self.appState.current_result = result
@@ -84,10 +88,10 @@ class AnalysisController:
             self.appState.analysis_progress = "100%"
             self.appState.analysis_status = "Analysis complete!"
             self.appState.notify()
-            print("AnalysisController: Pipeline completed successfully.")
 
         except Exception as e:
-            print(f"AnalysisController: Pipeline failed with error: {str(e)}")
+            # Keep the traceback here: analysis_error only stores str(e), so
+            # this stderr log is the sole record of a failed run for support.
             import traceback
             traceback.print_exc()
             self.appState.analysis_in_progress = False

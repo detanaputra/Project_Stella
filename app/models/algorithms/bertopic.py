@@ -34,6 +34,7 @@ class BERTopicAlgorithm(BaseAlgorithm):
             'umap_metric': 'cosine',
             'umap_low_memory': False,
             'hdbscan_min_samples': 10,
+            'hdbscan_min_cluster_size': 10,
             'hdbscan_metric': 'euclidean'
         }
 
@@ -70,8 +71,12 @@ class BERTopicAlgorithm(BaseAlgorithm):
             )
 
             # 2. Configure HDBSCAN
+            # min_cluster_size was missing entirely (audit M8); without it a
+            # custom clusterer leaves BERTopic's clustering unconstrained.
+            # Default it to the same value as min_topic_size for consistency.
             clusterer = HDBSCAN(
                 min_samples=int(params.get('hdbscan_min_samples', 10)),
+                min_cluster_size=int(params.get('hdbscan_min_cluster_size', 10)),
                 metric=params.get('hdbscan_metric', 'euclidean'),
                 prediction_data=True
             )
