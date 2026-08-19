@@ -36,6 +36,9 @@ env/
 *.html
 temp_viz_*.html
 
+# Session logs & transcripts
+logs/
+
 # OS generated files
 .DS_Store
 Thumbs.db

@@ -245,3 +245,64 @@ Interactions below are reconstructed from the Claude session transcripts in `log
 - recap: Compiled artifacts stay out of version control.
 
 ## v0.1.1
+
+Interactions below are reconstructed from the Claude session transcript in `logs/v0.1.1/` (2026-08-17 → 2026-08-18).
+
+### 2026-08-17 — Codebase audit and high-severity fixes
+
+- timestamp: 2026-08-17 20:26 UTC
+- prompt: Audit the codebase and identify potential bugs. Do not modify the code — create `audit.md` with the results and recommendations.
+- changes made by AI coding partner: read all 45 Python source files plus the docs and the training notebook; verified suspected bugs with targeted checks; wrote `audit.md` with findings H1–H6 (high), M1–M8 (medium), L1–L8 (low).
+- recap: A read-only audit was delivered; the BERTopic parameter plumbing was flagged as the core risk.
+
+- timestamp: 2026-08-17 20:37 UTC
+- prompt: Modify `.gitignore` to exclude the `.claude` folder from tracking.
+- changes made by AI coding partner: investigated why `.claude` appeared tracked (the repo had no tracked `.gitignore`); identified the root cause.
+- recap: The `.claude` folder was only "tracked" because the project's `.gitignore` was never committed.
+
+- timestamp: 2026-08-17 21:09 UTC
+- prompt: Fix the H1 audit finding on the new branch.
+- changes made by AI coding partner: `AlgorithmSettingsPanel._render()` now rebuilds the parameter form only on structural changes instead of on every keystroke; committed as `10b822e`.
+- recap: H1 (form destroying itself mid-edit) is fixed and pushed.
+
+- timestamp: 2026-08-17 21:21 UTC
+- prompt: Yes — add `.gitignore` to your branch.
+- changes made by AI coding partner: created the project `.gitignore` with a `.claude/` exclusion and restored compiled artifacts from tracking; committed as `baa3443`.
+- recap: Claude Code worktree/plan files and compiled artifacts stay out of git.
+
+- timestamp: 2026-08-17 21:24 UTC
+- prompt: I don't have any changed files in my working copy. Check again.
+- changes made by AI coding partner: verified `main` had moved on; rebased `worktree-code-audit` onto current `main`, dropping the redundant `.gitignore` commit, and force-pushed with `--force-with-lease`.
+- recap: The branch history was reconciled with `main`; the stale claim was corrected against the live repo state.
+
+- timestamp: 2026-08-17 21:59 UTC
+- prompt: The test works great. Now fix the rest of the top-5 things to fix first, on your branch.
+- changes made by AI coding partner: implemented H2–H6 — wizard default-parameter sync, wiring the five documented BERTopic hyperparameters into `train()`, showing the parameter UI before the first run, exception-safe event polling, and default parameter initialization; committed as `a02d9f5`.
+- recap: All six high-severity findings are fixed and pushed.
+
+### 2026-08-18 — Medium/low-severity fixes, v0.1.0 release, v0.2.0 setup
+
+- timestamp: 2026-08-18 10:33 UTC
+- prompt: Implement the fixes for the medium-severity findings on your branch.
+- changes made by AI coding partner: implemented M1–M8 — thread-safe UI dispatch (`AppState.call_on_main`), training re-entrancy guard, matplotlib figure cleanup, summary-panel rebuild guard + row cap, real export panel and offline Plotly visualizer, DataLoader CSV/encoding edge cases, debug-print removal, HDBSCAN `min_cluster_size`. Committed as `fdd421b`.
+- recap: All eight medium-severity fixes were implemented, verified with headless tests, and pushed.
+
+- timestamp: 2026-08-18 11:23 UTC
+- prompt: I got an `AttributeError: 'SummaryPanel' object has no attribute '_last_result'` at line 39 — but we initialize it at line 20.
+- changes made by AI coding partner: fixed the initialization order (the attribute must be set before `_build_ui()` runs `_render()`) and used a sentinel distinct from `None` so the placeholder still renders on a fresh start; verified with a live-Tk test; committed as `0383ce1`.
+- recap: The M3 render guard no longer crashes at startup.
+
+- timestamp: 2026-08-18 19:29 UTC
+- prompt: Now implement the fixes for the low-severity issues. Note that L2 is fixed but `audit.md` was not updated.
+- changes made by AI coding partner: implemented L1–L8 — deleted dead views/stub menus (real Edit menu, theme switcher on App Settings), parameter validation (UMAP/ngram clamps), LoadingPanel stacking guard, stop-words path handling, notebook bugs, project-load validation, milestone-based progress; updated `audit.md` including the L2 status. Commit `86f8dd5`.
+- recap: All low-severity findings fixed; every fix status is now recorded in `audit.md`.
+
+- timestamp: 2026-08-18 20:06 UTC
+- prompt: I've merged `worktree-code-audit` into main and deleted the branch on GitHub — I call this v0.1.0. Delete the local `worktree-code-audit` branch and create a new branch named `v0.2.0`.
+- changes made by AI coding partner: verified every branch commit was already on `main`; removed the `code-audit` worktree and branch; pruned the stale remote ref; created and checked out `v0.2.0` from `main`.
+- recap: v0.1.0 is released; the `v0.2.0` branch is ready for the next feature list.
+
+- timestamp: 2026-08-18 20:27 UTC
+- prompt: Open `roadmap.md` and write the current features under Version 0.1.0, categorized with level-3 headings (the v0.2.0 features will be added later).
+- changes made by AI coding partner: wrote `ROADMAP.md` with six categorized v0.1.0 sections (Core Topic Modelling, Data Loading & Validation, User Interface, Results & Export, Project Management, Reliability & Robustness); committed as `50ec71c`.
+- recap: The roadmap documents the v0.1.0 feature set; the v0.2.0 section is left empty.
