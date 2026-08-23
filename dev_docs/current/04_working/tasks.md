@@ -30,6 +30,14 @@ When choosing between options:
 - [x] triage + renumber SKU files with global IDs, move to `dev_docs/current/05_knowledge/skus/`
 - [x] delete duplicate `claude.md`; link `audit.md` from `cycle_1_review.md`
 
+## Drift Remediation (detect-drift run)
+
+- [x] delete leftover scaffold `app/controllers/controller.py` (also `model.py`/`view.py` remain — see note below)
+- [x] rewrite `dev_docs/current/02_contracts/api.md` to match the codebase
+- [x] update `dev_docs/current/01_system/architecture.md` (delete Folder Structure; fix Flows 1–3, registry, tests, layer paths)
+- [x] fix code so views call the controller (ARCH-3/ARCH-4): wizard panels, preview panel, viz panel, settings schema
+- [ ] decide whether to delete leftover scaffold `app/models/model.py` and `app/views/view.py` (unimported; flagged, not deleted)
+
 ## Cycle 2 Opening Tasks
 
 ### A. v0.2.0 planning

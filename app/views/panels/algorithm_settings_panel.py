@@ -4,7 +4,6 @@ from typing import Dict, Any
 from app.models.app_state import AppState
 from app.controllers.app_controller import AppController
 from app.controllers.analysis_controller import AnalysisController
-from app.models.algorithms import get_algorithm
 from app.views.panels.hyperparams.bertopic_section import BERTopicSection
 from app.views.panels.hyperparams.umap_section import UMAPSection
 from app.views.panels.hyperparams.hdbscan_section import HDBSCANSection
@@ -115,10 +114,10 @@ class AlgorithmSettingsPanel(ttk.Frame):
             UMAPSection(self.scrollable_frame, self.appState, self.controller).pack(fill=X, pady=10)
             HDBSCANSection(self.scrollable_frame, self.appState, self.controller).pack(fill=X, pady=10)
         else:
-            # Generic fallback for other algorithms
+            # Generic fallback for other algorithms (schema via the controller,
+            # never by calling the model directly from a view).
             try:
-                algo = get_algorithm(self.appState.selected_algorithm)
-                schema = algo.get_param_schema()
+                schema = self.controller.get_param_schema(self.appState.selected_algorithm)
                 self._build_param_form(schema)
             except Exception:
                 # Fallback mock content if algorithm not ready

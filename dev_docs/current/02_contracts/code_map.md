@@ -13,7 +13,7 @@ Define the stable note-to-code mapping for the current implementation state. Red
 - `app/models/algorithms/` — `base_algorithm.py`, `bertopic.py`
 - `app/models/services/` — `data_loader.py`, `processor.py`, `exporter.py`, `visualizer.py`, `project_service.py`
 - `app/views/` — `main_window.py`, `menu_manager.py`, `view.py`
-- `app/views/menus/` — `base_menu.py`, `file_menu.py`, `edit_menu.py`, `view_menu.py`
+- `app/views/menus/` — `base_menu.py`, `file_menu.py`, `edit_menu.py`
 - `app/views/panels/` — `toolbox_panel.py`, `summary_panel.py`, `algorithm_settings_panel.py`, `loading_panel.py`, `export_panel.py`
 - `app/views/panels/hyperparams/` — `base_section.py`, `bertopic_section.py`, `umap_section.py`, `hdbscan_section.py`
 - `app/views/panels/visualizations/` — `bertopic_viz_panel.py`
@@ -23,7 +23,7 @@ Define the stable note-to-code mapping for the current implementation state. Red
 
 | Note / doc | Code it covers |
 |---|---|
-| `dev_docs/current/01_system/architecture.md` | Overall MVC structure, data flow, `main_window.py` layout (3-column paned, Notebook) |
+| `dev_docs/current/01_system/architecture.md` | Overall MVC structure, data flow, `main_window.py` layout (2-column paned, Notebook) |
 | `dev_docs/current/02_contracts/api.md` | Contracts for `BaseAlgorithm`, `AppState`, `TopicResult`; service signatures |
 | `dev_docs/current/02_contracts/bertopic_hyperparams.md` | `app/models/algorithms/bertopic.py`; `app/views/panels/hyperparams/*` |
 | `dev_docs/current/03_control/decisions.md` | Decisions map to commits across `app/` (see each decision's commit ref) |
@@ -36,7 +36,7 @@ Define the stable note-to-code mapping for the current implementation state. Red
 
 - **Function contracts:** authoritative in `dev_docs/current/02_contracts/api.md` — callable signatures for `BaseAlgorithm`, `AppState`, services.
 - **Data contracts:** authoritative in `dev_docs/current/02_contracts/api.md` + `app/models/topic_result.py` (`TopicResult`), `app/models/app_state.py` (`AppState`).
-- **Parameter contract:** authoritative in `dev_docs/current/02_contracts/bertopic_hyperparams.md` — the five documented hyperparameters wired into `train()`.
+- **Parameter contract:** authoritative in `dev_docs/current/02_contracts/bertopic_hyperparams.md` — the 14 documented hyperparameters wired into `train()`.
 
 If code and contract disagree → treat as **drift**; explicitly decide whether to update code, contract, or both (see `dev_docs/current/04_working/source_of_truth.md`).
 
