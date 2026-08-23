@@ -77,7 +77,7 @@ Building a **desktop GUI application** that democratizes topic modelling for soc
 
 ## MVC Architecture
 
-Three layers (detailed in ARCHITECTURE.md):
+Three layers (detailed in `dev_docs/current/01_system/architecture.md`):
 
 **MODEL** (no UI)
 - AppState (centralized state management)
@@ -111,9 +111,9 @@ Three layers (detailed in ARCHITECTURE.md):
 ## For AI Coding Partner (Claude)
 
 ### How to Work with This Project
-1. **Provide context upfront** — Paste relevant section from ARCHITECTURE.md or API.md
+1. **Provide context upfront** — Paste relevant section from `dev_docs/current/01_system/architecture.md` or `dev_docs/current/02_contracts/api.md`
 2. **Ask for specific modules** — "Generate `models/algorithms/bertopic.py` following BaseAlgorithm contract"
-3. **Validate against contracts** — Check generated code against interfaces in API.md
+3. **Validate against contracts** — Check generated code against interfaces in `dev_docs/current/02_contracts/api.md`
 4. **Test early** — Unit test each module as generated
 
 ### When to Ask Claude
@@ -170,9 +170,9 @@ Three layers (detailed in ARCHITECTURE.md):
 
 ## Related Documentation
 
-- **ARCHITECTURE.md** — MVC structure, data flows, code patterns
-- **API.md** — Component contracts (BaseAlgorithm, AppState, TopicResult)
-- **DEVELOPMENT.md** — Setup, testing, deployment
+- **`dev_docs/current/01_system/architecture.md`** — MVC structure, data flows, code patterns
+- **`dev_docs/current/02_contracts/api.md`** — Component contracts (BaseAlgorithm, AppState, TopicResult)
+- **`dev_docs/current/03_control/development.md`** — Setup, testing, deployment
 - **README.md** — Installation, quick start, usage
 
 ---
@@ -180,8 +180,8 @@ Three layers (detailed in ARCHITECTURE.md):
 ## Important Files
 
 - `claude.md` ← You are here (high-level context)
-- `ARCHITECTURE.md` ← For development (patterns & data flows)
-- `API.md` ← For component interfaces
-- `DEVELOPMENT.md` ← For setup & testing
+- `dev_docs/current/01_system/architecture.md` ← For development (patterns & data flows)
+- `dev_docs/current/02_contracts/api.md` ← For component interfaces
+- `dev_docs/current/03_control/development.md` ← For setup & testing
 
 When starting a coding session, paste relevant sections from the appropriate doc.

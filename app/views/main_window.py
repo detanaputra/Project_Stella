@@ -18,7 +18,7 @@ class MainWindow(ttk.Window):
     """
     def __init__(self, state: AppState):
         super().__init__(themename="flatly")
-        self.title("Project Stella - Semantic Topic ExpLoration LeArning")
+        self.title("Project Stella - Semantic Topic ExpLoration and LeArning")
         self.geometry("1280x720")
 
         self.appState: AppState = state
