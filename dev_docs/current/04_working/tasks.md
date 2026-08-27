@@ -68,8 +68,8 @@ When choosing between options:
 - [x] add `gensim` to `requirements.txt` (pinned)
 - [x] implement topic quality service: NPMI/C_V/UMass via Gensim `CoherenceModel` + hand-rolled Topic Diversity
 - [x] wire the pipeline to compute metrics in the background after training and set `result.quality_metrics`
-- [ ] implement `MetricPanel` (ttk.Frame; matplotlib gauge/donut charts, one per metric)
-- [ ] wire `MainWindow` to add the "Metrics" tab (after Analysis) once a result exists; keep it while `current_result` holds a model
+- [x] implement `MetricPanel` (ttk.Frame; matplotlib gauge/donut charts, one per metric)
+- [x] wire `MainWindow` to add the "Metrics" tab (after Analysis) once a result exists; keep it while `current_result` holds a model
 
 ## Deferred to Later Cycles
 
