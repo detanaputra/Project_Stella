@@ -4,7 +4,7 @@
 
 ### Main goal
 - Publish the project on GitHub: README (description, goal, benefits) and Apache 2.0 license
-- MouseWheel scrolling in the algorithm settings panel (no scrollbar grabbing)
+- MouseWheel scrolling in the parameter panels (no scrollbar grabbing)
 - Show topic quality metrics in a new "Metrics" tab:
     - NPMI coherence
     - C_V coherence
@@ -14,7 +14,7 @@
 ### Main outcomes
 - README with description, goal, and benefit of the application
 - Apache 2.0 License file in the repo
-- MouseWheel scrolling in the settings panel
+- MouseWheel scrolling in the parameter panels
 - New "Metrics" tab (after the Analysis tab) shows topic quality metrics — 4 gauge/donut charts, one per metric
 - [deferred to a later cycle] LDA/NMF algorithms, embedded charts, search/filter, batch processing
 - Topic quality metrics computed with Gensim (`CoherenceModel`); Topic Diversity implemented in-app
@@ -36,7 +36,7 @@ Planned.
 - Write the README with the application's description, goal, and benefits
 
 ### User Interface
-- Attach a MouseWheel event to the scrollable container in `algorithm_settings_panel.py` so users can scroll up/down without grabbing the scrollbar
+- Attach a MouseWheel event to the scrollable containers in `algorithm_settings_panel.py` and the wizard's `panel_hyperparams.py` so users can scroll up/down without grabbing the scrollbar
 
 ### Results & Export
 - Compute and display topic quality metrics in a new "Metrics" tab (added to the main Notebook after the Analysis tab once a result exists) — 4 gauge/donut charts, one per metric, each showing the model's single (averaged) value:

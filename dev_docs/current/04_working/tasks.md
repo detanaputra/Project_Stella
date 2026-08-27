@@ -60,7 +60,8 @@ When choosing between options:
 - [ ] add Apache 2.0 license file
 
 ### User Interface
-- [ ] attach MouseWheel event to the scrollable container in `algorithm_settings_panel.py` so users can scroll without grabbing the scrollbar
+- [x] attach MouseWheel event to the scrollable container in `algorithm_settings_panel.py` (main window settings panel)
+- [ ] attach MouseWheel event to the scrollable container in the wizard's `panel_hyperparams.py`
 
 ### Topic quality (Metrics tab)
 - [x] add `quality_metrics` field to `TopicResult` (contract `api.md` + dataclass) — D-021
