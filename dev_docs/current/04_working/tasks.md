@@ -65,9 +65,9 @@ When choosing between options:
 
 ### Topic quality (Metrics tab)
 - [x] add `quality_metrics` field to `TopicResult` (contract `api.md` + dataclass) — D-021
-- [ ] add `gensim` to `requirements.txt` (pinned)
-- [ ] implement topic quality service: NPMI/C_V/UMass via Gensim `CoherenceModel` + hand-rolled Topic Diversity
-- [ ] wire the pipeline to compute metrics in the background after training and set `result.quality_metrics`
+- [x] add `gensim` to `requirements.txt` (pinned)
+- [x] implement topic quality service: NPMI/C_V/UMass via Gensim `CoherenceModel` + hand-rolled Topic Diversity
+- [x] wire the pipeline to compute metrics in the background after training and set `result.quality_metrics`
 - [ ] implement `MetricPanel` (ttk.Frame; matplotlib gauge/donut charts, one per metric)
 - [ ] wire `MainWindow` to add the "Metrics" tab (after Analysis) once a result exists; keep it while `current_result` holds a model
 
