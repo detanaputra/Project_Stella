@@ -3,38 +3,47 @@
 ## Version 0.2.0
 
 ### Main goal
-- General description to be displayed in github repo
-- smoother parameter scrolling
-- display topic quality metric to the user, using Octis (https://github.com/MIND-Lab/OCTIS). Topic quality to be implemented in this version:
+- Publish the project on GitHub: README (description, goal, benefits) and Apache 2.0 license
+- MouseWheel scrolling in the algorithm settings panel (no scrollbar grabbing)
+- Show topic quality metrics in a new "Metrics" tab:
     - NPMI coherence
     - C_V coherence
     - UMass coherence
     - Topic Diversity
 
 ### Main outcomes
-- README with description, goal, and benefit of the application to be displayed in github repo
-- MouseWheel scrolling in the settings panel (no sash grabbing)
-- summary tab now contain topic quality metric instead of topic result. topic result is moved to the next tab called Topic Model.
-- [postponed to very last feature to add] LDA/NMF algorithms, embedded charts, search/filter, batch processing
+- README with description, goal, and benefit of the application
+- Apache 2.0 License file in the repo
+- MouseWheel scrolling in the settings panel
+- New "Metrics" tab (after the Analysis tab) shows topic quality metrics — 4 gauge/donut charts, one per metric
+- [deferred to a later cycle] LDA/NMF algorithms, embedded charts, search/filter, batch processing
+- Topic quality metrics computed with Gensim (`CoherenceModel`); Topic Diversity implemented in-app
 
 ### Primary focus
-- General description of the project in Readme file
+- GitHub repo presentation (README + license)
 - UI scrolling ergonomics
-- Redesign the summary to display topic quality metric.
-- [postponed to very last feature to add] exercising the algorithm-agnostic abstraction with a second algorithm
+- Topic quality metrics in a new "Metrics" tab
+- [deferred to a later cycle] exercising the algorithm-agnostic abstraction with a second algorithm
 
 ### Success signal
-- A user can scroll parameters without touching the sash.
-- user can see their topic quality in the summary tab
+- A user can scroll parameters without touching the scrollbar
+- A user can see their topic quality in the Metrics tab
 
 ### Status
 Planned.
 
 ### Project Management
-- Write readme file and put the description, goal, and benefit of this application.
+- Write the README with the application's description, goal, and benefits
 
 ### User Interface
-- Attach MouseWheel event to scrollable container in algorithm_settings_panel.py so user can scroll down or up without grabbing shash.
+- Attach a MouseWheel event to the scrollable container in `algorithm_settings_panel.py` so users can scroll up/down without grabbing the scrollbar
+
+### Results & Export
+- Compute and display topic quality metrics in a new "Metrics" tab (added to the main Notebook after the Analysis tab once a result exists) — 4 gauge/donut charts, one per metric, each showing the model's single (averaged) value:
+    - NPMI, C_V, UMass coherence via Gensim's `CoherenceModel`
+    - Topic Diversity implemented in-app (not provided by Gensim)
+- Coherence computed on the training corpus, using each topic's top-10 words
+- Metrics computed in the background during the training pipeline; the Metrics tab stays visible while `current_result` holds a model
 
 ## Version 0.1.0 (done)
 

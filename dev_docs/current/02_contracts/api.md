@@ -35,6 +35,11 @@ class TopicResult:
     # Algorithm info for reproducibility.
     # BERTopic example: {'algorithm': 'BERTopic', 'version': '0.17.4',
     #                    'params': '<str(params)>', 'num_documents': '524', 'num_topics': '12'}
+
+    quality_metrics: Optional[Dict[str, float]] = None
+    # Topic quality evaluation, computed by the pipeline after training (not by
+    # the algorithm itself). One value per metric, averaged across topics.
+    # Example: {'npmi': 0.12, 'c_v': 0.45, 'u_mass': -3.2, 'topic_diversity': 0.78}
 ```
 
 ---

@@ -41,8 +41,8 @@ When choosing between options:
 ## Cycle 2 Opening Tasks
 
 ### A. v0.2.0 planning
-- [ ] write remaining v0.2.0 `ROADMAP.md` entries in cycle_plan form (goal / outcomes / focus / success signal / status)
-- [ ] decide Cycle 2 scope: README, MouseWheel scrolling first; LDA/NMF later
+- [x] write remaining v0.2.0 `ROADMAP.md` entries in cycle_plan form (goal / outcomes / focus / success signal / status)
+- [x] decide Cycle 2 scope: README + Apache 2.0 license, MouseWheel scrolling, topic quality metrics (new "Metrics" tab); LDA/NMF deferred to a later cycle
 - [ ] open the cycle-2 start handoff set (codebase + `current_state.md` + `source_of_truth.md` + task-relevant notes)
 
 ### B. SKU/evidence follow-ups
@@ -53,17 +53,33 @@ When choosing between options:
 - [ ] update `current_state.md` at the end of this hardening pass
 - [ ] keep `audit.md` and any status doc in sync with the changes they record
 
+## Cycle 2 Implementation Tasks (v0.2.0)
+
+### GitHub presentation
+- [ ] write README with description, goal, and benefits of the application
+- [ ] add Apache 2.0 license file
+
+### User Interface
+- [ ] attach MouseWheel event to the scrollable container in `algorithm_settings_panel.py` so users can scroll without grabbing the scrollbar
+
+### Topic quality (Metrics tab)
+- [x] add `quality_metrics` field to `TopicResult` (contract `api.md` + dataclass) — D-021
+- [ ] add `gensim` to `requirements.txt` (pinned)
+- [ ] implement topic quality service: NPMI/C_V/UMass via Gensim `CoherenceModel` + hand-rolled Topic Diversity
+- [ ] wire the pipeline to compute metrics in the background after training and set `result.quality_metrics`
+- [ ] implement `MetricPanel` (ttk.Frame; matplotlib gauge/donut charts, one per metric)
+- [ ] wire `MainWindow` to add the "Metrics" tab (after Analysis) once a result exists; keep it while `current_result` holds a model
+
 ## Deferred to Later Cycles
 
 - [ ] LDA/NMF algorithms (exercises the `BaseAlgorithm` abstraction — D-001)
 - [ ] embedded matplotlib charts (vs. browser-only visualizations)
 - [ ] document search/filter
 - [ ] batch processing
+- [ ] multi-model support ("Model 1", "Model 2", …) — metrics already stored per-`TopicResult` (D-021)
 
 ## Small Operational Tasks
 
-- [ ] write README with description, goal, and benefits of the application (v0.2.0)
-- [ ] attach MouseWheel event to the scrollable container in `algorithm_settings_panel.py` (v0.2.0)
-- [ ] add remote GitHub repository later
-- [ ] connect local Git repository to GitHub remote
-- [ ] confirm `.gitignore` still matches project needs after GitHub setup
+- [x] add remote GitHub repository — `origin` → github.com/detanaputra/Project_Stella
+- [x] connect local Git repository to GitHub remote
+- [x] confirm `.gitignore` still matches project needs after GitHub setup

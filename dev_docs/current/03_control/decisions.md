@@ -179,3 +179,32 @@ Verifying before deleting prevents silent work loss; branching fresh from `main`
 
 - **Quick Capture — BERTopic's `probs` shape and cluster-id mapping are the two correctness cliffs** of the doc-topic table; every future algorithm export must normalize the same way.
 - **Quick Capture — parameter plumbing (UI ↔ state ↔ `train()`) is the top risk surface.** The audit flagged it; the build bugs matched. Validate types at the algorithm boundary on every new parameter.
+
+---
+
+## Cycle 2 Decisions
+
+### D-020: Topic quality metrics via Gensim, not OCTIS
+- **Status:** active
+- **Context:** v0.2.0 adds topic quality metrics in a new "Metrics" tab — NPMI, C_V and UMass coherence plus Topic Diversity. The initial requirement named OCTIS (https://github.com/MIND-Lab/OCTIS) as the metric library. A footprint check (PyPI wheel sizes + dependency pins) showed OCTIS is infeasible for this app: the `octis` package itself is 0.13 MB, but it pulls torch (~106 MB wheel on macOS arm64, ~500 MB CUDA-bundled on Linux; ~500 MB+ installed), spacy, sentence-transformers and other heavy dependencies — roughly 1–2 GB installed and 1 GB+ added to a PyInstaller bundle. It also pins `scikit-learn==1.1.0` (wheels exist only for Python 3.8–3.10; incompatible with this project's Python 3.11+ and its `scikit-learn==1.7.1`), `numpy<2.0`, and `scipy<1.13`, conflicting with the BERTopic stack.
+- **Decision:** Compute the three coherence metrics with Gensim's `CoherenceModel` (`u_mass`, `c_v`, `c_npmi`) and implement Topic Diversity in-app (Gensim does not provide it). Add `gensim` as a pinned dependency.
+- **Rationale:** Gensim's `CoherenceModel` natively supports all three requested coherence measures at a fraction of the footprint (~30 MB installed). Topic Diversity is a trivial unique-word ratio implemented in a few lines. Gensim is also already planned as the base for future LDA, so the dependency earns its place beyond this feature.
+- **Consequences:** Coherence scores are per-topic and averaged to one value per metric; the measures have different value ranges (NPMI ≈ −1…1, C_V ≈ 0…1, UMass ≈ negative), so each gauge needs its own scale; C_V is the slowest and must run on the background thread, not the UI.
+- **Review Trigger:** If a later feature needs neural-model evaluation or embedding-based coherence, revisit whether OCTIS (or an equivalent) now justifies its footprint.
+
+### D-021: Topic quality metrics stored on `TopicResult`, not `AppState`
+- **Status:** active
+- **Context:** v0.2.0 adds topic quality metrics (NPMI, C_V, UMass, Topic Diversity) rendered in a new "Metrics" tab. The design question was where to store the computed values — a new `AppState` field or on the `TopicResult` itself. Multi-model support is a planned future direction (post-graduation), so the storage should prepare for it.
+- **Decision:** Add a dedicated `quality_metrics: Optional[Dict[str, float]] = None` field to `TopicResult`. The pipeline computes the metrics in the background after training and sets the field; `MetricPanel` reads `result.quality_metrics` and renders the gauges. The data contract (`api.md`) and the dataclass are updated together.
+- **Rationale:** Each model's metrics travel with its own result — a natural fit for multi-model, where every `TopicResult` is self-contained. It avoids a parallel `AppState` field that must be kept in sync with `current_result`, and keeps `AppState` lean. A dedicated field (rather than `metadata`) keeps evaluation output distinct from algorithm-specific internals.
+- **Consequences:** `TopicResult` gains a backward-compatible field (default `None`); the data contract in `api.md` is updated in the same change.
+- **Contract change:** `TopicResult` (in `api.md` and `app/models/topic_result.py`) gains `quality_metrics: Optional[Dict[str, float]] = None` — pipeline-computed evaluation output, one value per metric (NPMI, C_V, UMass, Topic Diversity).
+- **Review Trigger:** When multi-model is implemented, confirm each model's result carries its own metrics and the Metrics tab reads the selected model's result.
+
+### D-022: Single-event observer mechanism — keep `STATE_CHANGED`, adopt cheap-subscriber discipline
+- **Status:** active
+- **Context:** `AppState` notifies every subscriber on every state change (a single `STATE_CHANGED` event). As the app grows, every subscriber re-renders on every change, which could become expensive if subscribers do heavy work.
+- **Decision:** Keep the single-event mechanism. Enforce the discipline: expensive work (training, metrics, file I/O) lives in controllers' background threads and lands in state as finished values; subscribers only re-render and guard on the specific field they care about (compare to the last-rendered value). The metric service is called once per result in the pipeline, never on a generic state change. If the panel count grows and the guard pattern feels repetitive, add field-level change tracking to `AppState` (a dirty set via `__setattr__`, with `subscribe(cb, keys=...)` or `state.changed(field)`) — not a full event-type taxonomy.
+- **Rationale:** The mechanism's cost is bounded by the cheapest subscriber; expensive work never belongs in a subscriber. A full event-type system is overkill at this scale.
+- **Consequences:** Subscribers must be written cheap (guard pattern); no `AppState` change now.
+- **Review Trigger:** When the panel count grows enough that the guard pattern feels repetitive, revisit field-level filtering.
