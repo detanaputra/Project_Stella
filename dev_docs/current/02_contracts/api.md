@@ -304,6 +304,7 @@ All views follow the same contract:
 |---|---|---|
 | `panels/toolbox_panel.py` | `ToolboxPanel` | Left column: embeds `BERTopicVisualisation` |
 | `panels/summary_panel.py` | `SummaryPanel` | Result tables (topics, doc-topics); sentinel-guarded render |
+| `panels/metric_panel.py` | `MetricPanel` | 4 topic quality gauges (NPMI, C_V, UMass, Topic Diversity) from `result.quality_metrics`; sentinel-guarded render |
 | `panels/algorithm_settings_panel.py` | `AlgorithmSettingsPanel` | BERTopic/UMAP/HDBSCAN param sections; Retrain button; scrollable; re-renders only on structural change |
 | `panels/loading_panel.py` | `LoadingPanel` | Modal overlay; auto-closes when `analysis_in_progress` → false |
 | `panels/export_panel.py` | `ExportPanel` | CSV/JSON/report export + browser visualizations |

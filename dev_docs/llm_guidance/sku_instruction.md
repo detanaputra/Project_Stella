@@ -34,8 +34,8 @@ When you have them, also record: **timestamp** (UTC), **SKU ID**, and **evidence
 
 ## IDs and evidence links
 
-- Use a **global sequential ID** — `SKU-001`, `SKU-002`, … — that does **not restart** between versions or files. (Current Stella files restart at SKU 001 in each version file — do not perpetuate that.)
-- Reference SKUs in commit messages and other docs in the example's style: `Ref: SKU-042 — Implemented Polars switch to reduce RAM.`
+- Use a **cycle-coded sequential ID** — `SKU-[cycle]-[number]`, e.g. `SKU-02-01` — where the first segment is the cycle number and the second is the sequential number within that cycle. IDs restart per cycle (not per version file). (The v0.1.0/v0.1.1 files used a global `SKU-001`… sequence; v0.2.0 onward is cycle-coded.)
+- Reference SKUs in commit messages and other docs in the example's style: `Ref: SKU-02-01 — Implemented Polars switch to reduce RAM.`
 - Attach evidence: the git commit hash, the code file/line, and (for raw proof) a reference to the chat transcript in `logs/`. Evidence is what makes an SKU verifiable.
 
 ## Triage — which interactions deserve an SKU
@@ -64,5 +64,6 @@ Tag SKU-bearing files at the top with the knowledge tags, e.g. `#decision #desig
 
 ## Current state in this repo
 
-- `dev_docs/current/05_knowledge/skus/v0.1.0.md` — SKU-001…025 (triaged from 44; demoted entries in an appendix) and `dev_docs/current/05_knowledge/skus/v0.1.1.md` — SKU-026…036 (with commit refs). Format: `### SKU-NNN — <UTC timestamp>` heading; four bulleted components; optional **Evidence:** field.
-- Global IDs and triage are already applied; the v0.1.1 commit refs (`10b822e`, `a02d9f5`, `fdd421b`, `0383ce1`, `86f8dd5`, `50ec71c`) are recorded. Remaining upgrade: add `Cycle ID` / `Phase` / `AI Interaction` fields if a fuller template is wanted, and backfill v0.1.0 evidence links once those commits are identified.
+- `dev_docs/current/05_knowledge/skus/v0.1.0.md` — SKU-01-01…25 (cycle-coded; combined from 36 original; v0.1.1 merged here). Format: `### SKU-NN-NN — <UTC timestamp>` heading; four bulleted components; optional **Evidence:** field.
+- `dev_docs/current/05_knowledge/skus/v0.2.0.md` — SKU-02-01…04 (cycle-coded; from the design-changing commits of Cycle 2, with commit refs).
+- Triage is applied; the audit-fix commit refs (`10b822e`, `a02d9f5`, `fdd421b`, `0383ce1`, `86f8dd5`, `50ec71c`) are recorded in the merged file. Remaining upgrade: add `Cycle ID` / `Phase` / `AI Interaction` fields if a fuller template is wanted, and backfill v0.1.0 evidence links once those commits are identified.

@@ -57,7 +57,7 @@ This note is a **reusable control note**. Update it in the same change as any st
 | File | SHAPR role | Notes |
 |---|---|---|
 | `dev_docs/llm_guidance/sku_instruction.md` | SKU definition | Distilled from arXiv 2603.25660; `guide.md` removed |
-| `dev_docs/current/05_knowledge/skus/v0.1.0.md`, `v0.1.1.md` | SKU knowledge units | 25 + 11 SKUs (global IDs; triaged; v0.1.1 carries commit refs) |
+| `dev_docs/current/05_knowledge/skus/v0.1.0.md` | SKU knowledge units | 25 SKUs (SKU-01-01…25, cycle-coded; combined from 36 original; v0.1.1 merged here) |
 | `dev_docs/current/05_knowledge/reflection.md` | reflection | Created from cycle learnings |
 | `dev_docs/current/05_knowledge/references.md` | references | SHAPR papers + project guides |
 | *(missing)* `paper.md` | 05_knowledge | **Gap** — thesis/paper working draft |
@@ -93,6 +93,6 @@ This note is a **reusable control note**. Update it in the same change as any st
 4. `logs.md`/`logs/` not yet linked to SKU IDs or commit refs; no `/evidence` convention.
 5. ~~`audit.md` not referenced~~ — resolved: linked from `cycle_1_review.md` as its Evidence.
 6. ~~`claude.md` duplicate~~ — resolved: single tracked file (lowercase `claude.md`), no duplicate.
-7. SKU files triaged + global IDs applied; **v0.1.0 evidence links pending** (no commits were recorded in that log).
+7. SKU files triaged + cycle-coded IDs applied; **v0.1.0 evidence links pending** (no commits were recorded in that log).
 8. `naming_conventions.md` (contracts) and `paper.md` (knowledge) still missing.
 9. `dev_docs/snapshots/cycle_1_close/` is the first cycle snapshot; subsequent cycles should follow `snapshot_workflow.md`.

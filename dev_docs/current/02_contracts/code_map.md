@@ -28,7 +28,7 @@ Define the stable note-to-code mapping for the current implementation state. Red
 | `dev_docs/current/02_contracts/bertopic_hyperparams.md` | `app/models/algorithms/bertopic.py`; `app/views/panels/hyperparams/*` |
 | `dev_docs/current/03_control/decisions.md` | Decisions map to commits across `app/` (see each decision's commit ref) |
 | `dev_docs/cycle_record_notes/*` | Development process across the whole artefact |
-| `dev_docs/current/05_knowledge/skus/v0.1.0.md` / `v0.1.1.md` (SKUs) | Knowledge units; refer to the files named in each SKU's Context/Decision |
+| `dev_docs/current/05_knowledge/skus/v0.1.0.md` (SKUs) | Knowledge units; refer to the files named in each SKU's Context/Decision |
 | `audit.md` | Audit evidence; findings reference files across `app/` |
 | `ROADMAP.md` | Feature-level plan; not tied to specific files |
 

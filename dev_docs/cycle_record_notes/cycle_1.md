@@ -7,7 +7,7 @@ Build the interactive BERTopic topic-modelling desktop application — the v0.1.
 
 ## 1. Context
 
-The project needed a first complete, runnable release of a topic-modelling GUI for non-technical social scientists: upload CSV/TXT, train a BERTopic model, view structured results, export, and visualise interactively — with zero programming required. This cycle covered the entire build (2026-08-08 → 2026-08-17), reconstructed as 25 SKUs (triaged from 44) in `dev_docs/current/05_knowledge/skus/v0.1.0.md` from `logs.md`.
+The project needed a first complete, runnable release of a topic-modelling GUI for non-technical social scientists: upload CSV/TXT, train a BERTopic model, view structured results, export, and visualise interactively — with zero programming required. This cycle covered the entire build (2026-08-08 → 2026-08-17), reconstructed as 25 SKUs (SKU-01-01…25, combined from 36 original) in `dev_docs/current/05_knowledge/skus/v0.1.0.md` from `logs.md`.
 
 Cycle framing:
 - **Main goal:** ship the v0.1.0 feature set (MVC app, wizard setup, loading feedback, result tables, save/load, visualizations, retrain).
@@ -117,7 +117,7 @@ Consolidated insights (the cycle's knowledge output):
 ## 8. Outputs of Cycle 1
 
 ### Notes / control artefacts
-- `dev_docs/current/05_knowledge/skus/v0.1.0.md` — SKU-001…025 (triaged; this cycle's knowledge units).
+- `dev_docs/current/05_knowledge/skus/v0.1.0.md` — SKU-01-01…25 (combined; build + review knowledge units).
 - `claude.md`, `dev_docs/current/01_system/architecture.md`, `dev_docs/current/02_contracts/api.md`, `dev_docs/current/03_control/development.md` — project docs.
 - `dev_docs/current/02_contracts/bertopic_hyperparams.md` — hyperparameter reference.
 
@@ -137,4 +137,4 @@ Cycle 1 produced a complete, runnable v0.1.0 application: BERTopic training with
 
 ## 10. Likely Next Cycle Direction
 
-**The audit-and-harden work is `cycle_1_review.md`** (read-only audit with prioritized findings, fixes by severity, then release v0.1.0 and scaffold v0.2.0 — reconstructed as the v0.1.1 SKUs in `dev_docs/current/05_knowledge/skus/v0.1.1.md`). After that review closes, the next real cycle is **Cycle 2 — v0.2.0 feature set**: LDA/NMF algorithms, embedded matplotlib charts, document search/filter, batch processing. Write the v0.2.0 `ROADMAP.md` entries and open `current_state.md` for the cycle.
+**The audit-and-harden work is `cycle_1_review.md`** (read-only audit with prioritized findings, fixes by severity, then release v0.1.0 and scaffold v0.2.0 — reconstructed as SKU-01-16…25 in `dev_docs/current/05_knowledge/skus/v0.1.0.md`). After that review closes, the next real cycle is **Cycle 2 — v0.2.0 feature set**: LDA/NMF algorithms, embedded matplotlib charts, document search/filter, batch processing. Write the v0.2.0 `ROADMAP.md` entries and open `current_state.md` for the cycle.

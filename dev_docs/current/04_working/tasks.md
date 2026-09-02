@@ -27,7 +27,7 @@ When choosing between options:
 - [x] create `dev_docs/snapshots/cycle_1_close/` (frozen handoff)
 - [x] create `dev_docs/current/02_contracts/` (`code_map.md`, contract index)
 - [x] create `dev_docs/current/05_knowledge/references.md`
-- [x] triage + renumber SKU files with global IDs, move to `dev_docs/current/05_knowledge/skus/`
+- [x] triage + renumber SKU files with cycle-coded IDs, move to `dev_docs/current/05_knowledge/skus/`
 - [x] delete duplicate `claude.md`; link `audit.md` from `cycle_1_review.md`
 
 ## Drift Remediation (detect-drift run)
@@ -43,21 +43,21 @@ When choosing between options:
 ### A. v0.2.0 planning
 - [x] write remaining v0.2.0 `ROADMAP.md` entries in cycle_plan form (goal / outcomes / focus / success signal / status)
 - [x] decide Cycle 2 scope: README + Apache 2.0 license, MouseWheel scrolling, topic quality metrics (new "Metrics" tab); LDA/NMF deferred to a later cycle
-- [ ] open the cycle-2 start handoff set (codebase + `current_state.md` + `source_of_truth.md` + task-relevant notes)
+- [x] open the cycle-2 start handoff set (codebase + `current_state.md` + `source_of_truth.md` + task-relevant notes)
 
 ### B. SKU/evidence follow-ups
 - [ ] add commit refs to the v0.1.0 SKUs when the build commits are identified
 - [ ] decide whether to keep a `/evidence`-style home for `logs/` transcripts
 
 ### C. Document-control continuity
-- [ ] update `current_state.md` at the end of this hardening pass
+- [x] update `current_state.md` at the end of this hardening pass
 - [ ] keep `audit.md` and any status doc in sync with the changes they record
 
 ## Cycle 2 Implementation Tasks (v0.2.0)
 
 ### GitHub presentation
-- [ ] write README with description, goal, and benefits of the application
-- [ ] add Apache 2.0 license file
+- [x] write README with description, goal, and benefits of the application
+- [x] add Apache 2.0 license file
 
 ### User Interface
 - [x] attach MouseWheel event to the scrollable container in `algorithm_settings_panel.py` (main window settings panel)
@@ -70,6 +70,13 @@ When choosing between options:
 - [x] wire the pipeline to compute metrics in the background after training and set `result.quality_metrics`
 - [x] implement `MetricPanel` (ttk.Frame; matplotlib gauge/donut charts, one per metric)
 - [x] wire `MainWindow` to add the "Metrics" tab (after Analysis) once a result exists; keep it while `current_result` holds a model
+
+## Cycle 2 Close Tasks
+
+- [x] consolidate SKUs: create `v0.2.0.md` (SKU-02-01…04); merge v0.1.1 into `v0.1.0.md`; cycle-coded IDs
+- [ ] write `cycle_2.md` cycle record (build + review)
+- [ ] take a cycle-2 close snapshot (`dev_docs/snapshots/cycle_2_close/`)
+- [ ] update `ROADMAP.md` v0.2.0 status → Completed
 
 ## Deferred to Later Cycles
 

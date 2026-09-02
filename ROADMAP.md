@@ -30,7 +30,7 @@
 - A user can see their topic quality in the Metrics tab
 
 ### Status
-Planned.
+Completed.
 
 ### Project Management
 - Write the README with the application's description, goal, and benefits

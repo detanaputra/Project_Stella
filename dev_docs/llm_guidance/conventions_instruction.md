@@ -37,7 +37,7 @@ Mental model: **Folders → where to go; Tags → what it means; Links → how i
 - **Cycles:** filename `cycle_n.md` / `cycle_n_review.md` + `#cycle<N>` tag + a `## Cycle Title` heading.
 - **Decisions:** `DD-###` (early), then `D-###`, sequential across the log, grouped under cycle-boundary headings.
 - **Runs/experiments:** timestamp-based `run_id`.
-- **SKUs:** use a **global sequential** `SKU-NNN` (do not restart per file/version). Reference in commit messages as `Ref: SKU-042 — …`.
+- **SKUs:** use a **cycle-coded sequential** `SKU-[cycle]-[number]` (e.g. `SKU-02-01`; restart per cycle). Reference in commit messages as `Ref: SKU-02-01 — …`.
 - **Timestamps:** the example systemizes none; **Stella's SKU files do use UTC timestamps — keep them**, they are a traceability strength.
 
 ## Evidence layer

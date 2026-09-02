@@ -45,9 +45,21 @@ From the audit-based review (`dev_docs/cycle_record_notes/cycle_1_review.md` §4
 - **A status doc is only truth if it's current** — update `audit.md` in the same change as the fix.
 - **Verify commits reached `main` before deleting a branch.**
 
+## Cycle 2 Consolidated Quick Capture
+
+- **A footprint check before adopting a research library can save gigabytes.** OCTIS (0.13 MB package) pulls torch (~106 MB wheel, ~500 MB+ installed), spacy, sentence-transformers — 1–2 GB installed and 1 GB+ on a PyInstaller bundle — plus a `scikit-learn==1.1.0` pin incompatible with Python 3.11+. Gensim's `CoherenceModel` covered all three coherence measures at a fraction of the footprint.
+- **Gensim's sliding-window coherence uses multiprocessing by default.** `c_v`/`c_npmi` raise "bootstrapping phase" errors from a GUI background thread on macOS spawn — force `processes=1` (and it is fast for research corpora).
+- **Store evaluation output on the result object, not app state.** `TopicResult.quality_metrics` keeps each model's metrics with its result — the multi-model-ready shape, with no parallel state to keep in sync.
+- **A render guard keyed on `None` collides with "no result yet".** The MetricPanel's first render was skipped until a sentinel distinct from `None` was used (D-014 pattern).
+- **The single-event observer stays cheap when subscribers guard.** Expensive work belongs in controllers' background threads; subscribers compare the field they care about and skip work if unchanged.
+
+## Reflection — SKU consolidation: a numbering scheme is a contract
+
+The v0.1.0/v0.1.1 SKUs were too micro (25 + 11, many trivial). Consolidating to design-changing commits only (25 across cycle 1, 4 for cycle 2) and switching to cycle-coded IDs (`SKU-01-NN`, `SKU-02-NN`) made the knowledge layer scannable and aligned with the triage rule. The cost: the merge required updating every cross-reference (cycle records, repository structure, reflection, llm_guidance) — a reminder that a numbering scheme is a contract, and changing it has a documentation ripple.
+
 ## Reflection — Post-hoc reconstruction vs. capture-as-you-go
 
-The SKU files (`dev_docs/current/05_knowledge/skus/v0.1.0.md`, `v0.1.1.md`) were **reconstructed after the fact from `logs.md`** — one pass over chat transcripts. SHAPR's working rule is the opposite: *capture lightweight notes during work, consolidate at checkpoints and cycle end.*
+The SKU file (`dev_docs/current/05_knowledge/skus/v0.1.0.md`, holding the merged v0.1.0 + v0.1.1 SKUs) was **reconstructed after the fact from `logs.md`** — one pass over chat transcripts. SHAPR's working rule is the opposite: *capture lightweight notes during work, consolidate at checkpoints and cycle end.*
 
 - Strengths of what happened: timestamps on every SKU and a clean 4-field format gave the reconstruction strong traceability (the example vault timestamps almost nothing).
 - Cost: reconstruction is lossy and expensive — it cannot recover what the transcript never recorded, and it risks translating the AI's framing rather than the human's intent.
@@ -71,4 +83,4 @@ The v0.1.1 audit was, in SHAPR terms, a **review of Cycle 1** rather than a new 
 
 - **LDA/NMF will be the real test of the algorithm-agnostic design** (`D-001`) — if the UI needs per-algorithm branches, the abstraction is wrong.
 - **The parameter-plumbing risk recurs on every new parameter.** The pattern is known (`D-010`, `D-013`); apply it at the boundary, not after the bug.
-- **The SKU/evidence linkage is the next frontier** — global SKU IDs, commit refs, and a `/evidence`-style home for transcripts would make the knowledge layer independently auditable.
+- **The SKU/evidence linkage is the next frontier** — cycle-coded SKU IDs, commit refs, and a `/evidence`-style home for transcripts would make the knowledge layer independently auditable.
