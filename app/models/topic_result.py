@@ -29,3 +29,10 @@ class TopicResult:
     Algorithm info for reproducibility.
     Example: {'algorithm': 'BERTopic', 'version': '0.15.0', 'num_topics': '12'}
     """
+
+    quality_metrics: Optional[Dict[str, float]] = None
+    """
+    Topic quality evaluation, computed by the pipeline after training (not by the
+    algorithm itself). One value per metric, averaged across topics.
+    Example: {'npmi': 0.12, 'c_v': 0.45, 'u_mass': -3.2, 'topic_diversity': 0.78}
+    """

@@ -2,67 +2,7 @@
 
 This document provides detailed MVC architecture, data flow examples, and implementation patterns. Reference this when building components.
 
----
-
-## Folder Structure (MVC)
-
-```
-Project_Stella/
-├── main.py                           # Entry point
-├── requirements.txt
-├── claude.md                         # High-level context
-├── ARCHITECTURE.md                   # This file
-├── API.md                            # Component contracts
-├── DEVELOPMENT.md                    # Setup & testing
-│
-├── models/                           # MODEL: Data & business logic (no UI)
-│   ├── __init__.py
-│   ├── topic_result.py              # TopicResult dataclass
-│   ├── app_state.py                 # AppState with observer pattern
-│   │
-│   ├── algorithms/
-│   │   ├── __init__.py              # AVAILABLE_ALGORITHMS registry
-│   │   ├── base_algorithm.py        # Abstract BaseAlgorithm class
-│   │   ├── bertopic.py              # BERTopic implementation
-│   │   ├── lda.py                   # [Future] LDA
-│   │   └── nmf.py                   # [Future] NMF
-│   │
-│   └── services/
-│       ├── __init__.py
-│       ├── data_loader.py           # File I/O, validation, preprocessing
-│       ├── processor.py             # Unified processing pipeline
-│       ├── exporter.py              # CSV, JSON export
-│       └── visualizer.py            # Plotly HTML export
-│
-├── views/                            # VIEW: ttkbootstrap UI (display only)
-│   ├── __init__.py
-│   ├── main_window.py               # Main app window & layout
-│   ├── panels/
-│   │   ├── __init__.py
-│   │   ├── input_panel.py           # File upload UI
-│   │   ├── settings_panel.py        # Dynamic parameter form
-│   │   ├── processing_panel.py      # Progress display
-│   │   └── results_panel.py         # Results display
-│   └── styles/
-│       └── theme.py                 # ttkbootstrap theme config
-│
-├── controllers/                      # CONTROLLER: Orchestration
-│   ├── __init__.py
-│   ├── app_controller.py            # Main app event handlers
-│   └── analysis_controller.py       # Training pipeline
-│
-├── utils/
-│   ├── __init__.py
-│   ├── constants.py                 # App constants
-│   ├── logger.py                    # Logging setup
-│   └── validators.py                # Input validation helpers
-│
-└── tests/                            # Unit tests (mirrors src)
-    ├── test_models/
-    ├── test_services/
-    ├── test_controllers/
-    └── fixtures/
-```
+> **Repo layout:** the current file/folder structure is maintained in `dev_docs/03_control/repository_structure.md` (it evolves; a fixed tree here would drift).
 
 ---
 
@@ -71,7 +11,7 @@ Project_Stella/
 **AppState** is the single source of truth. All state lives here. Views observe it.
 
 ```python
-# models/app_state.py
+# app/models/app_state.py
 from dataclasses import dataclass, field
 from typing import Optional, Dict, Any, List, Callable
 
@@ -123,28 +63,25 @@ class AppState:
 
 ```
 USER ACTION:
-  Clicks "Select File" button in InputPanel
+  Browses for a file in the wizard's AlgorithmPanel ("Browse" button)
 
-VIEW (InputPanel)
+VIEW (AlgorithmPanel)
   → Calls: controller.on_file_selected(file_path)
 
 CONTROLLER (AppController)
-  → Calls: DataLoader.validate_file(path)
+  → Calls: DataLoader.validate_file(path) -> ValidationResult
   → Calls: DataLoader.load_preview(path)
   → Updates: state.selected_file_path = path
   → Updates: state.file_preview = preview
   → Calls: state.notify()
 
-MODEL (AppState notifies all subscribers)
-  → Calls: InputPanel._on_state_changed(state)
-  → Calls: SettingsPanel._on_state_changed(state)
-  → etc. (all subscribed views)
+MODEL (AppState notifies all subscribers via the event queue)
+  → Calls: subscribed panels re-render (e.g. wizard preview step)
 
-VIEW (InputPanel re-renders)
+VIEW (preview step re-renders)
   → Reads: state.selected_file_path
   → Reads: state.file_preview
-  → Displays file name & preview
-  → Enables "Run Analysis" button
+  → Displays the preview (no file I/O in the view — it comes from state)
 ```
 
 **Key points:**
@@ -159,34 +96,32 @@ VIEW (InputPanel re-renders)
 
 ```
 USER ACTION:
-  Selects "LDA" from algorithm dropdown in SettingsPanel
+  Selects "BERTopic" from algorithm dropdown in the wizard's AlgorithmPanel
+  (only BERTopic is registered in AVAILABLE_ALGORITHMS today)
 
-VIEW (SettingsPanel)
-  → Calls: controller.on_algorithm_changed("LDA")
+VIEW (AlgorithmPanel)
+  → Calls: controller.on_algorithm_changed("BERTopic")
 
 CONTROLLER (AppController)
-  → Calls: get_algorithm("LDA")
-  → Gets: default_params = LDA.get_default_params()
-  → Gets: param_schema = LDA.get_param_schema()
-  → Updates: state.selected_algorithm = "LDA"
+  → Calls: get_algorithm("BERTopic")
+  → Gets: default_params = BERTopicAlgorithm.get_default_params()
+  → Updates: state.selected_algorithm = "BERTopic"
   → Updates: state.algorithm_params = default_params
   → Calls: state.notify()
 
-MODEL (AppState notifies all subscribers)
-  → Calls: SettingsPanel._on_state_changed(state)
+MODEL (AppState notifies all subscribers via the event queue)
+  → Calls: AlgorithmSettingsPanel._on_state_changed(state)
 
-VIEW (SettingsPanel re-renders)
+VIEW (AlgorithmSettingsPanel re-renders, structural change only)
   → Reads: state.selected_algorithm
-  → Reads: param_schema from LDA.get_param_schema()
-  → DESTROYS old parameter widgets
-  → CREATES new widgets for LDA params (alpha, beta, etc.)
-  → Now shows LDA-specific form
+  → DESTROYS old parameter section widgets
+  → CREATES modular sections for BERTopic/UMAP/HDBSCAN parameters
 ```
 
 **Key points:**
 - Dynamic UI regeneration (same panel, different form)
-- Algorithm schema drives parameter form generation
-- No hardcoded parameter logic in views
+- Parameter schema drives form generation (fetched via `controller.get_param_schema()`)
+- No hardcoded parameter logic in views; views never call `get_algorithm` directly
 
 ---
 
@@ -194,60 +129,57 @@ VIEW (SettingsPanel re-renders)
 
 ```
 USER ACTION:
-  Clicks "Run Analysis" button in ProcessingPanel
+  Clicks "Train" in the wizard, or "Retrain Model with Current Params" in the
+  AlgorithmSettingsPanel (there is no ProcessingPanel)
 
-VIEW (ProcessingPanel)
-  → Calls: controller.on_run_analysis()
+VIEW (wizard / AlgorithmSettingsPanel)
+  → Syncs values through the controller (on_file_selected / on_algorithm_changed / set_params)
+  → Shows the LoadingPanel (owned by MainWindow)
+  → Calls: analysis_controller.run_analysis()
 
 CONTROLLER (AnalysisController)
-  → Starts background thread (non-blocking UI)
-  → Updates: state.analysis_in_progress = True
-  → Updates: state.analysis_progress = "0%"
-  → Calls: state.notify()
-  
+  → Re-entrancy guard: returns if state.analysis_in_progress
+  → Sets: state.analysis_in_progress = True
+  → Starts background thread (_execute_pipeline)
+
   [Background thread]
-  → Gets: texts = DataLoader.load(state.selected_file_path)
+  → Sets: state.analysis_progress = "0%"
+  → Gets: texts = DataLoader.load_texts(state.selected_file_path)
   → Gets: algo = get_algorithm(state.selected_algorithm)
-  → Calls: result = algo.train(texts, **state.algorithm_params)
-  → For each progress event:
-    → Updates: state.analysis_progress = "30%"
-    → Calls: state.notify()
+  → Creates: processor = TopicProcessor(algo)
+  → Calls: result = processor.process(
+      texts, preprocessing_options, model_params=state.algorithm_params,
+      progress_callback=update_progress)
   → On completion:
     → Updates: state.current_result = result
     → Updates: state.analysis_in_progress = False
     → Updates: state.analysis_progress = "100%"
+    → Updates: state.analysis_status = "Analysis complete!"
     → Calls: state.notify()
 
-MODEL (AppState notifies)
-  → Calls: ProcessingPanel._on_state_changed(state)
-  → Calls: ResultsPanel._on_state_changed(state)
+MODEL (AppState notifies via the event queue; process_events dispatches on the main thread)
+  → Calls: SummaryPanel._on_state_changed(state)
+  → Calls: LoadingPanel (auto-closes when analysis_in_progress → false)
+  → Calls: AlgorithmSettingsPanel._on_state_changed(state)
 
-VIEW (ProcessingPanel re-renders)
-  → Reads: state.analysis_in_progress
-  → Reads: state.analysis_progress
-  → Shows/hides progress bar
-  → Displays "Training... 30%"
-
-VIEW (ResultsPanel re-renders)
+VIEW (SummaryPanel re-renders)
   → Reads: state.current_result
   → IF result exists:
-    → Displays topics table
-    → Displays stats cards
-    → Shows action buttons
+    → Displays topic tables and per-document assignments
   → Else: Shows "No results yet"
 ```
 
 **Key points:**
-- Threading happens in controller (views never block)
+- Threading happens in the controller (views never block); worker threads reach the UI only via `AppState.call_on_main` / `process_events` on the main thread
 - Progress updates trigger view re-renders
-- Multiple views react to single state change
-- View only reads, never calls algorithms
+- Multiple views react to a single state change
+- Views only read state and call controllers — they never call algorithms or load files directly
 
 ---
 
 ## MVC Layers Explained
 
-### MODEL Layer (models/)
+### MODEL Layer (app/models/)
 
 **Responsibility:** Data structures, business logic, NO UI imports
 
@@ -255,7 +187,7 @@ VIEW (ResultsPanel re-renders)
 - AppState (state machine)
 - TopicResult (standardized output)
 - BaseAlgorithm (abstract interface)
-- Algorithm implementations (BERTopic, LDA, etc.)
+- Algorithm implementations (BERTopic today; LDA/NMF planned)
 - Services (DataLoader, Processor, Exporter, Visualizer)
 
 **What DOESN'T belong here:**
@@ -269,12 +201,12 @@ VIEW (ResultsPanel re-renders)
 
 ---
 
-### VIEW Layer (views/)
+### VIEW Layer (app/views/)
 
 **Responsibility:** Display data, listen to state changes, delegate actions to controller
 
 **What belongs here:**
-- ttkbootstrap panels (InputPanel, SettingsPanel, etc.)
+- ttkbootstrap panels (ToolboxPanel, SummaryPanel, MetricPanel, AlgorithmSettingsPanel, LoadingPanel, ExportPanel, wizard panels)
 - Layout & styling
 - Widget creation
 - Subscribe to AppState.subscribe()
@@ -329,7 +261,7 @@ class MyPanel(ttk.Frame):
 
 ---
 
-### CONTROLLER Layer (controllers/)
+### CONTROLLER Layer (app/controllers/)
 
 **Responsibility:** Orchestrate model and view. Handle user events.
 
@@ -399,10 +331,10 @@ All algorithms follow the same interface (BaseAlgorithm). This allows UI to work
 ### BaseAlgorithm Contract
 
 ```python
-# models/algorithms/base_algorithm.py
+# app/models/algorithms/base_algorithm.py
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any
-from models.topic_result import TopicResult
+from app.models.topic_result import TopicResult
 
 class BaseAlgorithm(ABC):
     @abstractmethod
@@ -465,14 +397,12 @@ class BaseAlgorithm(ABC):
 ### Registry Pattern
 
 ```python
-# models/algorithms/__init__.py
+# app/models/algorithms/__init__.py
 from .bertopic import BERTopicAlgorithm
-from .lda import LDAAlgorithm
 
 AVAILABLE_ALGORITHMS = {
     'BERTopic': BERTopicAlgorithm,
-    'LDA': LDAAlgorithm,
-    # Add more as you implement them
+    # Future: 'LDA': LDAAlgorithm, 'NMF': NMFAlgorithm
 }
 
 def get_algorithm(name: str) -> BaseAlgorithm:
@@ -483,17 +413,17 @@ def get_algorithm(name: str) -> BaseAlgorithm:
 ```
 
 **Extending:** To add a new algorithm (e.g., NMF):
-1. Create `models/algorithms/nmf.py` with NMFAlgorithm class
+1. Create `app/models/algorithms/nmf.py` with NMFAlgorithm class
 2. Implement BaseAlgorithm methods
 3. Add to AVAILABLE_ALGORITHMS registry
-4. No UI changes needed (parameter form auto-generates)
+4. No UI changes needed (the parameter form is generated from the algorithm's schema via the controller)
 
 ---
 
 ## Key MVC Principles
 
-1. **Models know nothing about views** — No ttkbootstrap imports in models/
-2. **Views know nothing about business logic** — No algorithms or file I/O in views/
+1. **Models know nothing about views** — No ttkbootstrap imports in `app/models/`
+2. **Views know nothing about business logic** — No algorithms or file I/O in `app/views/`
 3. **Controllers orchestrate** — Controllers call models and update state; views observe
 4. **State flows one direction** — Models → AppState → Views (via subscription)
 5. **Events flow opposite way** — View clicks → Controller → Models/AppState
@@ -504,61 +434,14 @@ def get_algorithm(name: str) -> BaseAlgorithm:
 
 ## Testing Strategy (Unit Tests)
 
-### Test Models (No UI needed)
+> **Status:** no committed `tests/` suite exists yet. Correctness is verified with ad-hoc headless smoke tests (e.g. after the M-fix batch in the v0.1.1 audit) and the occasional live-Tk check. A proper `tests/` tree is planned; the intended layout is described below.
 
-```python
-# tests/test_models/test_app_state.py
-def test_app_state_subscribe():
-    state = AppState()
-    called = []
-    state.subscribe(lambda s: called.append(s))
-    
-    state.selected_file_path = "test.csv"
-    state.notify()
-    
-    assert len(called) == 1
-    assert called[0].selected_file_path == "test.csv"
-
-# tests/test_models/test_algorithms/test_bertopic.py
-def test_bertopic_train():
-    algo = BERTopicAlgorithm()
-    texts = ["hello world", "goodbye world"]
-    result = algo.train(texts, min_topic_size=2)
-    
-    assert isinstance(result, TopicResult)
-    assert len(result.topics) > 0
-    assert len(result.doc_topics) == 2
-```
-
-### Test Controllers (No UI needed)
-
-```python
-# tests/test_controllers/test_app_controller.py
-def test_on_file_selected():
-    state = AppState()
-    controller = AppController(state)
-    
-    controller.on_file_selected("tests/fixtures/sample_data.csv")
-    
-    assert state.selected_file_path == "tests/fixtures/sample_data.csv"
-    assert len(state.file_preview) > 0
-```
-
-### Test Views (Mock state)
-
-```python
-# tests/test_views/test_input_panel.py
-def test_input_panel_renders_file():
-    root = tk.Tk()
-    state = AppState()
-    state.selected_file_path = "test.csv"
-    
-    panel = InputPanel(root, state, controller=None)
-    panel._render()
-    
-    # Verify panel shows file name
-    # (check label text, button state, etc.)
-```
+The MODEL layer is unit-testable without a GUI (no ttkbootstrap imports), so tests can run headless:
+- **AppState** — subscription, notification, and the event-queue dispatch (`notify()` → `process_events()`).
+- **DataLoader** — `load_texts`, `load_preview`, `validate_file` (returning `ValidationResult`).
+- **BERTopicAlgorithm** — train on a small corpus and check the `TopicResult` shape.
+- **Controllers** — `AppController.on_file_selected` / `on_algorithm_changed`, `AnalysisController.run_analysis` against a stub `AppState`.
+- **Views** — would need a mocked state; deferred until the suite is added.
 
 ---
 

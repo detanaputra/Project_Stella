@@ -5,6 +5,7 @@ from app.models.services.data_loader import DataLoader
 from app.models.services.processor import TopicProcessor
 from app.models.services.visualizer import TopicVisualizer
 from app.models.services.exporter import Exporter
+from app.models.services.topic_quality import compute_topic_quality
 from app.models.algorithms import get_algorithm
 
 class AnalysisController:
@@ -93,7 +94,23 @@ class AnalysisController:
                 progress_callback=update_progress
             )
 
-            # 5. Finalize
+            # 5. Compute topic quality metrics in the background (C_V is slow;
+            #    never on the main thread). Stored on the result so each model
+            #    carries its own metrics (D-021).
+            self.appState.analysis_status = "Computing topic quality metrics..."
+            self.appState.notify()
+            try:
+                top_n = int(self.appState.algorithm_params.get('bertopic_top_n_words', 10))
+                result.quality_metrics = compute_topic_quality(
+                    result.topics,
+                    result.metadata.get('texts', []),
+                    top_n=top_n,
+                )
+            except Exception:
+                # A metric failure must not fail the whole analysis.
+                result.quality_metrics = None
+
+            # 6. Finalize
             self.appState.current_result = result
             self.appState.analysis_in_progress = False
             self.appState.analysis_progress = "100%"

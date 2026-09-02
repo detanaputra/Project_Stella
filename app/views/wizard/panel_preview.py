@@ -1,11 +1,14 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
-import pandas as pd
 from app.models.app_state import AppState
 from app.controllers.app_controller import AppController
 
 class PreviewPanel(ttk.Frame):
-    """Step 2: Data preview displaying the head of the loaded file."""
+    """Step 2: Data preview displaying the head of the loaded file.
+
+    No file I/O in views: the preview comes from AppState.file_preview, which
+    the controller populated through DataLoader.load_preview.
+    """
 
     def __init__(self, parent, state: AppState, controller: AppController):
         super().__init__(parent, padding=20)
@@ -24,10 +27,12 @@ class PreviewPanel(ttk.Frame):
 
         self.tree = ttk.Treeview(
             self.table_frame,
-            columns=(),
+            columns=("Text Content",),
             show="headings",
             bootstyle="info"
         )
+        self.tree.heading("Text Content", text="Text Content")
+        self.tree.column("Text Content", width=400)
 
         # Add vertical and horizontal scrollbars
         self.vsb = ttk.Scrollbar(self.table_frame, orient=VERTICAL, command=self.tree.yview)
@@ -41,35 +46,32 @@ class PreviewPanel(ttk.Frame):
         self.table_frame.grid_columnconfigure(0, weight=1)
         self.table_frame.grid_rowconfigure(0, weight=1)
 
+        # Status line (reused, so repeated refreshes do not stack labels)
+        self.status_lbl = ttk.Label(self, text="", bootstyle="secondary")
+        self.status_lbl.pack(pady=(8, 0))
+
+    def _set_status(self, text: str):
+        self.status_lbl.config(text=text)
+
     def refresh_preview(self):
-        """Load data from state and populate the Treeview."""
-        # Clear existing
+        """Populate the Treeview from state — no direct file reading."""
         self.tree.delete(*self.tree.get_children())
+        self._set_status("")
 
         file_path = self.appState.selected_file_path
         if not file_path:
-            ttk.Label(self, text="No file selected. Please go back and select a file.").pack()
+            self._set_status("No file selected. Please go back and select a file.")
             return
 
-        try:
-            # Load head of the file
-            if file_path.lower().endswith('.csv'):
-                df = pd.read_csv(file_path, nrows=10)
-            else:
-                # For txt files, we treat each line as a record in a single column
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    lines = [f.readline().strip() for _ in range(10)]
-                df = pd.DataFrame(lines, columns=["Text Content"])
+        # No direct file I/O in views: ensure the preview is loaded through the
+        # controller (which delegates to DataLoader), then render what state holds.
+        if not self.appState.file_preview:
+            self.controller.on_file_selected(file_path)
 
-            # Setup columns
-            self.tree["columns"] = list(df.columns)
-            for col in df.columns:
-                self.tree.heading(col, text=col)
-                self.tree.column(col, width=150)
+        preview = self.appState.file_preview or []
+        if not preview:
+            self._set_status("No preview available for this file.")
+            return
 
-            # Insert data
-            for idx, row in df.iterrows():
-                self.tree.insert("", END, values=list(row))
-
-        except Exception as e:
-            ttk.Label(self, text=f"Error loading preview: {str(e)}", bootstyle="danger").pack()
+        for text in preview:
+            self.tree.insert("", END, values=(text,))

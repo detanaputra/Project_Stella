@@ -36,9 +36,15 @@ env/
 *.html
 temp_viz_*.html
 
+# Session logs & transcripts
+logs/
+
 # OS generated files
 .DS_Store
 Thumbs.db
 
 # agent
 .claude
+
+# example of SHAPR documentations
+dev_docs/example_docs/

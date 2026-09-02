@@ -50,6 +50,16 @@ class HyperparamPanel(ttk.Frame):
             lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
         )
 
+        # MouseWheel scrolling: let users scroll the parameter list without
+        # grabbing the scrollbar (v0.2.0). Bound on the canvas and the frame;
+        # the section widgets are bound below after they are created.
+        self.canvas.bind("<MouseWheel>", self._on_mousewheel)
+        self.canvas.bind("<Button-4>", self._on_mousewheel_linux_up)
+        self.canvas.bind("<Button-5>", self._on_mousewheel_linux_down)
+        self.scrollable_frame.bind("<MouseWheel>", self._on_mousewheel)
+        self.scrollable_frame.bind("<Button-4>", self._on_mousewheel_linux_up)
+        self.scrollable_frame.bind("<Button-5>", self._on_mousewheel_linux_down)
+
         # --- Modular Sections ---
         self.sections = []
 
@@ -68,6 +78,10 @@ class HyperparamPanel(ttk.Frame):
         self.hdbscan_section.pack(fill=X, pady=10)
         self.sections.append(self.hdbscan_section)
 
+        # Bind the mouse wheel to the section widgets so scrolling works over
+        # the parameter controls, not just the canvas (v0.2.0).
+        self._bind_mousewheel_recursive(self.scrollable_frame)
+
         # Note about custom settings
         self.hint_label = ttk.Label(
             self,
@@ -80,6 +94,27 @@ class HyperparamPanel(ttk.Frame):
     def _on_canvas_configure(self, event):
         # Resize the interior frame to match the canvas width
         self.canvas.itemconfig(self.canvas_window, width=event.width)
+
+    def _on_mousewheel(self, event):
+        """Scroll the canvas on mouse wheel (Windows/macOS)."""
+        delta = event.delta
+        # Windows/Linux report ±120 per notch; macOS reports small values (±1..±10).
+        steps = -int(delta / 120) if abs(delta) >= 120 else -delta
+        self.canvas.yview_scroll(steps, "units")
+
+    def _on_mousewheel_linux_up(self, event):
+        self.canvas.yview_scroll(-1, "units")
+
+    def _on_mousewheel_linux_down(self, event):
+        self.canvas.yview_scroll(1, "units")
+
+    def _bind_mousewheel_recursive(self, widget):
+        """Bind the mouse wheel to scroll the canvas for a widget and its children."""
+        widget.bind("<MouseWheel>", self._on_mousewheel)
+        widget.bind("<Button-4>", self._on_mousewheel_linux_up)
+        widget.bind("<Button-5>", self._on_mousewheel_linux_down)
+        for child in widget.winfo_children():
+            self._bind_mousewheel_recursive(child)
 
     def get_current_params(self):
         """Aggregate parameters from all modular sections."""

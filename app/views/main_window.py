@@ -10,6 +10,7 @@ from app.views.panels.summary_panel import SummaryPanel
 from app.views.panels.algorithm_settings_panel import AlgorithmSettingsPanel
 from app.views.panels.loading_panel import LoadingPanel
 from app.views.panels.export_panel import ExportPanel
+from app.views.panels.metric_panel import MetricPanel
 
 class MainWindow(ttk.Window):
     """
@@ -18,7 +19,7 @@ class MainWindow(ttk.Window):
     """
     def __init__(self, state: AppState):
         super().__init__(themename="flatly")
-        self.title("Project Stella - Semantic Topic ExpLoration LeArning")
+        self.title("Project Stella - Semantic Topic ExpLoration and LeArning")
         self.geometry("1280x720")
 
         self.appState: AppState = state
@@ -30,6 +31,11 @@ class MainWindow(ttk.Window):
         self.menu_manager.build_menu()
 
         self._build_ui()
+
+        # Metrics tab: created dynamically once a result exists (v0.2.0).
+        self._metrics_tab = None
+        self._metrics_panel = None
+        self.appState.subscribe(self._on_state_changed)
 
         # Start polling the event queue
         self._poll_state_events()
@@ -116,6 +122,23 @@ class MainWindow(ttk.Window):
     def _on_theme_changed(self, event=None) -> None:
         """Apply the selected ttkbootstrap theme to the whole application."""
         self.style.theme_use(self.theme_var.get())
+
+    def _on_state_changed(self, state: AppState):
+        self._sync_metrics_tab()
+
+    def _sync_metrics_tab(self):
+        """Add the Metrics tab after Analysis once a result exists; remove it
+        when the result is cleared (v0.2.0)."""
+        has_result = self.appState.current_result is not None
+        if has_result and self._metrics_tab is None:
+            self._metrics_tab = ttk.Frame(self.main_notebook)
+            self._metrics_panel = MetricPanel(self._metrics_tab, self.appState, self.app_controller)
+            self._metrics_panel.pack(fill=BOTH, expand=YES)
+            self.main_notebook.insert(1, self._metrics_tab, text=" Metrics ")
+        elif not has_result and self._metrics_tab is not None:
+            self.main_notebook.forget(self._metrics_tab)
+            self._metrics_tab = None
+            self._metrics_panel = None
 
     def _poll_state_events(self):
         """Check the AppState event queue and update views."""

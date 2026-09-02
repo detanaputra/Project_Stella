@@ -118,10 +118,11 @@ class TopicModelWizard(Toplevel):
 
     def _handle_train(self):
         """Trigger analysis, show loading panel, and close wizard."""
-        # Ensure final values are synced to state
+        # Ensure final values are synced to state THROUGH the controller —
+        # views must not mutate AppState directly (architecture rule).
         vals = self.panel_algo.get_current_values()
-        self.appState.selected_algorithm = vals["algorithm"]
-        self.appState.selected_file_path = vals["file_path"]
+        self.app_controller.on_file_selected(vals["file_path"])
+        self.app_controller.on_algorithm_changed(vals["algorithm"])
 
         # Sync hyperparameters from the hyperparam panel to state.
         # "Custom Settings" applies the panel values; "Default Settings"
@@ -129,9 +130,7 @@ class TopicModelWizard(Toplevel):
         # main-window retrain) train with identical parameters (audit H2).
         if vals["settings_mode"] == "custom":
             custom_params = self.panel_hyper.get_current_params()
-            self.appState.algorithm_params.update(custom_params)
-        else:
-            self.app_controller.on_algorithm_changed(vals["algorithm"])
+            self.app_controller.set_params(custom_params)
 
         # 1. Show Loading Panel via MainWindow
         if hasattr(self.parent, 'show_loading_panel'):

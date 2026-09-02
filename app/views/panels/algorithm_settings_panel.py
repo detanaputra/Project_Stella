@@ -4,7 +4,6 @@ from typing import Dict, Any
 from app.models.app_state import AppState
 from app.controllers.app_controller import AppController
 from app.controllers.analysis_controller import AnalysisController
-from app.models.algorithms import get_algorithm
 from app.views.panels.hyperparams.bertopic_section import BERTopicSection
 from app.views.panels.hyperparams.umap_section import UMAPSection
 from app.views.panels.hyperparams.hdbscan_section import HDBSCANSection
@@ -61,8 +60,40 @@ class AlgorithmSettingsPanel(ttk.Frame):
             lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
         )
 
+        # MouseWheel scrolling: let users scroll the parameter list without
+        # grabbing the scrollbar (v0.2.0). Bound on the canvas and the frame
+        # here; the dynamically-created parameter widgets are bound in _render
+        # after the form is (re)built.
+        self.canvas.bind("<MouseWheel>", self._on_mousewheel)
+        self.canvas.bind("<Button-4>", self._on_mousewheel_linux_up)
+        self.canvas.bind("<Button-5>", self._on_mousewheel_linux_down)
+        self.scrollable_frame.bind("<MouseWheel>", self._on_mousewheel)
+        self.scrollable_frame.bind("<Button-4>", self._on_mousewheel_linux_up)
+        self.scrollable_frame.bind("<Button-5>", self._on_mousewheel_linux_down)
+
     def _on_canvas_configure(self, event):
         self.canvas.itemconfig(self.canvas_window, width=event.width)
+
+    def _on_mousewheel(self, event):
+        """Scroll the canvas on mouse wheel (Windows/macOS)."""
+        delta = event.delta
+        # Windows/Linux report ±120 per notch; macOS reports small values (±1..±10).
+        steps = -int(delta / 120) if abs(delta) >= 120 else -delta
+        self.canvas.yview_scroll(steps, "units")
+
+    def _on_mousewheel_linux_up(self, event):
+        self.canvas.yview_scroll(-1, "units")
+
+    def _on_mousewheel_linux_down(self, event):
+        self.canvas.yview_scroll(1, "units")
+
+    def _bind_mousewheel_recursive(self, widget):
+        """Bind the mouse wheel to scroll the canvas for a widget and its children."""
+        widget.bind("<MouseWheel>", self._on_mousewheel)
+        widget.bind("<Button-4>", self._on_mousewheel_linux_up)
+        widget.bind("<Button-5>", self._on_mousewheel_linux_down)
+        for child in widget.winfo_children():
+            self._bind_mousewheel_recursive(child)
 
     def _on_retrain(self):
         """Trigger a new analysis run using the current hyperparameters."""
@@ -115,10 +146,10 @@ class AlgorithmSettingsPanel(ttk.Frame):
             UMAPSection(self.scrollable_frame, self.appState, self.controller).pack(fill=X, pady=10)
             HDBSCANSection(self.scrollable_frame, self.appState, self.controller).pack(fill=X, pady=10)
         else:
-            # Generic fallback for other algorithms
+            # Generic fallback for other algorithms (schema via the controller,
+            # never by calling the model directly from a view).
             try:
-                algo = get_algorithm(self.appState.selected_algorithm)
-                schema = algo.get_param_schema()
+                schema = self.controller.get_param_schema(self.appState.selected_algorithm)
                 self._build_param_form(schema)
             except Exception:
                 # Fallback mock content if algorithm not ready
@@ -127,6 +158,10 @@ class AlgorithmSettingsPanel(ttk.Frame):
                     text="[Mock-up Content]\nParameter forms and\nconfiguration will\nbe here.",
                     justify=LEFT
                 ).pack(pady=5)
+
+        # Re-bind the mouse wheel to the freshly created widgets so scrolling
+        # works over the parameter controls, not just the canvas (v0.2.0).
+        self._bind_mousewheel_recursive(self.scrollable_frame)
 
     def _build_param_form(self, schema: Dict[str, Any]):
         for param_name, config in schema.items():

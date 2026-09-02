@@ -51,8 +51,8 @@ class AlgorithmPanel(ttk.Frame):
         ttk.Radiobutton(settings_frame, text="Custom Settings", variable=self.settings_var, value="custom").pack(side=LEFT, padx=10)
 
     def _update_algo(self, event=None):
-        self.appState.selected_algorithm = self.algo_var.get()
-        self.appState.notify()
+        # Views must not mutate AppState directly — the controller runs the logic.
+        self.controller.on_algorithm_changed(self.algo_var.get())
 
     def _browse_file(self):
         path = filedialog.askopenfilename(
@@ -60,8 +60,8 @@ class AlgorithmPanel(ttk.Frame):
         )
         if path:
             self.file_var.set(path)
-            self.appState.selected_file_path = path
-            self.appState.notify()
+            # The controller validates the file and updates state + preview.
+            self.controller.on_file_selected(path)
 
     def get_current_values(self):
         """Returns current panel values to sync with state before moving next."""

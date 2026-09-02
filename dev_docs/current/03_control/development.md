@@ -15,7 +15,7 @@ Setup, testing, building, and deployment instructions.
 
 ```bash
 # Clone repository
-git clone https://github.com/your-name/bertopic-gui.git
+git clone https://github.com/detanaputra/Project_Stella.git
 cd bertopic-gui
 
 # Create virtual environment
