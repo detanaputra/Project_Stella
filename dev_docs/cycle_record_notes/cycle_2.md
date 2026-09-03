@@ -98,8 +98,8 @@ Consolidated insights (the cycle's knowledge output):
 
 ## 9. Cycle Outcome
 
-Cycle 2 delivered the v0.2.0 feature set: a GitHub-ready repo (README + Apache 2.0 license), wheel-scrollable parameter panels, and topic quality metrics (NPMI, C_V, UMass, Topic Diversity) shown as 4 gauges in a dynamic "Metrics" tab. All five work packages were committed to `v0.2.0` and pushed. **Status: complete; pending release to `main`.**
+Cycle 2 delivered the v0.2.0 feature set: a GitHub-ready repo (README + Apache 2.0 license), wheel-scrollable parameter panels, and topic quality metrics (NPMI, C_V, UMass, Topic Diversity) shown as 4 gauges in a dynamic "Metrics" tab. All five work packages were committed to `v0.2.0` and pushed. **Status: complete; released to `main` via PR #2 (merge commit `993cc53`).**
 
 ## 10. Likely Next Cycle Direction
 
-**Cycle 3** would release v0.2.0 to `main` (merge → verify → delete → fresh branch, per D-017) and then take on the post-graduation backlog: LDA/NMF algorithms, multi-model support, embedded matplotlib charts, document search/filter, batch processing.
+**Cycle 3** starts from the released v0.2.0 baseline (the release step — merge → verify → delete → fresh branch, per D-017 — has been completed). The post-graduation backlog remains: LDA/NMF algorithms, multi-model support, embedded matplotlib charts, document search/filter, batch processing — plus the gaps flagged in `cycle_2_review.md` §3 (Metrics-tab explanations for beginners; topic refinement with metric recalculation).

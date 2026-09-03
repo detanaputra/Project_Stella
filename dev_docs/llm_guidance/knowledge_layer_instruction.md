@@ -49,6 +49,6 @@ append-first capture (decisions.md / tasks.md / ideas.md / reflection.md)
 
 The human directs scope and judgement; AI is used to consolidate, restructure, and align notes at deliberate checkpoints — not to decide what is true.
 
-## Current state in this repo (Stella)
+## Current state
 
-None of these files exist yet. If created: `reflection.md` would capture the methodological learnings already present in `paper.md` of the example (not applicable here) — for Stella, the raw material is `logs.md` and the SKU files. `SHAPR_future.md` is not needed unless the project writes its own SHAPR methodology chapter.
+This folder is **guidance only** — it does not track the project's current state. For live state, see the authoritative working docs: `dev_docs/current/04_working/current_state.md` (active phase), `dev_docs/current/04_working/source_of_truth.md` (file authority), and `dev_docs/current/03_control/repository_structure.md` (repo layout).

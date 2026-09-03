@@ -49,30 +49,33 @@ This note is a **reusable control note**. Update it in the same change as any st
 ### Working (04)
 | File | SHAPR role | Notes |
 |---|---|---|
-| `ROADMAP.md` | ≈ `04_working/cycle_plan.md` | Upgraded to cycle_plan form (goal / outcomes / focus / success signal / status) |
+| `dev_docs/current/04_working/cycle_plan.md` | 04_working — cycle plan | The multi-cycle roadmap (goal / outcomes / focus / success signal / status); moved from root `ROADMAP.md` |
+| `dev_docs/current/04_working/ideas.md` | 04_working — ideas | Raw idea capture; refined and promoted to `cycle_plan.md` |
 | `dev_docs/current/04_working/source_of_truth.md`, `current_state.md`, `tasks.md` | 04_working | Created in Cycle 1 Close hardening |
-| *(missing)* `ideas.md` | 04_working | Small gap — raw idea capture note |
 
 ### Knowledge (05)
 | File | SHAPR role | Notes |
 |---|---|---|
 | `dev_docs/llm_guidance/sku_instruction.md` | SKU definition | Distilled from arXiv 2603.25660; `guide.md` removed |
 | `dev_docs/current/05_knowledge/skus/v0.1.0.md` | SKU knowledge units | 25 SKUs (SKU-01-01…25, cycle-coded; combined from 36 original; v0.1.1 merged here) |
+| `dev_docs/current/05_knowledge/skus/v0.2.0.md` | SKU knowledge units | 4 SKUs (SKU-02-01…04, cycle-coded; from the design-changing commits of Cycle 2) |
 | `dev_docs/current/05_knowledge/reflection.md` | reflection | Created from cycle learnings |
 | `dev_docs/current/05_knowledge/references.md` | references | SHAPR papers + project guides |
-| *(missing)* `paper.md` | 05_knowledge | **Gap** — thesis/paper working draft |
+| `dev_docs/current/05_knowledge/paper.md` | paper | Working draft toward the research write-up |
 
 ### Cycles (evidence of the cycle)
 | File | SHAPR role | Notes |
 |---|---|---|
 | `dev_docs/cycle_record_notes/cycle_1.md` | cycle record | Build cycle (v0.1.0) |
 | `dev_docs/cycle_record_notes/cycle_1_review.md` | cycle review | Audit-and-release review (v0.1.1) |
-| `audit.md` | Review evidence | The findings behind `cycle_1_review.md` (linked as its Evidence) |
+| `dev_docs/cycle_record_notes/cycle_2.md` | cycle record | Build cycle (v0.2.0) |
+| `dev_docs/cycle_record_notes/cycle_2_review.md` | cycle review | Review of the v0.2.0 build (verdict: Release) |
+| `dev_docs/snapshots/cycle_1_close/audit.md` | Review evidence (archived) | The findings behind `cycle_1_review.md` (linked as its Evidence) |
 
 ### Evidence / raw data
 | File | SHAPR role | Notes |
 |---|---|---|
-| `logs.md` + `logs/` | Raw interaction data | The Explore-phase proof; source for SKUs. Not yet linked to SKU IDs / commits |
+| `dev_docs/snapshots/cycle_1_close/logs.md` | Raw interaction data (archived) | The Explore-phase proof; source for the cycle-1 SKUs. Archived at cycle-1 close; no `/evidence` home needed (transcripts are not required evidence per canonical SHAPR) |
 
 ### Reference
 | File | SHAPR role | Notes |
@@ -87,12 +90,12 @@ This note is a **reusable control note**. Update it in the same change as any st
 
 ## Known gaps (short list)
 
-1. ~~`04_working` empty~~ — `source_of_truth.md`, `current_state.md`, `tasks.md` created; only `ideas.md` missing.
+1. ~~`04_working` empty~~ — `source_of_truth.md`, `current_state.md`, `tasks.md`, `cycle_plan.md`, `ideas.md` created.
 2. ~~`ROADMAP.md` missing cycle_plan fields~~ — resolved: upgraded with goal / outcomes / focus / success signal / status.
 3. ~~No `code_map.md`~~ — resolved: created in `02_contracts/`.
-4. `logs.md`/`logs/` not yet linked to SKU IDs or commit refs; no `/evidence` convention.
+4. ~~`logs.md`/`logs/` not yet linked to SKU IDs or commit refs; no `/evidence` convention~~ — resolved: `logs.md` archived to `dev_docs/snapshots/cycle_1_close/`; no `/evidence` home needed (transcripts are not required evidence per canonical SHAPR).
 5. ~~`audit.md` not referenced~~ — resolved: linked from `cycle_1_review.md` as its Evidence.
 6. ~~`claude.md` duplicate~~ — resolved: single tracked file (lowercase `claude.md`), no duplicate.
-7. SKU files triaged + cycle-coded IDs applied; **v0.1.0 evidence links pending** (no commits were recorded in that log).
-8. `naming_conventions.md` (contracts) and `paper.md` (knowledge) still missing.
-9. `dev_docs/snapshots/cycle_1_close/` is the first cycle snapshot; subsequent cycles should follow `snapshot_workflow.md`.
+7. SKU files triaged + cycle-coded IDs applied; v0.1.0 evidence links added (build SKUs → `7b88c71`/`f0573ff`; audit-fix SKUs → their own commits).
+8. ~~`naming_conventions.md` (contracts)~~ and ~~`paper.md` (knowledge)~~ — resolved: created in `02_contracts/` and `05_knowledge/`.
+9. `dev_docs/snapshots/cycle_1_close/` and `dev_docs/snapshots/cycle_2_close/` are the cycle snapshots taken so far; subsequent cycles should follow `snapshot_workflow.md`.

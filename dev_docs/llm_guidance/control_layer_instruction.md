@@ -78,6 +78,6 @@ Core principle: `docs/current/` is the active working source of truth; **a snaps
 - `implementation_stack.md` — the chosen tech stack and rationale.
 - `repository_structure.md` — the explicit repo layout (the example treats this as worth its own note; Git and cycle snapshots have *different* roles — Git is history, snapshots are frozen handoffs).
 
-## Current state in this repo (Stella)
+## Current state
 
-`dev_docs/current/03_control/decisions.md` exists with D-001…D-019 (ADR schema, commit refs). The v0.1.1 audit (`audit.md`) and the SKU files in `dev_docs/current/05_knowledge/skus/` contain further decisions; port the substantive ones there with the full ADR schema and add commit refs as they arise.
+This folder is **guidance only** — it does not track the project's current state. For live state, see the authoritative working docs: `dev_docs/current/04_working/current_state.md` (active phase), `dev_docs/current/04_working/source_of_truth.md` (file authority), and `dev_docs/current/03_control/repository_structure.md` (repo layout).

@@ -1,4 +1,25 @@
-# App Development Roadmap
+# Cycle Plan
+
+#working #plan #cycles
+
+The multi-cycle roadmap. Each version/cycle entry uses the cycle_plan form (goal / outcomes / focus / success signal / status). Raw, undeveloped ideas live in `ideas.md` and are promoted here once refined.
+
+## Version 0.3.0
+
+### Main goal
+*(not yet decided — candidates in `ideas.md`)*
+
+### Main outcomes
+- *(pending)*
+
+### Primary focus
+- *(pending)*
+
+### Success signal
+- *(pending)*
+
+### Status
+Planned.
 
 ## Version 0.2.0
 
@@ -101,3 +122,13 @@ Completed.
 - Exception-isolated event processing so one bad callback cannot freeze the UI
 - Parameter validation: UMAP neighbor clamping for small corpora, n-gram range clamping
 - Offline-capable visualizations (plotly.js embedded, no CDN required)
+
+## Working Principles
+
+- Small controlled enhancements over uncontrolled expansion.
+- Note consolidation is a checkpoint activity, not continuous.
+- Prefer the smaller, more traceable implementation that gets the next working step done cleanly.
+
+## Review Rule
+
+Review this plan at cycle end, on major shifts, or when drift recurs.

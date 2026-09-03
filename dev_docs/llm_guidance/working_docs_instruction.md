@@ -66,6 +66,6 @@ Raw capture of undeveloped ideas — no format pressure; it is a holding area.
 
 During active development: append short bullets, don't chase perfect placement, consolidate later. This is the core anti-burnout rule — *if documentation slows you down, you are doing too much.*
 
-## Current state in this repo (Stella)
+## Current state
 
-None of these working docs exist yet under `dev_docs/`. If the project adopts the SHAPR working set, create `source_of_truth.md` first (it defines the authority for everything else), then `current_state.md`, `tasks.md`, `cycle_plan.md`, `ideas.md`.
+This folder is **guidance only** — it does not track the project's current state. For live state, see the authoritative working docs: `dev_docs/current/04_working/current_state.md` (active phase), `dev_docs/current/04_working/source_of_truth.md` (file authority), and `dev_docs/current/03_control/repository_structure.md` (repo layout).

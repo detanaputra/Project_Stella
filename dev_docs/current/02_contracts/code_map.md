@@ -9,12 +9,12 @@ Define the stable note-to-code mapping for the current implementation state. Red
 
 - `main.py` — entry point; `multiprocessing.freeze_support()` for the webview process
 - `app/controllers/` — `app_controller.py`, `analysis_controller.py`
-- `app/models/` — `app_state.py` (observer state), `topic_result.py` (standardized output), `model.py`
+- `app/models/` — `app_state.py` (observer state), `topic_result.py` (standardized output)
 - `app/models/algorithms/` — `base_algorithm.py`, `bertopic.py`
-- `app/models/services/` — `data_loader.py`, `processor.py`, `exporter.py`, `visualizer.py`, `project_service.py`
-- `app/views/` — `main_window.py`, `menu_manager.py`, `view.py`
+- `app/models/services/` — `data_loader.py`, `processor.py`, `exporter.py`, `visualizer.py`, `project_service.py`, `topic_quality.py`
+- `app/views/` — `main_window.py`, `menu_manager.py`
 - `app/views/menus/` — `base_menu.py`, `file_menu.py`, `edit_menu.py`
-- `app/views/panels/` — `toolbox_panel.py`, `summary_panel.py`, `algorithm_settings_panel.py`, `loading_panel.py`, `export_panel.py`
+- `app/views/panels/` — `toolbox_panel.py`, `summary_panel.py`, `metric_panel.py`, `algorithm_settings_panel.py`, `loading_panel.py`, `export_panel.py`
 - `app/views/panels/hyperparams/` — `base_section.py`, `bertopic_section.py`, `umap_section.py`, `hdbscan_section.py`
 - `app/views/panels/visualizations/` — `bertopic_viz_panel.py`
 - `app/views/wizard/` — `wizard_main.py`, `panel_algorithm.py`, `panel_preview.py`, `panel_hyperparams.py`, `panel_summary.py`
@@ -29,8 +29,9 @@ Define the stable note-to-code mapping for the current implementation state. Red
 | `dev_docs/current/03_control/decisions.md` | Decisions map to commits across `app/` (see each decision's commit ref) |
 | `dev_docs/cycle_record_notes/*` | Development process across the whole artefact |
 | `dev_docs/current/05_knowledge/skus/v0.1.0.md` (SKUs) | Knowledge units; refer to the files named in each SKU's Context/Decision |
-| `audit.md` | Audit evidence; findings reference files across `app/` |
-| `ROADMAP.md` | Feature-level plan; not tied to specific files |
+| `dev_docs/current/05_knowledge/skus/v0.2.0.md` (SKUs) | Knowledge units for the v0.2.0 metrics feature; refer to the files named in each SKU's Context/Decision |
+| `dev_docs/snapshots/cycle_1_close/audit.md` | Audit evidence (archived); findings reference files across `app/` |
+| `dev_docs/current/04_working/cycle_plan.md` | Feature-level plan; not tied to specific files |
 
 ## Contract layer boundaries
 

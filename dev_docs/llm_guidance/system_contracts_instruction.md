@@ -51,10 +51,4 @@ If **code and contract disagree**: the disagreement is **drift**; the current ta
 
 ## Mapping to this project (Stella)
 
-Stella already has equivalent documents at the repo root:
-- `dev_docs/current/01_system/architecture.md` — the architecture note, moved into the `01_system` role.
-- `dev_docs/current/02_contracts/api.md` — serves the function + data contract role.
-- `dev_docs/current/02_contracts/bertopic_hyperparams.md` — the parameter contract.
-- `CLAUDE.md` ≈ project overview
-
-If the project formalises SHAPR folders, these can be linked (wiki-style or inline) rather than duplicated. `code_map.md` (note↔code) is the one contract Stella does **not** have — it would map the SKU/decision docs to `app/` files.
+The current note↔code mapping and repo layout are maintained in `dev_docs/current/02_contracts/code_map.md` and `dev_docs/current/03_control/repository_structure.md` — refer to those rather than this guidance file.

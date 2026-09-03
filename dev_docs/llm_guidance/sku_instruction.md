@@ -62,8 +62,6 @@ Knowledge flow: **capture (append-first) → cycle record consolidation → refl
 
 Tag SKU-bearing files at the top with the knowledge tags, e.g. `#decision #design #learn` (full taxonomy in `conventions_instruction.md`).
 
-## Current state in this repo
+## Current state
 
-- `dev_docs/current/05_knowledge/skus/v0.1.0.md` — SKU-01-01…25 (cycle-coded; combined from 36 original; v0.1.1 merged here). Format: `### SKU-NN-NN — <UTC timestamp>` heading; four bulleted components; optional **Evidence:** field.
-- `dev_docs/current/05_knowledge/skus/v0.2.0.md` — SKU-02-01…04 (cycle-coded; from the design-changing commits of Cycle 2, with commit refs).
-- Triage is applied; the audit-fix commit refs (`10b822e`, `a02d9f5`, `fdd421b`, `0383ce1`, `86f8dd5`, `50ec71c`) are recorded in the merged file. Remaining upgrade: add `Cycle ID` / `Phase` / `AI Interaction` fields if a fuller template is wanted, and backfill v0.1.0 evidence links once those commits are identified.
+This folder is **guidance only** — it does not track the project's current state. For live state, see the authoritative working docs: `dev_docs/current/04_working/current_state.md` (active phase), `dev_docs/current/04_working/source_of_truth.md` (file authority), and `dev_docs/current/03_control/repository_structure.md` (repo layout).

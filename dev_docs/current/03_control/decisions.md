@@ -163,9 +163,9 @@ Release procedure: merge to `main` → verify every commit reached `main` → de
 #### Rationale
 Verifying before deleting prevents silent work loss; branching fresh from `main` gives a clean baseline for the next release.
 
-### D-018: `ROADMAP.md` as the categorized version feature record
+### D-018: `cycle_plan.md` as the categorized version feature record (formerly `ROADMAP.md`)
 - **Status:** active
-- **Decision:** `ROADMAP.md` documents the v0.1.0 feature set under six level-3 categories; the v0.2.0 section left empty. — commit `50ec71c`
+- **Decision:** `cycle_plan.md` (formerly `ROADMAP.md`) documents the v0.1.0 feature set under six level-3 categories; the v0.2.0 section left empty. — commit `50ec71c`
 - **Rationale:** Categorized, versioned features make the roadmap scannable and scaffold the next version.
 
 ### D-019: Normalize BERTopic output shape before mapping documents

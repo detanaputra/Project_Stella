@@ -36,7 +36,7 @@ When choosing between options:
 - [x] rewrite `dev_docs/current/02_contracts/api.md` to match the codebase
 - [x] update `dev_docs/current/01_system/architecture.md` (delete Folder Structure; fix Flows 1–3, registry, tests, layer paths)
 - [x] fix code so views call the controller (ARCH-3/ARCH-4): wizard panels, preview panel, viz panel, settings schema
-- [ ] decide whether to delete leftover scaffold `app/models/model.py` and `app/views/view.py` (unimported; flagged, not deleted)
+- [x] decide whether to delete leftover scaffold `app/models/model.py` and `app/views/view.py` (unimported; flagged, not deleted) — deleted
 
 ## Cycle 2 Opening Tasks
 
@@ -46,12 +46,12 @@ When choosing between options:
 - [x] open the cycle-2 start handoff set (codebase + `current_state.md` + `source_of_truth.md` + task-relevant notes)
 
 ### B. SKU/evidence follow-ups
-- [ ] add commit refs to the v0.1.0 SKUs when the build commits are identified
-- [ ] decide whether to keep a `/evidence`-style home for `logs/` transcripts
+- [x] add commit refs to the v0.1.0 SKUs when the build commits are identified
+- [x] decide whether to keep a `/evidence`-style home for `logs/` transcripts — resolved: `logs.md` archived to `dev_docs/snapshots/cycle_1_close/`; no `/evidence` home needed (transcripts are not required evidence per canonical SHAPR)
 
 ### C. Document-control continuity
 - [x] update `current_state.md` at the end of this hardening pass
-- [ ] keep `audit.md` and any status doc in sync with the changes they record
+- [x] keep `audit.md` and any status doc in sync with the changes they record — resolved: `audit.md` archived to `dev_docs/snapshots/cycle_1_close/` (cycle-1 review evidence; no longer active)
 
 ## Cycle 2 Implementation Tasks (v0.2.0)
 
@@ -74,9 +74,15 @@ When choosing between options:
 ## Cycle 2 Close Tasks
 
 - [x] consolidate SKUs: create `v0.2.0.md` (SKU-02-01…04); merge v0.1.1 into `v0.1.0.md`; cycle-coded IDs
-- [ ] write `cycle_2.md` cycle record (build + review)
-- [ ] take a cycle-2 close snapshot (`dev_docs/snapshots/cycle_2_close/`)
-- [ ] update `ROADMAP.md` v0.2.0 status → Completed
+- [x] write `cycle_2.md` cycle record (build + review)
+- [x] take a cycle-2 close snapshot (`dev_docs/snapshots/cycle_2_close/`)
+- [x] update `ROADMAP.md` v0.2.0 status → Completed
+
+## Cycle 3 Opening Tasks
+
+- [ ] brainstorm the v0.3.0 scope (per `cycle_2_review.md` §7) — candidates: Metrics-tab explanations for beginners; topic refinement (merge/delete) with metric recalculation
+- [ ] write the `cycle_plan.md` v0.3.0 section
+- [ ] open `current_state.md` for the cycle
 
 ## Deferred to Later Cycles
 

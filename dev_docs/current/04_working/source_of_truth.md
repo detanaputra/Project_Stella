@@ -53,7 +53,7 @@ Primary source of truth for: what work is planned, what is active, what to do ne
 Primary source of truth for: why important design choices were made, which decisions are accepted, what trade-offs were chosen, and what governs the current phase until explicitly revised. `cycle_record_notes` point here instead of duplicating rationale.
 
 ### 7. Plan / roadmap truth
-**Authoritative artefact:** `ROADMAP.md` (≈ `cycle_plan.md`)
+**Authoritative artefact:** `dev_docs/current/04_working/cycle_plan.md`
 
 Primary source of truth for the version/cycle roadmap: what each version is mainly trying to achieve and its status. Review at cycle end.
 

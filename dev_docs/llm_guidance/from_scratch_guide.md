@@ -56,7 +56,7 @@ Append short lines. Do not tidy them yet — tidying happens at the cycle close.
 
 A cycle is "a chunk of work with a clear goal." For each one:
 
-1. **Set the goal** in `cycle_plan.md` (here: `ROADMAP.md`): goal, what "done" looks like, success check. Keep it small enough to finish in days, not months.
+1. **Set the goal** in `cycle_plan.md`: goal, what "done" looks like, success check. Keep it small enough to finish in days, not months.
 2. **Open a fresh chat with the AI** and hand it the handoff set: the code, `current_state.md`, `source_of_truth.md`, and only the notes relevant to this task. Not everything.
 3. **Work** — code, test, append tiny notes.
 4. **Close the cycle**:
