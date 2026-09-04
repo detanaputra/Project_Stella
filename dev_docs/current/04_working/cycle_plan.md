@@ -7,16 +7,20 @@ The multi-cycle roadmap. Each version/cycle entry uses the cycle_plan form (goal
 ## Version 0.3.0
 
 ### Main goal
-*(not yet decided — candidates in `ideas.md`)*
+Bring the BERTopic visualisations into the app as in-app tabs and restructure the main-window layout.
 
 ### Main outcomes
-- *(pending)*
+- 5 visualisation tabs (topics, heatmap, barchart, hierarchy, term_rank) in the main Notebook, after Metrics, shown only when a result exists
+- Each tab: a static matplotlib chart (from Plotly `to_dict()` data) + an "Open interactive" button that opens the Plotly HTML in the default browser
+- Static charts generated on-demand (lazy) when a tab is first opened
+- Layout restructure: toolbox removed; parameter panel moved to a persistent left column; Export and Settings become top-level panels under File Menu (theme switcher stays in the Settings panel)
 
 ### Primary focus
-- *(pending)*
+- In-app visualisation tabs (static matplotlib via `to_dict()`)
+- Main-window layout restructure
 
 ### Success signal
-- *(pending)*
+A user can open each of the 5 visualisations as a tab inside the app, see a static chart, and click "Open interactive" to get the full Plotly figure in the browser — with the toolbox gone and parameters on the left.
 
 ### Status
 Planned.

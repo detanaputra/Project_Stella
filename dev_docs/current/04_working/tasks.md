@@ -80,9 +80,22 @@ When choosing between options:
 
 ## Cycle 3 Opening Tasks
 
-- [ ] brainstorm the v0.3.0 scope (per `cycle_2_review.md` §7) — candidates: Metrics-tab explanations for beginners; topic refinement (merge/delete) with metric recalculation
-- [ ] write the `cycle_plan.md` v0.3.0 section
-- [ ] open `current_state.md` for the cycle
+- [x] brainstorm the v0.3.0 scope (per `cycle_2_review.md` §7) — decided: visualisation tabs + layout restructure; topic refinement deferred to cycle 4
+- [x] write the `cycle_plan.md` v0.3.0 section
+- [x] open `current_state.md` for the cycle
+
+## Cycle 3 Implementation Tasks (v0.3.0)
+
+### WP1 — Static viz service + visualisation tabs
+- [ ] `to_dict()` → matplotlib converter (dispatch on trace type: scatter, heatmap, bar, dendrogram) for the 5 visualisations
+- [ ] add 5 viz tabs (topics, heatmap, barchart, hierarchy, term_rank) to the main Notebook after Metrics, shown only when a result exists
+- [ ] lazy (on-demand) static chart generation per tab
+- [ ] "Open interactive" button per tab → opens the Plotly HTML in the default browser
+
+### WP2 — Layout restructure
+- [ ] remove the toolbox panel
+- [ ] move the parameter panel to a persistent left column
+- [ ] Export and Settings → top-level panels under File Menu (theme switcher stays in the Settings panel)
 
 ## Deferred to Later Cycles
 

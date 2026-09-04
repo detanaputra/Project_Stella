@@ -11,6 +11,16 @@ from app.views.panels.algorithm_settings_panel import AlgorithmSettingsPanel
 from app.views.panels.loading_panel import LoadingPanel
 from app.views.panels.export_panel import ExportPanel
 from app.views.panels.metric_panel import MetricPanel
+from app.views.panels.static_viz_panel import StaticVizPanel
+
+# The 5 BERTopic visualisations exposed as static tabs (v0.3.0, WP1).
+_VIZ_TABS = [
+    ("topics", "Topics"),
+    ("heatmap", "Heatmap"),
+    ("barchart", "Barchart"),
+    ("hierarchy", "Hierarchy"),
+    ("term_rank", "Term Rank"),
+]
 
 class MainWindow(ttk.Window):
     """
@@ -31,10 +41,14 @@ class MainWindow(ttk.Window):
         self.menu_manager.build_menu()
 
         self._build_ui()
+        self.main_notebook.bind("<<NotebookTabChanged>>", self._on_tab_changed)
 
         # Metrics tab: created dynamically once a result exists (v0.2.0).
         self._metrics_tab = None
         self._metrics_panel = None
+        # Visualisation tabs: created dynamically once a result exists (v0.3.0, WP1).
+        self._viz_tabs = None
+        self._viz_panels = None
         self.appState.subscribe(self._on_state_changed)
 
         # Start polling the event queue
@@ -125,6 +139,7 @@ class MainWindow(ttk.Window):
 
     def _on_state_changed(self, state: AppState):
         self._sync_metrics_tab()
+        self._sync_viz_tabs()
 
     def _sync_metrics_tab(self):
         """Add the Metrics tab after Analysis once a result exists; remove it
@@ -139,6 +154,40 @@ class MainWindow(ttk.Window):
             self.main_notebook.forget(self._metrics_tab)
             self._metrics_tab = None
             self._metrics_panel = None
+
+    def _sync_viz_tabs(self):
+        """Add the 5 visualisation tabs after Metrics once a result exists;
+        remove them when the result is cleared (v0.3.0, WP1)."""
+        has_result = self.appState.current_result is not None
+        if has_result and self._viz_tabs is None:
+            self._viz_tabs = []
+            self._viz_panels = []
+            insert_pos = 1  # after Analysis
+            if self._metrics_tab is not None:
+                insert_pos = self.main_notebook.index(self._metrics_tab) + 1
+            for viz_name, title in _VIZ_TABS:
+                tab = ttk.Frame(self.main_notebook)
+                panel = StaticVizPanel(tab, self.appState, self.app_controller, viz_name, title)
+                panel.pack(fill=BOTH, expand=YES)
+                self.main_notebook.insert(insert_pos, tab, text=f" {title} ")
+                self._viz_tabs.append(tab)
+                self._viz_panels.append(panel)
+                insert_pos += 1
+        elif not has_result and self._viz_tabs is not None:
+            for tab in self._viz_tabs:
+                self.main_notebook.forget(tab)
+            self._viz_tabs = None
+            self._viz_panels = None
+
+    def _on_tab_changed(self, event=None):
+        """Lazy-render the selected visualisation tab (v0.3.0, WP1)."""
+        if self._viz_panels is None:
+            return
+        selected = self.main_notebook.select()
+        for tab, panel in zip(self._viz_tabs, self._viz_panels):
+            if str(tab) == str(selected):
+                panel.ensure_rendered()
+                break
 
     def _poll_state_events(self):
         """Check the AppState event queue and update views."""

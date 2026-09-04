@@ -205,8 +205,34 @@ class TopicVisualizer:
         """Returns {'topics': path, 'heatmap': path, 'barchart': path, 'hierarchy': path}
         for BERTopic (real plots); {} if unsupported. Individual failures are skipped."""
 
+    def visualize_one(self, result: TopicResult, viz_name: str) -> Optional[str]:
+        """Generate one visualization's offline HTML; return the path or None
+        (used by the "Open interactive" button on the static viz tabs)."""
+
     def open_visualization(self, file_path: str) -> None:
         """Open an HTML visualization in the default browser."""
+```
+
+---
+
+### StaticVizConverter
+
+**Location:** `app/models/services/static_viz.py`
+
+Converts BERTopic's Plotly visualizations to static matplotlib figures for the
+in-app viz tabs (v0.3.0, WP1). BERTopic's `visualize_*` return Plotly figures
+only; `fig.to_dict()` exposes the rendered data, which is re-plotted with
+matplotlib.
+
+```python
+def plotly_fig_to_mpl(fig_dict: Dict[str, Any], figure: Optional[Figure] = None) -> Figure:
+    """Render a Plotly figure dict (from fig.to_dict()) as a matplotlib Figure.
+    Dispatches on trace type (scatter / heatmap / bar); traces on distinct axes
+    become subplots (BERTopic's barchart)."""
+
+def static_chart(model, viz_name: str, figure: Optional[Figure] = None) -> Figure:
+    """Generate a static matplotlib chart for a BERTopic visualization by name
+    (topics / heatmap / barchart / hierarchy / term_rank)."""
 ```
 
 ---
@@ -261,6 +287,14 @@ class AppController:
         """Set analysis_in_progress + status, then run _generate_visualization on a
         background thread. Webview is launched in a separate process."""
 
+    def render_static_chart(self, viz_name: str, figure) -> bool:
+        """Draw a static matplotlib chart for the current result onto `figure`.
+        Returns True on success, False if no result/model or rendering failed."""
+
+    def open_interactive_viz(self, viz_name: str) -> None:
+        """Generate one visualization's offline HTML and open it in the default
+        browser (the "Open interactive" button on the static viz tabs)."""
+
     # Export
     def export_csv(self, output_path: str) -> None: ...
     def export_json(self, output_path: str) -> None: ...
@@ -305,6 +339,7 @@ All views follow the same contract:
 | `panels/toolbox_panel.py` | `ToolboxPanel` | Left column: embeds `BERTopicVisualisation` |
 | `panels/summary_panel.py` | `SummaryPanel` | Result tables (topics, doc-topics); sentinel-guarded render |
 | `panels/metric_panel.py` | `MetricPanel` | 4 topic quality gauges (NPMI, C_V, UMass, Topic Diversity) from `result.quality_metrics`; sentinel-guarded render |
+| `panels/static_viz_panel.py` | `StaticVizPanel` | One static matplotlib chart per BERTopic visualization + "Open interactive" button; lazy render on first view |
 | `panels/algorithm_settings_panel.py` | `AlgorithmSettingsPanel` | BERTopic/UMAP/HDBSCAN param sections; Retrain button; scrollable; re-renders only on structural change |
 | `panels/loading_panel.py` | `LoadingPanel` | Modal overlay; auto-closes when `analysis_in_progress` → false |
 | `panels/export_panel.py` | `ExportPanel` | CSV/JSON/report export + browser visualizations |

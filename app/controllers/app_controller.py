@@ -8,6 +8,7 @@ from app.models.app_state import AppState
 from app.models.services.data_loader import DataLoader
 from app.models.services.exporter import Exporter
 from app.models.services.visualizer import TopicVisualizer
+from app.models.services.static_viz import static_chart
 from app.models.services.project_service import ProjectService
 from app.models.algorithms import get_algorithm
 
@@ -189,6 +190,35 @@ class AppController:
             self.appState.analysis_in_progress = False
             self.appState.analysis_status = ""
             self.appState.notify()
+
+    def render_static_chart(self, viz_name: str, figure) -> bool:
+        """Draw a static matplotlib chart for the current result onto ``figure``.
+
+        Returns True on success, False if there is no result/model or rendering
+        failed. The view owns the canvas; this only touches the model (v0.3.0,
+        WP1).
+        """
+        result = self.appState.current_result
+        if result is None:
+            return False
+        model = result.metadata.get("model")
+        if model is None:
+            return False
+        try:
+            static_chart(model, viz_name, figure=figure)
+            return True
+        except Exception:
+            return False
+
+    def open_interactive_viz(self, viz_name: str) -> None:
+        """Generate one visualization's offline HTML and open it in the default
+        browser (the "Open interactive" button on the static viz tabs, v0.3.0,
+        WP1)."""
+        if not self.appState.current_result:
+            return
+        path = self.visualizer.visualize_one(self.appState.current_result, viz_name)
+        if path:
+            self.visualizer.open_visualization(path)
 
     def export_csv(self, output_path: str) -> None:
         """Export the current TopicResult to CSV."""

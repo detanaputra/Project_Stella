@@ -57,6 +57,26 @@ class TopicVisualizer:
 
         return viz_files
 
+    def visualize_one(self, result: TopicResult, viz_name: str) -> Optional[str]:
+        """Generate one visualization's offline HTML; return the file path or None.
+
+        Used by the "Open interactive" button on the static viz tabs (v0.3.0,
+        WP1). Individual failures return None rather than raising.
+        """
+        if 'model' not in result.metadata:
+            return None
+        model = result.metadata['model']
+        method = getattr(model, f"visualize_{viz_name}", None)
+        if method is None:
+            return None
+        try:
+            fig = method()
+            path = os.path.join(self.output_dir, f"{viz_name}.html")
+            fig.write_html(path, include_plotlyjs=True, full_html=True)
+            return path
+        except Exception:
+            return None
+
     def open_visualization(self, file_path: str) -> None:
         """Open a visualization file in the default browser."""
         webbrowser.open(f"file://{os.path.abspath(file_path)}")
