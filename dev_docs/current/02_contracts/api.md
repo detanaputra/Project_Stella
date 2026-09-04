@@ -205,12 +205,10 @@ class TopicVisualizer:
         """Returns {'topics': path, 'heatmap': path, 'barchart': path, 'hierarchy': path}
         for BERTopic (real plots); {} if unsupported. Individual failures are skipped."""
 
-    def visualize_one(self, result: TopicResult, viz_name: str) -> Optional[str]:
-        """Generate one visualization's offline HTML; return the path or None
-        (used by the "Open interactive" button on the static viz tabs)."""
-
     def open_visualization(self, file_path: str) -> None:
-        """Open an HTML visualization in the default browser."""
+        """Open an HTML visualization in the default browser, served over a
+        local http://localhost server (browsers handle http reliably; file://
+        intermittently opens a blank tab)."""
 ```
 
 ---
@@ -225,14 +223,21 @@ only; `fig.to_dict()` exposes the rendered data, which is re-plotted with
 matplotlib.
 
 ```python
-def plotly_fig_to_mpl(fig_dict: Dict[str, Any], figure: Optional[Figure] = None) -> Figure:
+def plotly_fig_to_mpl(fig_dict: Dict[str, Any], viz_name: Optional[str] = None,
+                      figure: Optional[Figure] = None) -> Figure:
     """Render a Plotly figure dict (from fig.to_dict()) as a matplotlib Figure.
     Dispatches on trace type (scatter / heatmap / bar); traces on distinct axes
-    become subplots (BERTopic's barchart)."""
+    become subplots (BERTopic's barchart). viz_name enables per-viz styling
+    (topics/hierarchy axis removal, term-rank axis labels)."""
 
 def static_chart(model, viz_name: str, figure: Optional[Figure] = None) -> Figure:
     """Generate a static matplotlib chart for a BERTopic visualization by name
-    (topics / heatmap / barchart / hierarchy / term_rank)."""
+    (topics / heatmap / barchart / hierarchy / term_rank), passing viz_name
+    through for per-visualisation styling."""
+
+def save_static_charts(model, output_dir: str) -> Dict[str, str]:
+    """Generate all 5 static charts and save them as PNG files; returns
+    {viz_name: png_path}. Individual failures are skipped."""
 ```
 
 ---
@@ -287,13 +292,13 @@ class AppController:
         """Set analysis_in_progress + status, then run _generate_visualization on a
         background thread. Webview is launched in a separate process."""
 
-    def render_static_chart(self, viz_name: str, figure) -> bool:
-        """Draw a static matplotlib chart for the current result onto `figure`.
-        Returns True on success, False if no result/model or rendering failed."""
+    def get_static_chart_path(self, viz_name: str) -> Optional[str]:
+        """Return the pre-generated static chart PNG path for a visualization,
+        or None if no result/chart exists."""
 
     def open_interactive_viz(self, viz_name: str) -> None:
-        """Generate one visualization's offline HTML and open it in the default
-        browser (the "Open interactive" button on the static viz tabs)."""
+        """Open the pre-generated offline HTML for a visualization in the
+        default browser (the "Open interactive" button on the static viz tabs)."""
 
     # Export
     def export_csv(self, output_path: str) -> None: ...
@@ -319,7 +324,8 @@ class AnalysisController:
     def run_analysis(self) -> None:
         """Re-entrancy guard (returns if analysis_in_progress). Validates a file is
         selected, sets analysis_in_progress, and starts a background thread running
-        _execute_pipeline: load_texts -> TopicProcessor.process -> set current_result.
+        _execute_pipeline: load_texts -> TopicProcessor.process -> compute metrics ->
+        generate visualisations (static PNGs + offline HTML) -> set current_result.
         Worker thread updates state via notify()/call_on_main (never Tkinter directly)."""
 ```
 
@@ -339,7 +345,7 @@ All views follow the same contract:
 | `panels/toolbox_panel.py` | `ToolboxPanel` | Left column: embeds `BERTopicVisualisation` |
 | `panels/summary_panel.py` | `SummaryPanel` | Result tables (topics, doc-topics); sentinel-guarded render |
 | `panels/metric_panel.py` | `MetricPanel` | 4 topic quality gauges (NPMI, C_V, UMass, Topic Diversity) from `result.quality_metrics`; sentinel-guarded render |
-| `panels/static_viz_panel.py` | `StaticVizPanel` | One static matplotlib chart per BERTopic visualization + "Open interactive" button; lazy render on first view |
+| `panels/static_viz_panel.py` | `StaticVizPanel` | Displays the pre-generated static chart PNG per BERTopic visualization + "Open interactive" button (opens the pre-generated HTML) |
 | `panels/algorithm_settings_panel.py` | `AlgorithmSettingsPanel` | BERTopic/UMAP/HDBSCAN param sections; Retrain button; scrollable; re-renders only on structural change |
 | `panels/loading_panel.py` | `LoadingPanel` | Modal overlay; auto-closes when `analysis_in_progress` → false |
 | `panels/export_panel.py` | `ExportPanel` | CSV/JSON/report export + browser visualizations |

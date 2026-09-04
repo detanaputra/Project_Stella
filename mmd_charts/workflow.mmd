@@ -1,0 +1,27 @@
+flowchart TD
+    subgraph Handoff Instruction
+    hi_1[All workpackage done and commited]
+    hi_2[Handoff preparation]
+    hi_3[Drift resolution]
+    hi_4[Final commit and push]
+    hi_5[Pull request from web UI]
+    hi_6[Clear context and start new session]
+    end
+    hi_1-->hi_2
+    hi_2-->hi_3
+    hi_3-->hi_4
+    hi_4-->hi_5
+    hi_5-->hi_6
+
+    subgraph Development
+    d_1[Combine tasks into workpackage]
+    d_2[execute workpackage]
+    d_3[Commit workpackage]
+    d_4[Document SKU with reference to commit id]
+    end
+    d_1-->d_2-->d_3-->d_4
+
+    subgraph Ideas
+    %% current/04_working
+    ideas.md--LLM refined-->cycle_plan.md--LLM formalize-->tasks.md
+    end

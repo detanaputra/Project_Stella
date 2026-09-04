@@ -1,7 +1,36 @@
+import functools
+import http.server
 import os
+import threading
 import webbrowser
 from typing import Dict, Optional
 from app.models.topic_result import TopicResult
+
+
+class _QuietHandler(http.server.SimpleHTTPRequestHandler):
+    """Serves files without logging each request to stderr."""
+
+    def log_message(self, format, *args):
+        pass
+
+
+class _VizServer:
+    """A tiny local HTTP server serving the visualisation output directory.
+
+    Browsers handle http://localhost URLs far more reliably than file:// URLs
+    (which intermittently open a blank tab), so interactive visualisations are
+    served over localhost instead of opened as local files (v0.3.0, WP1).
+    """
+
+    def __init__(self, directory: str):
+        handler = functools.partial(_QuietHandler, directory=directory)
+        self._httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)
+        self.port = self._httpd.server_address[1]
+        self._thread = threading.Thread(target=self._httpd.serve_forever, daemon=True)
+        self._thread.start()
+
+    def url_for(self, filename: str) -> str:
+        return f"http://localhost:{self.port}/{filename}"
 
 class TopicVisualizer:
     """Generate interactive visualizations for export to browser (offline HTML)."""
@@ -13,6 +42,7 @@ class TopicVisualizer:
         ("heatmap", "visualize_heatmap"),
         ("barchart", "visualize_barchart"),
         ("hierarchy", "visualize_hierarchy"),
+        ("term_rank", "visualize_term_rank"),
     ]
 
     def __init__(self, output_dir: Optional[str] = None):
@@ -20,6 +50,7 @@ class TopicVisualizer:
         # in a stable, user-level location rather than a cwd-relative path.
         self.output_dir = output_dir or os.path.join(os.path.expanduser("~"), ".bertopic-gui", "viz")
         os.makedirs(self.output_dir, exist_ok=True)
+        self._server = None  # local HTTP server, started lazily on first open
 
     def visualize(self, result: TopicResult, algorithm_name: str) -> Dict[str, str]:
         """
@@ -57,26 +88,17 @@ class TopicVisualizer:
 
         return viz_files
 
-    def visualize_one(self, result: TopicResult, viz_name: str) -> Optional[str]:
-        """Generate one visualization's offline HTML; return the file path or None.
-
-        Used by the "Open interactive" button on the static viz tabs (v0.3.0,
-        WP1). Individual failures return None rather than raising.
-        """
-        if 'model' not in result.metadata:
-            return None
-        model = result.metadata['model']
-        method = getattr(model, f"visualize_{viz_name}", None)
-        if method is None:
-            return None
-        try:
-            fig = method()
-            path = os.path.join(self.output_dir, f"{viz_name}.html")
-            fig.write_html(path, include_plotlyjs=True, full_html=True)
-            return path
-        except Exception:
-            return None
+    def _ensure_server(self) -> _VizServer:
+        """Start the local HTTP server once, on first use."""
+        if self._server is None:
+            self._server = _VizServer(self.output_dir)
+        return self._server
 
     def open_visualization(self, file_path: str) -> None:
-        """Open a visualization file in the default browser."""
-        webbrowser.open(f"file://{os.path.abspath(file_path)}")
+        """Open a visualization in the default browser, served over localhost.
+
+        Served over http://localhost rather than file:// because browsers handle
+        http URLs reliably (file:// intermittently opens a blank tab).
+        """
+        server = self._ensure_server()
+        webbrowser.open(server.url_for(os.path.basename(file_path)))

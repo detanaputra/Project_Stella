@@ -10,6 +10,7 @@ Design (settled): clean matplotlib defaults (not pixel-matched to Plotly); the
 hierarchy dendrogram uses a simple line representation for the MVP.
 """
 
+import os
 import re
 from typing import Any, Dict, List, Optional
 
@@ -17,13 +18,19 @@ import numpy as np
 from matplotlib.figure import Figure
 
 
-def plotly_fig_to_mpl(fig_dict: Dict[str, Any], figure: Optional[Figure] = None) -> Figure:
+# The 5 BERTopic visualisations exposed as static tabs (v0.3.0, WP1).
+VIZ_NAMES = ["topics", "heatmap", "barchart", "hierarchy", "term_rank"]
+
+
+def plotly_fig_to_mpl(fig_dict: Dict[str, Any], viz_name: Optional[str] = None,
+                      figure: Optional[Figure] = None) -> Figure:
     """Render a Plotly figure dict (from ``fig.to_dict()``) as a matplotlib Figure.
 
     Dispatches on each trace's ``type``. Traces that reference distinct axes
     (BERTopic's barchart uses one subplot per topic) are drawn on subplots;
     everything else shares a single axes. Draws onto ``figure`` when given,
-    otherwise creates one.
+    otherwise creates one. ``viz_name`` enables per-visualisation styling
+    (topics/hierarchy axis removal, term-rank axis labels).
     """
     data = fig_dict.get("data", [])
     layout = fig_dict.get("layout", {})
@@ -43,6 +50,7 @@ def plotly_fig_to_mpl(fig_dict: Dict[str, Any], figure: Optional[Figure] = None)
         ax = figure.add_subplot(111)
         for trace in data:
             _render_trace(ax, trace)
+        _apply_viz_style(ax, viz_name, layout)
     else:
         n = len(groups)
         cols = 2 if n > 1 else 1
@@ -79,7 +87,27 @@ def static_chart(model, viz_name: str, figure: Optional[Figure] = None) -> Figur
     if method is None:
         raise ValueError(f"visualize_{viz_name} not available on the model")
     plotly_fig = method()
-    return plotly_fig_to_mpl(plotly_fig.to_dict(), figure=figure)
+    return plotly_fig_to_mpl(plotly_fig.to_dict(), viz_name=viz_name, figure=figure)
+
+
+def save_static_charts(model, output_dir: str) -> Dict[str, str]:
+    """Generate all 5 static matplotlib charts and save them as PNG files.
+
+    Returns {viz_name: png_path}. Individual failures are skipped so one
+    failing visualisation does not fail the whole batch (v0.3.0, WP1).
+    """
+    paths: Dict[str, str] = {}
+    if model is None:
+        return paths
+    for name in VIZ_NAMES:
+        try:
+            fig = static_chart(model, name)
+            path = os.path.join(output_dir, f"{name}.png")
+            fig.savefig(path, dpi=100)
+            paths[name] = path
+        except Exception:
+            continue
+    return paths
 
 
 # --- trace renderers -------------------------------------------------------
@@ -120,7 +148,7 @@ def _render_heatmap(ax, trace: Dict[str, Any]) -> None:
     z = np.asarray(trace.get("z"))
     if z.size == 0:
         return
-    im = ax.imshow(z, cmap="viridis", aspect="auto")
+    im = ax.imshow(z, cmap="YlGn", aspect="auto")
     x = trace.get("x")
     y = trace.get("y")
     if x:
@@ -147,10 +175,49 @@ def _render_bar(ax, trace: Dict[str, Any]) -> None:
 # --- helpers ---------------------------------------------------------------
 
 
+def _apply_viz_style(ax, viz_name: Optional[str], layout: Dict[str, Any]) -> None:
+    """Per-visualisation styling for the single-axes charts (v0.3.0, WP1)."""
+    if viz_name == "topics":
+        # The intertopic distance map is a projection — no meaningful axes.
+        ax.set_axis_off()
+    elif viz_name == "hierarchy":
+        _style_hierarchy(ax, layout)
+    elif viz_name == "term_rank":
+        ax.set_xlabel("Term Rank")
+        ax.set_ylabel("c-TF-IDF score")
+
+
+def _style_hierarchy(ax, layout: Dict[str, Any]) -> None:
+    """Style the dendrogram: remove the frame and x-axis, and show the topic
+    labels as y-axis tick labels at the leaf positions.
+
+    The leaves are at x=0, spread vertically at ``yaxis.tickvals`` (from the
+    Plotly layout); the topic names are ``yaxis.ticktext``.
+    """
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    ax.tick_params(axis="x", bottom=False, labelbottom=False)
+    yaxis = layout.get("yaxis", {})
+    ticktext = yaxis.get("ticktext")
+    tickvals = yaxis.get("tickvals")
+    if ticktext and tickvals:
+        ax.set_yticks(tickvals)
+        ax.set_yticklabels([str(t) for t in ticktext], fontsize=7)
+        ax.tick_params(axis="y", length=0)  # no tick marks, labels only
+    else:
+        ax.set_yticks([])
+
+
 def _trace_color(trace: Dict[str, Any]) -> str:
     marker = trace.get("marker", {})
     color = marker.get("color")
     if isinstance(color, str):
+        # Plotly uses CSS 'rgb(r,g,b)' / 'rgba(r,g,b,a)' strings, which
+        # matplotlib does not parse; convert to hex.
+        m = re.match(r"rgba?\((\d+),\s*(\d+),\s*(\d+)", color)
+        if m:
+            r, g, b = (int(v) for v in m.groups())
+            return f"#{r:02x}{g:02x}{b:02x}"
         return color
     return "#1f77b4"
 

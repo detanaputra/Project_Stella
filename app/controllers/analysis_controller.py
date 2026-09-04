@@ -6,6 +6,7 @@ from app.models.services.processor import TopicProcessor
 from app.models.services.visualizer import TopicVisualizer
 from app.models.services.exporter import Exporter
 from app.models.services.topic_quality import compute_topic_quality
+from app.models.services.static_viz import save_static_charts
 from app.models.algorithms import get_algorithm
 
 class AnalysisController:
@@ -109,6 +110,21 @@ class AnalysisController:
             except Exception:
                 # A metric failure must not fail the whole analysis.
                 result.quality_metrics = None
+
+            # 5.5 Generate visualisations in the background (v0.3.0, WP1): 5
+            #     static PNG charts + 5 offline HTML files, so the viz tabs and
+            #     "Open interactive" are instant and the HTML files are stable
+            #     (never regenerated on click).
+            self.appState.analysis_status = "Generating visualisations..."
+            self.appState.notify()
+            try:
+                result.metadata['static_chart_paths'] = save_static_charts(
+                    result.metadata.get('model'), self.visualizer.output_dir)
+                result.metadata['viz_files'] = self.visualizer.visualize(
+                    result, self.appState.selected_algorithm)
+            except Exception:
+                result.metadata['static_chart_paths'] = {}
+                result.metadata['viz_files'] = {}
 
             # 6. Finalize
             self.appState.current_result = result

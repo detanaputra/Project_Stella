@@ -41,7 +41,6 @@ class MainWindow(ttk.Window):
         self.menu_manager.build_menu()
 
         self._build_ui()
-        self.main_notebook.bind("<<NotebookTabChanged>>", self._on_tab_changed)
 
         # Metrics tab: created dynamically once a result exists (v0.2.0).
         self._metrics_tab = None
@@ -178,16 +177,6 @@ class MainWindow(ttk.Window):
                 self.main_notebook.forget(tab)
             self._viz_tabs = None
             self._viz_panels = None
-
-    def _on_tab_changed(self, event=None):
-        """Lazy-render the selected visualisation tab (v0.3.0, WP1)."""
-        if self._viz_panels is None:
-            return
-        selected = self.main_notebook.select()
-        for tab, panel in zip(self._viz_tabs, self._viz_panels):
-            if str(tab) == str(selected):
-                panel.ensure_rendered()
-                break
 
     def _poll_state_events(self):
         """Check the AppState event queue and update views."""

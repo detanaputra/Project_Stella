@@ -15,11 +15,12 @@ Raw capture of undeveloped ideas — no format pressure; a holding area. Ideas h
     - Params panel: persistent left column (no collapse toggle for now)
     - Static charts: generated on-demand (lazy) when a tab is first opened
   - **Design (settled):**
-    - New service `app/models/services/static_viz.py`: `plotly_fig_to_mpl(fig_dict)` dispatches on trace type (scatter / heatmap / bar); `static_chart(model, viz_name)` wrapper
-    - Clean matplotlib defaults (not pixel-matched to Plotly); intertopic point sizes scaled for readability
+    - New service `app/models/services/static_viz.py`: `plotly_fig_to_mpl(fig_dict)` dispatches on trace type (scatter / heatmap / bar); `static_chart(model, viz_name)` wrapper; `save_static_charts(model, output_dir)` batch → PNGs
+    - Clean matplotlib defaults (not pixel-matched to Plotly); intertopic point sizes scaled for readability; heatmap uses `YlGn` colormap
     - Hierarchy: simpler representation for now (MVP) — not a faithful dendrogram
+    - **Pre-generation:** the pipeline generates all 5 static PNGs + 5 offline HTML files after metrics (user waits during training anyway); tabs display the PNGs, "Open interactive" opens the pre-generated HTML — no lazy/on-click generation, so the HTML files are stable
+    - **Served over localhost:** interactive HTML is opened via a tiny local HTTP server (http://localhost) instead of file:// — browsers handle http reliably (file:// intermittently opens a blank tab)
     - Verification: headless smoke test (train small corpus → convert all 5 → save PNGs)
-    - Caching: converted figure cached per tab; invalidated when a new result replaces the model
 
 ## Deferred to Other Cycle (backlog)
 - Topic refinement (merge/delete topics) — targeted for cycle 4; from `cycle_2_review.md` §3. Scope: select a topic → merge or delete → input user interpretation for the topic. Risk: metrics must be recalculated after each refinement (§5).
