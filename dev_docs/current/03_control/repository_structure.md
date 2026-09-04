@@ -59,7 +59,7 @@ This note is a **reusable control note**. Update it in the same change as any st
 | `dev_docs/llm_guidance/sku_instruction.md` | SKU definition | Distilled from arXiv 2603.25660; `guide.md` removed |
 | `dev_docs/current/05_knowledge/skus/v0.1.0.md` | SKU knowledge units | 25 SKUs (SKU-01-01…25, cycle-coded; combined from 36 original; v0.1.1 merged here) |
 | `dev_docs/current/05_knowledge/skus/v0.2.0.md` | SKU knowledge units | 4 SKUs (SKU-02-01…04, cycle-coded; from the design-changing commits of Cycle 2) |
-| `dev_docs/current/05_knowledge/skus/v0.3.0.md` | SKU knowledge units | 3 SKUs (SKU-03-01…03, cycle-coded; WP1 — visualisation tabs) |
+| `dev_docs/current/05_knowledge/skus/v0.3.0.md` | SKU knowledge units | 4 SKUs (SKU-03-01…04, cycle-coded; WP1 visualisation tabs + WP2 layout restructure) |
 | `dev_docs/current/05_knowledge/reflection.md` | reflection | Created from cycle learnings |
 | `dev_docs/current/05_knowledge/references.md` | references | SHAPR papers + project guides |
 | `dev_docs/current/05_knowledge/paper.md` | paper | Working draft toward the research write-up |
@@ -67,10 +67,13 @@ This note is a **reusable control note**. Update it in the same change as any st
 ### Cycles (evidence of the cycle)
 | File | SHAPR role | Notes |
 |---|---|---|
+| `dev_docs/cycle_record_notes/cycle_0.md` | cycle record | Pre-SHAPR retrospective (environment-setup / ideation) |
 | `dev_docs/cycle_record_notes/cycle_1.md` | cycle record | Build cycle (v0.1.0) |
 | `dev_docs/cycle_record_notes/cycle_1_review.md` | cycle review | Audit-and-release review (v0.1.1) |
 | `dev_docs/cycle_record_notes/cycle_2.md` | cycle record | Build cycle (v0.2.0) |
 | `dev_docs/cycle_record_notes/cycle_2_review.md` | cycle review | Review of the v0.2.0 build (verdict: Release) |
+| `dev_docs/cycle_record_notes/cycle_3.md` | cycle record | Build cycle (v0.3.0) |
+| `dev_docs/cycle_record_notes/cycle_3_review.md` | cycle review | Review of the v0.3.0 build (verdict: Release) |
 | `dev_docs/snapshots/cycle_1_close/audit.md` | Review evidence (archived) | The findings behind `cycle_1_review.md` (linked as its Evidence) |
 
 ### Evidence / raw data

@@ -12,7 +12,7 @@ Bring the BERTopic visualisations into the app as in-app tabs and restructure th
 ### Main outcomes
 - 5 visualisation tabs (topics, heatmap, barchart, hierarchy, term_rank) in the main Notebook, after Metrics, shown only when a result exists
 - Each tab: a static matplotlib chart (from Plotly `to_dict()` data) + an "Open interactive" button that opens the Plotly HTML in the default browser
-- Static charts generated on-demand (lazy) when a tab is first opened
+- All 5 static PNGs + 5 offline HTML files pre-generated in the pipeline after metrics (tabs and "Open interactive" are instant; the HTML files are stable)
 - Layout restructure: toolbox removed; parameter panel moved to a persistent left column; Export and Settings become top-level panels under File Menu (theme switcher stays in the Settings panel)
 
 ### Primary focus
@@ -23,7 +23,7 @@ Bring the BERTopic visualisations into the app as in-app tabs and restructure th
 A user can open each of the 5 visualisations as a tab inside the app, see a static chart, and click "Open interactive" to get the full Plotly figure in the browser — with the toolbox gone and parameters on the left.
 
 ### Status
-Planned.
+Completed and ready to close.
 
 ## Version 0.2.0
 

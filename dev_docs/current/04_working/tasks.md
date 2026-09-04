@@ -1,6 +1,6 @@
 # Tasks
 
-#working #tasks #cycle2 #implementation
+#working #tasks #cycle3 #implementation
 
 ## Working Rule
 
@@ -93,14 +93,21 @@ When choosing between options:
 - [x] "Open interactive" button per tab → opens the Plotly HTML in the default browser (served over a local http://localhost server)
 
 ### WP2 — Layout restructure
-- [ ] remove the toolbox panel
-- [ ] move the parameter panel to a persistent left column
-- [ ] Export and Settings → top-level panels under File Menu (theme switcher stays in the Settings panel)
+- [x] remove the toolbox panel (and the dead `toolbox_panel.py` / `bertopic_viz_panel.py`)
+- [x] move the parameter panel to a persistent left column
+- [x] Export and Settings → top-level panels under File Menu (theme switcher stays in the Settings panel)
+
+## Cycle 3 Close Tasks
+
+- [x] write `cycle_3.md` cycle record (drafted)
+- [x] write `cycle_3_review.md` (drafted)
+- [x] take the cycle-3 close snapshot (`dev_docs/snapshots/cycle_3_close/`)
+- [ ] release v0.3.0 to `main` (merge → verify → delete → fresh branch, D-017)
+- [ ] commit the cycle-close docs batch
 
 ## Deferred to Later Cycles
 
 - [ ] LDA/NMF algorithms (exercises the `BaseAlgorithm` abstraction — D-001)
-- [ ] embedded matplotlib charts (vs. browser-only visualizations)
 - [ ] document search/filter
 - [ ] batch processing
 - [ ] multi-model support ("Model 1", "Model 2", …) — metrics already stored per-`TopicResult` (D-021)
