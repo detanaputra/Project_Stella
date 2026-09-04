@@ -30,6 +30,7 @@ Define the stable note-to-code mapping for the current implementation state. Red
 | `dev_docs/cycle_record_notes/*` | Development process across the whole artefact |
 | `dev_docs/current/05_knowledge/skus/v0.1.0.md` (SKUs) | Knowledge units; refer to the files named in each SKU's Context/Decision |
 | `dev_docs/current/05_knowledge/skus/v0.2.0.md` (SKUs) | Knowledge units for the v0.2.0 metrics feature; refer to the files named in each SKU's Context/Decision |
+| `dev_docs/current/05_knowledge/skus/v0.3.0.md` (SKUs) | Knowledge units for the v0.3.0 visualisation-tabs feature; refer to the files named in each SKU's Context/Decision |
 | `dev_docs/snapshots/cycle_1_close/audit.md` | Audit evidence (archived); findings reference files across `app/` |
 | `dev_docs/current/04_working/cycle_plan.md` | Feature-level plan; not tied to specific files |
 

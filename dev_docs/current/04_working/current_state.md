@@ -14,7 +14,7 @@ Cycle 1 (v0.1.0 build) is **closed**: released on `main`, recorded in `dev_docs/
 - Cycle records: `cycle_1.md` + `cycle_1_review.md`, `cycle_2.md` + `cycle_2_review.md`.
 - Control layer: `decisions.md` (D-001..D-022), `repository_structure.md`, `snapshot_workflow.md`.
 - Working layer: `source_of_truth.md`, `current_state.md`, `tasks.md`, `cycle_plan.md`, `ideas.md`.
-- Knowledge layer: `reflection.md`, SKU files under `dev_docs/current/05_knowledge/skus/` (cycle-coded: `v0.1.0.md` SKU-01-01…25 with v0.1.1 merged, `v0.2.0.md` SKU-02-01…04).
+- Knowledge layer: `reflection.md`, SKU files under `dev_docs/current/05_knowledge/skus/` (cycle-coded: `v0.1.0.md` SKU-01-01…25 with v0.1.1 merged, `v0.2.0.md` SKU-02-01…04, `v0.3.0.md` SKU-03-01…03).
 - GitHub remote `origin` → github.com/detanaputra/Project_Stella.
 - `dev_docs/snapshots/cycle_1_close/` and `dev_docs/snapshots/cycle_2_close/` — frozen handoffs of the cycle-1 and cycle-2 close states.
 

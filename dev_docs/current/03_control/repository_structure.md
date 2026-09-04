@@ -59,6 +59,7 @@ This note is a **reusable control note**. Update it in the same change as any st
 | `dev_docs/llm_guidance/sku_instruction.md` | SKU definition | Distilled from arXiv 2603.25660; `guide.md` removed |
 | `dev_docs/current/05_knowledge/skus/v0.1.0.md` | SKU knowledge units | 25 SKUs (SKU-01-01…25, cycle-coded; combined from 36 original; v0.1.1 merged here) |
 | `dev_docs/current/05_knowledge/skus/v0.2.0.md` | SKU knowledge units | 4 SKUs (SKU-02-01…04, cycle-coded; from the design-changing commits of Cycle 2) |
+| `dev_docs/current/05_knowledge/skus/v0.3.0.md` | SKU knowledge units | 3 SKUs (SKU-03-01…03, cycle-coded; WP1 — visualisation tabs) |
 | `dev_docs/current/05_knowledge/reflection.md` | reflection | Created from cycle learnings |
 | `dev_docs/current/05_knowledge/references.md` | references | SHAPR papers + project guides |
 | `dev_docs/current/05_knowledge/paper.md` | paper | Working draft toward the research write-up |

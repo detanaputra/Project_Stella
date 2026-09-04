@@ -87,10 +87,10 @@ When choosing between options:
 ## Cycle 3 Implementation Tasks (v0.3.0)
 
 ### WP1 — Static viz service + visualisation tabs
-- [ ] `to_dict()` → matplotlib converter (dispatch on trace type: scatter, heatmap, bar, dendrogram) for the 5 visualisations
-- [ ] add 5 viz tabs (topics, heatmap, barchart, hierarchy, term_rank) to the main Notebook after Metrics, shown only when a result exists
-- [ ] lazy (on-demand) static chart generation per tab
-- [ ] "Open interactive" button per tab → opens the Plotly HTML in the default browser
+- [x] `to_dict()` → matplotlib converter (dispatch on trace type: scatter, heatmap, bar, dendrogram) for the 5 visualisations
+- [x] add 5 viz tabs (topics, heatmap, barchart, hierarchy, term_rank) to the main Notebook after Metrics, shown only when a result exists
+- [x] pre-generate all 5 static PNGs + 5 offline HTML files in the pipeline after metrics (replaced the original lazy/on-click design)
+- [x] "Open interactive" button per tab → opens the Plotly HTML in the default browser (served over a local http://localhost server)
 
 ### WP2 — Layout restructure
 - [ ] remove the toolbox panel
