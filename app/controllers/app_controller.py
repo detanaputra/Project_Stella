@@ -190,6 +190,24 @@ class AppController:
             self.appState.analysis_status = ""
             self.appState.notify()
 
+    def get_static_chart_path(self, viz_name: str) -> Optional[str]:
+        """Return the pre-generated static chart PNG path for a visualization,
+        or None if no result/chart exists (v0.3.0, WP1)."""
+        result = self.appState.current_result
+        if result is None:
+            return None
+        return result.metadata.get("static_chart_paths", {}).get(viz_name)
+
+    def open_interactive_viz(self, viz_name: str) -> None:
+        """Open the pre-generated offline HTML for a visualization in the
+        default browser (v0.3.0, WP1)."""
+        result = self.appState.current_result
+        if result is None:
+            return
+        path = result.metadata.get("viz_files", {}).get(viz_name)
+        if path:
+            self.visualizer.open_visualization(path)
+
     def export_csv(self, output_path: str) -> None:
         """Export the current TopicResult to CSV."""
         if self.appState.current_result:

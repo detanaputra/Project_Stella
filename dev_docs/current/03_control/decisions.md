@@ -163,9 +163,9 @@ Release procedure: merge to `main` → verify every commit reached `main` → de
 #### Rationale
 Verifying before deleting prevents silent work loss; branching fresh from `main` gives a clean baseline for the next release.
 
-### D-018: `ROADMAP.md` as the categorized version feature record
+### D-018: `cycle_plan.md` as the categorized version feature record (formerly `ROADMAP.md`)
 - **Status:** active
-- **Decision:** `ROADMAP.md` documents the v0.1.0 feature set under six level-3 categories; the v0.2.0 section left empty. — commit `50ec71c`
+- **Decision:** `cycle_plan.md` (formerly `ROADMAP.md`) documents the v0.1.0 feature set under six level-3 categories; the v0.2.0 section left empty. — commit `50ec71c`
 - **Rationale:** Categorized, versioned features make the roadmap scannable and scaffold the next version.
 
 ### D-019: Normalize BERTopic output shape before mapping documents
@@ -208,3 +208,15 @@ Verifying before deleting prevents silent work loss; branching fresh from `main`
 - **Rationale:** The mechanism's cost is bounded by the cheapest subscriber; expensive work never belongs in a subscriber. A full event-type system is overkill at this scale.
 - **Consequences:** Subscribers must be written cheap (guard pattern); no `AppState` change now.
 - **Review Trigger:** When the panel count grows enough that the guard pattern feels repetitive, revisit field-level filtering.
+
+---
+
+## Cycle 3 Decisions
+
+### D-023: In-app visualisation tabs — static matplotlib via Plotly `to_dict()`, pre-generated in the pipeline, interactive HTML served over localhost
+- **Status:** active
+- **Context:** The user wanted the BERTopic visualisations *inside* the app as tabs, not only opened in the browser. BERTopic's `visualize_*` methods return Plotly figures only; rendering them statically in Tk requires a browser engine (kaleido needs a plotly upgrade plus an installed Chrome; embedding a browser widget is heavy) — all conflicting with the app's lightweight design. The first design (lazy generation on tab open, HTML generated on click) made the tabs slow and caused intermittent blank browser tabs.
+- **Decision:** Bring the visualisations in-app as static tabs via three coupled choices: (1) read the rendered data out of each Plotly figure with `fig.to_dict()` and re-plot it with matplotlib (already pinned), dispatching on trace type — no new dependency; (2) pre-generate all 5 static PNGs + 5 offline HTML files in the training pipeline, right after the quality metrics, so the tabs and "Open interactive" are instant and the HTML files are stable; (3) serve the interactive HTML over a tiny local HTTP server (127.0.0.1, ephemeral port, daemon thread) and open `http://localhost/<file>` in the browser — `file://` URLs intermittently open blank tabs.
+- **Rationale:** A research GUI gets the most value from an in-app static preview of every visualisation plus an "Open interactive" button for the real Plotly figure, without shipping a browser engine. Front-loading the expensive once-only work into the wait the user already endures (training) makes every interaction instant. Browsers navigate to `http://localhost` reliably.
+- **Consequences:** The pipeline takes a few extra seconds (≈2s on the sample corpus); the 5 viz tabs appear when a result exists; the pywebview separate-process route (D-009) is no longer used by any view and is kept only until the new path is confirmed working.
+- **Review Trigger:** If training time becomes a concern for large corpora, revisit pre-generation (lazy/on-demand). If packaging (PyInstaller) changes process behavior, re-verify the localhost server.

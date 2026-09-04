@@ -1,0 +1,32 @@
+flowchart TD
+    subgraph Cycle Closing
+    cc_1[Capture snapshot]
+    cc_2[Final commit and push]
+    cc_3[Pull request from web UI]
+    cc_4[Clear context and start new session]
+    end
+    cc_1-->cc_2-->cc_3-->cc_4
+
+    subgraph Handoff Instruction
+    hi_1[All workpackage done and commited]
+    hi_2[Handoff preparation]
+    hi_3[Drift resolution]
+    hi_4[Create cycle_n+1.md]
+    hi_5[Create cycle_n+1_review.md]
+    end
+    hi_1-->hi_2
+    hi_2-->hi_3
+    hi_3-->hi_4-->hi_5
+
+    subgraph Development
+    d_1[Combine tasks into workpackage]
+    d_2[execute workpackage]
+    d_3[Commit workpackage]
+    d_4[Document SKU with reference to commit id]
+    end
+    d_1-->d_2-->d_3-->d_4
+
+    subgraph Ideas
+    %% current/04_working
+    ideas.md--LLM refined-->cycle_plan.md--LLM formalize-->tasks.md
+    end

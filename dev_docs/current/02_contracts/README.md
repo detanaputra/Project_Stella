@@ -13,7 +13,7 @@ Assigns each contract **role** to its authoritative artefact. The actual contrac
 | Data contracts (schemas / fields) | `api.md` + `app/models/topic_result.py`, `app/models/app_state.py` | In place |
 | Parameter contract (algorithm hyperparameters) | `bertopic_hyperparams.md` (this folder) | In place |
 | Code map (note↔code) | `code_map.md` (this folder) | ✅ created |
-| Naming conventions | *(missing — no dedicated note)* | **Gap** |
+| Naming conventions | `naming_conventions.md` (this folder) | ✅ created |
 
 ## Drift rule
 
@@ -26,5 +26,5 @@ If code and contract disagree → the disagreement is **drift**. The current tas
 
 ## Open gaps
 
-1. **`naming_conventions.md`** — a naming-rules note (file/module/function naming) does not exist yet.
+1. ~~**`naming_conventions.md`** — a naming-rules note (file/module/function naming) does not exist yet.~~ — resolved: created.
 2. **`data_contracts.md` as a standalone note** — currently folded into `api.md`; consider extracting if it grows.

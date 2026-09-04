@@ -77,4 +77,4 @@ Write the review **from the perspective of a fresh reader/chat examining the art
 
 ## Mapping to this project (Stella)
 
-Stella currently documents by **version** (v0.1.0, v0.1.1), not by cycle. If you add cycle structure: v0.1.0 maps naturally to a *build cycle* and v0.1.1 to an *audit-and-release cycle*. Each would get a `cycle_N.md` + `cycle_N_review.md` under `dev_docs/cycle_record_notes/`.
+The current cycle records and reviews live under `dev_docs/cycle_record_notes/` (`cycle_N.md` + `cycle_N_review.md`). For the live state, see `dev_docs/current/04_working/current_state.md` — this guidance file does not track it.

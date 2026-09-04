@@ -16,7 +16,7 @@ Setup, testing, building, and deployment instructions.
 ```bash
 # Clone repository
 git clone https://github.com/detanaputra/Project_Stella.git
-cd bertopic-gui
+cd Project_Stella
 
 # Create virtual environment
 python -m venv venv
@@ -31,44 +31,24 @@ pip install -r requirements-dev.txt  # For testing, linting, etc.
 
 ### requirements.txt
 
+Pinned to the installed set (D-008) — reproducibility is non-negotiable for a tool shipped to researchers.
+
 ```
-# Core
-ttkbootstrap==1.6.1
-BERTopic==0.15.0
-pandas>=2.0.0
-numpy>=1.24.0
-
-# Visualization
-matplotlib>=3.7.0
-seaborn>=0.12.0
-plotly>=5.14.0
-
-# Future algorithms
-gensim>=4.3.0
-scikit-learn>=1.3.0
-
-# Utilities
-python-dotenv>=1.0.0
+ttkbootstrap==2.2.0
+bertopic==0.17.4
+pandas==2.2.2
+numpy==1.26.4
+matplotlib==3.9.2
+seaborn==0.13.2
+plotly==5.24.1
+scikit-learn==1.7.1
+gensim==4.3.3
+pywebview==5.2.1
 ```
 
 ### requirements-dev.txt
 
-```
--r requirements.txt
-
-# Testing
-pytest>=7.4.0
-pytest-cov>=4.1.0
-
-# Linting & formatting
-black>=23.0.0
-flake8>=6.0.0
-isort>=5.12.0
-mypy>=1.5.0
-
-# Debugging
-ipdb>=0.13.0
-```
+Not present yet — no committed test/lint tooling exists. When added, it would extend `requirements.txt` with pytest, black, flake8, isort, and mypy.
 
 ---
 
@@ -89,6 +69,8 @@ DEBUG=1 python main.py
 ---
 
 ## Testing
+
+> **Status:** no committed `tests/` suite exists yet — correctness is verified with ad-hoc headless smoke tests. The layout below is the intended structure for when the suite is added.
 
 ### Run All Tests
 
@@ -140,7 +122,7 @@ tests/
 ```python
 # tests/test_models/test_app_state.py
 import pytest
-from models.app_state import AppState
+from app.models.app_state import AppState
 
 def test_app_state_initialization():
     """Test AppState initializes with defaults"""
@@ -167,8 +149,8 @@ def test_app_state_subscribe():
 ```python
 # tests/test_controllers/test_app_controller.py
 import pytest
-from models.app_state import AppState
-from controllers.app_controller import AppController
+from app.models.app_state import AppState
+from app.controllers.app_controller import AppController
 from tests.fixtures import sample_csv_path
 
 def test_on_file_selected():
@@ -340,10 +322,10 @@ export HTTP_PROXY=http://proxy.example.com:8080
 export HTTPS_PROXY=https://proxy.example.com:8080
 ```
 
-### Tests Fail with "No module named 'models'"
+### Tests Fail with "No module named 'app'"
 
 ```bash
-# Add project root to PYTHONPATH
+# Run pytest from the project root (where the `app/` package lives)
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 pytest
 ```
@@ -377,7 +359,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements-dev.txt
+        pip install -r requirements.txt
     
     - name: Run tests
       run: pytest --cov
@@ -425,7 +407,7 @@ def train_model(texts, params):
 
 ### Checklist
 
-- [ ] Create `models/algorithms/your_algo.py`
+- [ ] Create `app/models/algorithms/your_algo.py`
 - [ ] Implement `BaseAlgorithm` (train, get_default_params, get_param_schema, algorithm_name)
 - [ ] Add to `AVAILABLE_ALGORITHMS` registry in `__init__.py`
 - [ ] Write unit tests in `tests/test_models/test_algorithms/test_your_algo.py`
@@ -437,12 +419,12 @@ def train_model(texts, params):
 
 ```bash
 # 1. Create file
-touch models/algorithms/nmf.py
+touch app/models/algorithms/nmf.py
 
 # 2. Implement NMFAlgorithm (follow API.md BaseAlgorithm contract)
 
 # 3. Update registry
-# In models/algorithms/__init__.py:
+# In app/models/algorithms/__init__.py:
 # AVAILABLE_ALGORITHMS['NMF'] = NMFAlgorithm
 
 # 4. Test

@@ -53,6 +53,15 @@ From the audit-based review (`dev_docs/cycle_record_notes/cycle_1_review.md` §4
 - **A render guard keyed on `None` collides with "no result yet".** The MetricPanel's first render was skipped until a sentinel distinct from `None` was used (D-014 pattern).
 - **The single-event observer stays cheap when subscribers guard.** Expensive work belongs in controllers' background threads; subscribers compare the field they care about and skip work if unchanged.
 
+## Cycle 3 Consolidated Quick Capture
+
+- **Explore-before-build pays off.** The `to_dict()` feasibility probe in the notebook came before any design commitment — it ruled out kaleido (plotly upgrade + Chrome) and made the intertopic map easy. A cheap Explore check (can we read the rendered data?) saved the Build phase from a wrong dependency and a wrong strategy.
+- **Design evolves through Use, not just upfront.** The lazy→pre-generation and `file://`→localhost changes came from real-app testing, not the initial design. The Use phase surfaced what the design could not anticipate (slow tabs, blank browser windows) — the cycle loop working as intended.
+- **Front-load expensive once-only work into the wait the user already endures.** Pre-generating during training (≈2s) made every tab and click instant. The principle generalises: batch once-only work into an existing wait rather than spreading it across interactions.
+- **SKU triage is about the user's point of view.** "No trivia, only meaningful information, specifically from the user's point of view" — SKUs should capture user-visible decisions and transferable insights, not implementation gotchas (colormaps, color-string parsing).
+- **Formalising the ideation flow gave the cycle a clean front door.** ideas.md (raw) → cycle_plan.md (refined) → tasks.md (committed) meant the scope was decided before any code.
+- **The human's cognitive workflows are worth capturing, not delegating.** The handoff/development/ideas flows in `workflow.mmd` are the real work the human does; documenting them keeps the human the epistemic authority.
+
 ## Reflection — SKU consolidation: a numbering scheme is a contract
 
 The v0.1.0/v0.1.1 SKUs were too micro (25 + 11, many trivial). Consolidating to design-changing commits only (25 across cycle 1, 4 for cycle 2) and switching to cycle-coded IDs (`SKU-01-NN`, `SKU-02-NN`) made the knowledge layer scannable and aligned with the triage rule. The cost: the merge required updating every cross-reference (cycle records, repository structure, reflection, llm_guidance) — a reminder that a numbering scheme is a contract, and changing it has a documentation ripple.

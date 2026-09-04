@@ -6,7 +6,7 @@
 
 A read-only audit of the Cycle 1 build (run 2026-08-17 → 2026-08-18, reconstructed as 10 SKUs, SKU-01-16…25, in `dev_docs/current/05_knowledge/skus/v0.1.0.md`) read all 45 Python files plus the docs and training notebook and found **22 findings**: H1–H6 (high), M1–M8 (medium), L1–L8 (low). The BERTopic **parameter plumbing** between UI, state, and `train()` was the core risk. All 22 were fixed and released: v0.1.0 merged to `main`, the `v0.2.0` branch created, and `ROADMAP.md` documents the released feature set.
 
-**Evidence:** `audit.md` (root) — the complete findings list with fix statuses that underpins this review.
+**Evidence:** `dev_docs/snapshots/cycle_1_close/audit.md` — the complete findings list with fix statuses that underpins this review.
 
 ## 1. What Went Well
 

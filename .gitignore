@@ -48,3 +48,6 @@ Thumbs.db
 
 # example of SHAPR documentations
 dev_docs/example_docs/
+
+# workspace
+*.code-workspace

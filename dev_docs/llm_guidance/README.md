@@ -13,6 +13,20 @@ Provenance: these files distill the conventions from `dev_docs/example_docs/` (a
 - **Capture lightweight notes during work (append-first); consolidate at checkpoints and cycle end.** Never reconstruct everything from memory at the end of a project.
 - An SKU turns *"I asked AI"* into *"I evaluated an AI-generated artefact against constraints."* It is evidence, not prose.
 
+## Hands-off areas
+
+`mmd_charts/` and `notebooks/` are the human's **personal working directory** — for experimenting with and learning the codebase manually, without LLM help. **Do not touch, modify, or archive them unless the human explicitly asks.** They are not part of the SHAPR documentation or the app code.
+
+## Expected evidence
+
+What counts as evidence in SHAPR (from the canonical papers, arXiv `2602.12443` and `2603.25660`):
+
+- **The repository is the evidence layer.** Evidence is the *translation* of an interaction into artefact changes, documented in the repo — source code, cycle records, decisions, SKUs, snapshots, evaluation data. Git commits support traceability of artefact changes.
+- **Chat transcripts are not required evidence.** Interaction with an AI becomes research evidence only when translated into artefact changes and documented in the repository. Conversations are "cognitive scaffolding" — optional raw material, not the formal record.
+- **Evidence types** (per `2602.12443` Table 4): source code; configuration/environment files; prompts and AI interaction records; planning/PRD documentation; design sketches and architectural notes; evaluation notes and test records; reflective journals and analytic memos; version history/change logs.
+- **Lightweight and tool-agnostic.** No specific logging tool or format is mandated; reflective notes linked to specific artefact versions are sufficient.
+- **SKU evidence.** Attach the git commit hash and/or code `file:line`; a chat-transcript reference is optional raw proof, never a substitute for the documented artefact.
+
 ## Component index — load what you need
 
 | Component | File | Use when |
@@ -27,11 +41,6 @@ Provenance: these files distill the conventions from `dev_docs/example_docs/` (a
 | System & contracts | `system_contracts_instruction.md` | Maintaining design/spec notes (`01_system`) or interface contracts (`02_contracts`) |
 | Tags, links, IDs, evidence | `conventions_instruction.md` | Any file — the cross-cutting taxonomy and linking rules |
 
-## Current state of this project (Stella)
+## Current state
 
-- **Code:** `app/` (ttkbootstrap MVC — models/views/controllers). Supporting docs: `claude.md`, `dev_docs/current/01_system/architecture.md`, `dev_docs/current/02_contracts/api.md`, `dev_docs/current/03_control/development.md`, `ROADMAP.md`, `audit.md`.
-- **Interaction log:** `logs.md` (+ raw transcripts under `logs/`). This is the *raw data* source for SKUs.
-- **Current SKU files:** `dev_docs/current/05_knowledge/skus/v0.1.0.md` (SKU-01-01…25, cycle-coded; v0.1.1 merged here) and `dev_docs/current/05_knowledge/skus/v0.2.0.md` (SKU-02-01…04) — cycle-coded IDs, one SKU per design-changing commit, timestamped.
-- **Working/control scaffolding in place:** `dev_docs/current/04_working/` (`source_of_truth.md`, `current_state.md`, `tasks.md`), `dev_docs/current/03_control/` (`decisions.md` D-001…D-019, `repository_structure.md`, `snapshot_workflow.md`), `dev_docs/current/02_contracts/` (`code_map.md`, contract index), `dev_docs/current/05_knowledge/` (`reflection.md`, `references.md`), `dev_docs/cycle_record_notes/` (cycle_1 + review), `dev_docs/snapshots/cycle_1_close/`.
-- **Remaining gaps vs the example:** no `paper.md`; no `naming_conventions.md`; `ROADMAP.md` ≈ `cycle_plan.md` but version-oriented; evidence links on v0.1.0 SKUs pending (no commits recorded in that log); tags not yet applied across files.
-- **Example vault:** `dev_docs/example_docs/` was removed after being distilled into these instruction files; the old snapshot at `dev_docs/snapshots/cycle_1_close/` still preserves the original layout.
+This folder is **guidance only** — it does not track the project's current state. For live state, see the authoritative working docs: `dev_docs/current/04_working/current_state.md` (active phase), `dev_docs/current/04_working/source_of_truth.md` (file authority), and `dev_docs/current/03_control/repository_structure.md` (repo layout).

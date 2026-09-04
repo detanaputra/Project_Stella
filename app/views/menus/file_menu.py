@@ -15,9 +15,24 @@ class FileMenu(BaseMenu):
         file_menu.add_command(label="Save Project", command=self._on_save)
         file_menu.add_command(label="Load Project", command=self._on_load)
         file_menu.add_separator()
+        file_menu.add_command(label="Export...", command=self._on_export)
+        file_menu.add_command(label="Settings...", command=self._on_settings)
+        file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.root.quit)
 
         return file_menu
+
+    def _on_export(self) -> None:
+        """Open the Export panel in a dialog (v0.3.0, WP2)."""
+        from app.views.main_window import MainWindow
+        if isinstance(self.root, MainWindow):
+            self.root.open_export_dialog()
+
+    def _on_settings(self) -> None:
+        """Open the App Settings (theme switcher) in a dialog (v0.3.0, WP2)."""
+        from app.views.main_window import MainWindow
+        if isinstance(self.root, MainWindow):
+            self.root.open_settings_dialog()
 
     def _on_new(self) -> None:
         """Launch the Topic Model Creation Wizard."""

@@ -1,4 +1,29 @@
-# App Development Roadmap
+# Cycle Plan
+
+#working #plan #cycles
+
+The multi-cycle roadmap. Each version/cycle entry uses the cycle_plan form (goal / outcomes / focus / success signal / status). Raw, undeveloped ideas live in `ideas.md` and are promoted here once refined.
+
+## Version 0.3.0
+
+### Main goal
+Bring the BERTopic visualisations into the app as in-app tabs and restructure the main-window layout.
+
+### Main outcomes
+- 5 visualisation tabs (topics, heatmap, barchart, hierarchy, term_rank) in the main Notebook, after Metrics, shown only when a result exists
+- Each tab: a static matplotlib chart (from Plotly `to_dict()` data) + an "Open interactive" button that opens the Plotly HTML in the default browser
+- All 5 static PNGs + 5 offline HTML files pre-generated in the pipeline after metrics (tabs and "Open interactive" are instant; the HTML files are stable)
+- Layout restructure: toolbox removed; parameter panel moved to a persistent left column; Export and Settings become top-level panels under File Menu (theme switcher stays in the Settings panel)
+
+### Primary focus
+- In-app visualisation tabs (static matplotlib via `to_dict()`)
+- Main-window layout restructure
+
+### Success signal
+A user can open each of the 5 visualisations as a tab inside the app, see a static chart, and click "Open interactive" to get the full Plotly figure in the browser — with the toolbox gone and parameters on the left.
+
+### Status
+Completed and ready to close.
 
 ## Version 0.2.0
 
@@ -101,3 +126,13 @@ Completed.
 - Exception-isolated event processing so one bad callback cannot freeze the UI
 - Parameter validation: UMAP neighbor clamping for small corpora, n-gram range clamping
 - Offline-capable visualizations (plotly.js embedded, no CDN required)
+
+## Working Principles
+
+- Small controlled enhancements over uncontrolled expansion.
+- Note consolidation is a checkpoint activity, not continuous.
+- Prefer the smaller, more traceable implementation that gets the next working step done cleanly.
+
+## Review Rule
+
+Review this plan at cycle end, on major shifts, or when drift recurs.
