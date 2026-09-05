@@ -40,6 +40,10 @@ class TopicResult:
     # Topic quality evaluation, computed by the pipeline after training (not by
     # the algorithm itself). One value per metric, averaged across topics.
     # Example: {'npmi': 0.12, 'c_v': 0.45, 'u_mass': -3.2, 'topic_diversity': 0.78}
+
+    topic_labels: Optional[Dict[int, str]] = None
+    # User-provided names/interpretations per topic, set via topic refinement
+    # (v0.4.0, WP1). Maps topic_id -> label; shown in the topics table.
 ```
 
 ---
@@ -122,6 +126,8 @@ class BaseAlgorithm(ABC):
 ```
 
 **Registered algorithms** (`app/models/algorithms/__init__.py`): `AVAILABLE_ALGORITHMS = {'BERTopic': BERTopicAlgorithm}`. Only BERTopic is registered today; `get_algorithm(name)` raises `ValueError` for unknown names.
+
+**BERTopic refinement** (v0.4.0, WP1): `BERTopicAlgorithm` adds `merge_topics(result, topic_ids)` and `delete_topics(result, topic_ids)` — both mutate the model via BERTopic's native `merge_topics`/`delete_topics` and return an updated `TopicResult` (documents of deleted topics → outlier -1).
 
 ---
 
@@ -295,6 +301,19 @@ class AppController:
     def open_interactive_viz(self, viz_name: str) -> None:
         """Open the pre-generated offline HTML for a visualization in the
         default browser (the "Open interactive" button on the static viz tabs)."""
+
+    # Topic refinement (v0.4.0, WP1)
+    def merge_topics(self, topic_ids: List[int]) -> None:
+        """Merge the selected topics into one; re-derives metrics + viz in a
+        background thread (the view shows the loading panel)."""
+
+    def delete_topics(self, topic_ids: List[int]) -> None:
+        """Delete the selected topics (documents → outlier -1); re-derives
+        metrics + viz in a background thread."""
+
+    def label_topic(self, topic_id: int, label: str) -> None:
+        """Store a user interpretation for a topic (no model mutation; the
+        topics table re-renders with the label)."""
 
     # Export
     def export_csv(self, output_path: str) -> None: ...

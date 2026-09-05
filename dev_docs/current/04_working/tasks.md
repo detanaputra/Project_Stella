@@ -113,31 +113,39 @@ When choosing between options:
 
 ## Cycle 4 Implementation Tasks (v0.4.0)
 
-### Topic refinement
-- [ ] refactor: extract "build `TopicResult` from a fitted model" out of `BERTopicAlgorithm.train` into a reusable helper (shared by training and refinement; keeps the doc-topic probability mapping correct after `topic_mapper_` remaps ids)
-- [ ] implement refinement operations: delete via native `model.delete_topics([t])` (documents → outlier -1); merge via native `model.merge_topics(texts, [t1, t2, …])` (needs `result.metadata['texts']`)
-- [ ] implement label support: store `{topic_id: label}` on the result; show the label in the topics table
-- [ ] implement the re-derive pipeline: rebuild `TopicResult` (topics, doc_topics, `model_info`) → recompute `quality_metrics` → regenerate 5 PNGs + 5 HTMLs → update `state.current_result` (background thread + loading panel)
-- [ ] add controller methods for merge/delete/label that run the re-derive pipeline
-- [ ] SummaryPanel: add a leading checkbox column (☐/☑ glyph toggle) to the topics table; clicking anywhere on a row toggles; mirror into native selection (`selectmode="none"`, `selection_add`/`selection_remove`) for row highlight
-- [ ] SummaryPanel: add an icon-only toolbar (ttkbootstrap `icon=` + `icon_only=True`) after the basic stats, before the topics table — merge (`git-merge`), delete (`trash`), label (`tag`)
-- [ ] button enablement: all disabled by default; delete enabled when 1+ topics selected; merge enabled when 2+ topics selected; label enabled when exactly 1 topic selected
-- [ ] confirmation dialogs for merge and delete; run the pipeline only after the user confirms
+### WP1 — Topic refinement
+- [x] refactor: extract "build `TopicResult` from a fitted model" out of `BERTopicAlgorithm.train` into a reusable helper (shared by training and refinement; keeps the doc-topic probability mapping correct after `topic_mapper_` remaps ids)
+- [x] implement refinement operations: delete via native `model.delete_topics([t])` (documents → outlier -1); merge via native `model.merge_topics(texts, [t1, t2, …])` (needs `result.metadata['texts']`)
+- [x] implement label support: store `{topic_id: label}` on the result; show the label in the topics table
+- [x] implement the re-derive pipeline: rebuild `TopicResult` (topics, doc_topics, `model_info`) → recompute `quality_metrics` → regenerate 5 PNGs + 5 HTMLs → update `state.current_result` (background thread + loading panel)
+- [x] add controller methods for merge/delete/label that run the re-derive pipeline
+- [x] SummaryPanel: add a leading checkbox column (☐/☑ glyph toggle) to the topics table; clicking anywhere on a row toggles; mirror into native selection (`selectmode="none"`, `selection_add`/`selection_remove`) for row highlight
+- [x] SummaryPanel: add a toolbar (ttkbootstrap `icon=` + `text=`, `icon_only=False`) after the basic stats, before the topics table — merge (`sign-merge-left`), delete (`trash`), label (`tag`)
+- [x] button enablement: all disabled by default; delete enabled when 1+ topics selected; merge enabled when 2+ topics selected; label enabled when exactly 1 topic selected
+- [x] confirmation dialogs for merge and delete; run the pipeline only after the user confirms
 
-### Retire pywebview
+### WP2 — Retire pywebview
 - [x] remove `request_visualization` + `_generate_visualization` + `_launch_bertopic_webview` from `app_controller.py`
 - [x] drop `pywebview==5.2.1` from `requirements.txt`
 - [x] remove `multiprocessing.freeze_support()` from `main.py`
 
-### Metrics-tab explanations for beginners
+### WP3 — Metrics-tab explanations for beginners
 - [x] add plain-language explanations for each metric gauge (NPMI, C_V, UMass, Topic Diversity) in `metric_panel.py`
 
-### Fix dialog placement
+### WP3 — Fix dialog placement
 - [x] anchor the Export/Settings dialogs to the centre of the main window (`open_export_dialog` / `open_settings_dialog` in `main_window.py`)
 
-### MVP option limiting
+### WP3 — MVP option limiting
 - [x] limit the sentence-transformer model options to `all-MiniLM-L6-v2` only (`bertopic_section.py`)
 - [x] limit the language option to English only (`bertopic_section.py`)
+
+### WP4 — Document exploration
+- [ ] store `original_texts` in the result metadata at training time (controller sets it after processing); carry it through refinement (`_build_result` + `merge_topics`/`delete_topics` copy it)
+- [ ] refactor the Document Assignments table columns to Doc Index · Document · Topic 1 · Prob 1 (drop the Topic 2/3 columns)
+- [ ] Document cell: first 50 chars normally; when searching, show the substring around the query match
+- [ ] add a search Entry + "Search" button above the Document Assignments table (not per-keystroke); case-insensitive substring match on the full document text; a "Clear" resets to all docs
+- [ ] add a "Detail" button (enabled when exactly one doc row is selected) that opens a centered Top-Level window
+- [ ] Detail window: shows Doc Index, all topic→probability pairs, and the full document in a scrollable read-only Text (paragraphs supported)
 
 ## Small Operational Tasks
 

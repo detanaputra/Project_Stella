@@ -1,9 +1,13 @@
-from typing import Any, Dict, Optional
+import threading
+from dataclasses import replace
+from typing import Any, Dict, List, Optional
 from app.models.app_state import AppState
 from app.models.services.data_loader import DataLoader
 from app.models.services.exporter import Exporter
 from app.models.services.visualizer import TopicVisualizer
 from app.models.services.project_service import ProjectService
+from app.models.services.topic_quality import compute_topic_quality
+from app.models.services.static_viz import save_static_charts
 from app.models.algorithms import get_algorithm
 
 
@@ -84,6 +88,70 @@ class AppController:
         path = result.metadata.get("viz_files", {}).get(viz_name)
         if path:
             self.visualizer.open_visualization(path)
+
+    # Topic refinement (v0.4.0, WP1)
+    def merge_topics(self, topic_ids: List[int]) -> None:
+        """Merge the selected topics into one; re-derives metrics + viz."""
+        result = self.appState.current_result
+        if result is None:
+            return
+        self._start_refinement(
+            lambda: get_algorithm(self.appState.selected_algorithm).merge_topics(result, topic_ids)
+        )
+
+    def delete_topics(self, topic_ids: List[int]) -> None:
+        """Delete the selected topics (documents → outlier -1); re-derives metrics + viz."""
+        result = self.appState.current_result
+        if result is None:
+            return
+        self._start_refinement(
+            lambda: get_algorithm(self.appState.selected_algorithm).delete_topics(result, topic_ids)
+        )
+
+    def label_topic(self, topic_id: int, label: str) -> None:
+        """Store a user interpretation for a topic (no model mutation)."""
+        result = self.appState.current_result
+        if result is None:
+            return
+        labels = dict(result.topic_labels or {})
+        labels[topic_id] = label
+        self.appState.current_result = replace(result, topic_labels=labels)
+        self.appState.notify()
+
+    def _start_refinement(self, mutate) -> None:
+        """Run a refinement (mutate model → re-derive metrics + viz) in a background thread."""
+        self.appState.analysis_in_progress = True
+        self.appState.analysis_status = "Refining topics..."
+        self.appState.notify()
+        threading.Thread(target=self._refine_worker, args=(mutate,), daemon=True).start()
+
+    def _refine_worker(self, mutate) -> None:
+        """Background: mutate the model, rebuild the result, re-derive metrics + viz."""
+        try:
+            new_result = mutate()
+            try:
+                top_n = int(self.appState.algorithm_params.get('bertopic_top_n_words', 10))
+                new_result.quality_metrics = compute_topic_quality(
+                    new_result.topics, new_result.metadata.get('texts', []), top_n=top_n)
+            except Exception:
+                new_result.quality_metrics = None
+            try:
+                new_result.metadata['static_chart_paths'] = save_static_charts(
+                    new_result.metadata.get('model'), self.visualizer.output_dir)
+                new_result.metadata['viz_files'] = self.visualizer.visualize(
+                    new_result, self.appState.selected_algorithm)
+            except Exception:
+                new_result.metadata['static_chart_paths'] = {}
+                new_result.metadata['viz_files'] = {}
+            self.appState.current_result = new_result
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            self.appState.analysis_error = f"Refinement failed: {str(e)}"
+        finally:
+            self.appState.analysis_in_progress = False
+            self.appState.analysis_status = ""
+            self.appState.notify()
 
     def export_csv(self, output_path: str) -> None:
         """Export the current TopicResult to CSV."""
