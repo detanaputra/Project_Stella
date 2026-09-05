@@ -23,7 +23,7 @@ Bring the BERTopic visualisations into the app as in-app tabs and restructure th
 A user can open each of the 5 visualisations as a tab inside the app, see a static chart, and click "Open interactive" to get the full Plotly figure in the browser — with the toolbox gone and parameters on the left.
 
 ### Status
-Completed and ready to close.
+Completed.
 
 ## Version 0.2.0
 

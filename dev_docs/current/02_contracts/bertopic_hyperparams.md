@@ -3,7 +3,7 @@
 1. implement the views/wizard/panel_hyperparams.py according to the configuration section below. Each Subsection (BERTopic, UMAP, and HDBSCAN) must be implemented in each Labelframe container and give label according to the name of its subsection. 
 2. implement each subsection in different file for easier maintainability and put it inside the same folder. 
 3. Pass the hyperparameter setting value to each object in bertopic.py, specifically in train() function. 
-4. implement these hyperparameter configuration input in views/panels/settings_panel.py. if possible, use the same files to display each subsection that you just created in the step 2.
+4. implement these hyperparameter configuration inputs in the main-window settings panel — `views/panels/algorithm_settings_panel.py`. Reuse the same subsection files from step 2 there and in the wizard's `views/wizard/panel_hyperparams.py`.
 
 
 ## Configuration:
@@ -60,7 +60,7 @@ default: False
 calculate_probabilities
 name: calculate_probabilities
 implementation: Checkbutton
-default: False
+default: True
 
 ### UMAP
 n_neighbors
@@ -91,6 +91,13 @@ default: False
 ### HDBSCAN
 min_samples
 name: min_samples
+implementation: Spinbox
+min: 1
+max: 100
+default: 10
+
+min_cluster_size
+name: min_cluster_size
 implementation: Spinbox
 min: 1
 max: 100

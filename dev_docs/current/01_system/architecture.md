@@ -206,7 +206,7 @@ VIEW (SummaryPanel re-renders)
 **Responsibility:** Display data, listen to state changes, delegate actions to controller
 
 **What belongs here:**
-- ttkbootstrap panels (ToolboxPanel, SummaryPanel, MetricPanel, AlgorithmSettingsPanel, LoadingPanel, ExportPanel, wizard panels)
+- ttkbootstrap panels (StaticVizPanel, SummaryPanel, MetricPanel, AlgorithmSettingsPanel, LoadingPanel, ExportPanel, wizard panels)
 - Layout & styling
 - Widget creation
 - Subscribe to AppState.subscribe()

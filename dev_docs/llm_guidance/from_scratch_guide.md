@@ -75,7 +75,7 @@ On a real discovery — a bug with a surprising cause, an architectural choice w
 3. **Observation** — what happened when it ran.
 4. **Learning** — *why* it happened and why future-you should care.
 
-Give each card a number (`SKU-001`, `SKU-002`, …) that **never restarts** across the whole project, so a commit message or the final write-up can point to "card #7".
+Give each card a number (`SKU-001`, `SKU-002`, …) that **never restarts** across the whole project, so a commit message or the final write-up can point to "card #7". (Stella refines this to **cycle-coded** IDs — `SKU-<cycle>-<number>`, restarting per cycle, e.g. `SKU-03-04`; see `sku_instruction.md` for the exact convention.)
 
 **The important bit: don't write a card for everything.** Cards are for decisions or lessons with a reason. Changing a slider's thickness, adding an ignore file, bumping a version — trivial; those go on `tasks.md`, not the knowledge cards. If it wouldn't change how you'd do things later, it's not a card.
 

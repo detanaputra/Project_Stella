@@ -43,7 +43,7 @@ When adding LDA/NMF — confirm the abstraction still fits without per-algorithm
 
 ### D-002: 4-step wizard setup flow
 - **Status:** active
-- **Decision:** Non-technical users set up a model through a 4-step wizard (algorithm/file → preview → hyperparameters → summary), not one dense form.
+- **Decision:** Non-technical users set up a model through a 4-step wizard (algorithm/file → hyperparameters → preview → summary; the "Default Settings" option skips the hyperparameters step), not one dense form.
 - **Rationale:** Sequential steps lower cognitive load for researchers without programming skills.
 
 ### D-003: Transient UI (loading panel) owned by `MainWindow`, driven by state

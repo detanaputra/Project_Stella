@@ -102,4 +102,4 @@ This note is a **reusable control note**. Update it in the same change as any st
 6. ~~`claude.md` duplicate~~ — resolved: single tracked file (lowercase `claude.md`), no duplicate.
 7. SKU files triaged + cycle-coded IDs applied; v0.1.0 evidence links added (build SKUs → `7b88c71`/`f0573ff`; audit-fix SKUs → their own commits).
 8. ~~`naming_conventions.md` (contracts)~~ and ~~`paper.md` (knowledge)~~ — resolved: created in `02_contracts/` and `05_knowledge/`.
-9. `dev_docs/snapshots/cycle_1_close/` and `dev_docs/snapshots/cycle_2_close/` are the cycle snapshots taken so far; subsequent cycles should follow `snapshot_workflow.md`.
+9. ~~Snapshots taken so far~~ — resolved: `dev_docs/snapshots/cycle_1_close/`, `cycle_2_close/`, and `cycle_3_close/` exist (cycle-3 close snapshot taken at the v0.3.0 release); subsequent cycles follow `snapshot_workflow.md`.

@@ -102,8 +102,14 @@ When choosing between options:
 - [x] write `cycle_3.md` cycle record (drafted)
 - [x] write `cycle_3_review.md` (drafted)
 - [x] take the cycle-3 close snapshot (`dev_docs/snapshots/cycle_3_close/`)
-- [ ] release v0.3.0 to `main` (merge → verify → delete → fresh branch, D-017)
-- [ ] commit the cycle-close docs batch
+- [x] release v0.3.0 to `main` (merge → verify → delete → fresh branch, D-017) — PR #3 (`e646fe4`)
+- [x] commit the cycle-close docs batch (`be0a130`)
+
+## Cycle 4 Opening Tasks
+
+- [ ] decide Cycle 4 scope (per `ideas.md` Cycle 4 candidates — retire pywebview, topic refinement, metrics-tab plain-language explanations)
+- [ ] write the `cycle_plan.md` v0.4.0 section
+- [ ] update `current_state.md` for the cycle
 
 ## Deferred to Later Cycles
 

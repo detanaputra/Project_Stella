@@ -11,7 +11,7 @@ Define the naming rules for this project — files, modules, classes, functions,
 ### Files and modules
 
 - `snake_case.py` — e.g. `app_state.py`, `data_loader.py`, `algorithm_settings_panel.py`.
-- Package-per-layer: `app/models`, `app/views`, `app/controllers`; sub-packages by role (`app/models/services`, `app/views/panels`, `app/views/wizard`, `app/views/menus`, `app/views/panels/hyperparams`, `app/views/panels/visualizations`).
+- Package-per-layer: `app/models`, `app/views`, `app/controllers`; sub-packages by role (`app/models/services`, `app/views/panels`, `app/views/wizard`, `app/views/menus`, `app/views/panels/hyperparams`). (`panels/visualizations/` was removed in v0.3.0 WP2 — static-visualisation panels live directly under `panels/`.)
 
 ### Classes
 
@@ -20,7 +20,7 @@ Define the naming rules for this project — files, modules, classes, functions,
 
 | Role | Suffix | Examples |
 |---|---|---|
-| Panel (ttk.Frame) | `*Panel` | `SummaryPanel`, `MetricPanel`, `AlgorithmSettingsPanel`, `ToolboxPanel`, `ExportPanel`, `PreviewPanel`, `HyperparamPanel` |
+| Panel (ttk.Frame) | `*Panel` | `SummaryPanel`, `MetricPanel`, `AlgorithmSettingsPanel`, `StaticVizPanel`, `ExportPanel`, `PreviewPanel`, `HyperparamPanel` |
 | Modal overlay (Toplevel) | `*Panel` | `LoadingPanel` |
 | Controller | `*Controller` | `AppController`, `AnalysisController` |
 | Algorithm | `*Algorithm` | `BaseAlgorithm`, `BERTopicAlgorithm` |
