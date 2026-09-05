@@ -9,6 +9,7 @@ from app.views.wizard.panel_preview import PreviewPanel
 from app.views.wizard.panel_hyperparams import HyperparamPanel
 from app.views.wizard.panel_summary import SummaryPanel
 from app.views.panels.loading_panel import LoadingPanel
+from app.views.window_utils import center_on_parent
 
 class TopicModelWizard(Toplevel):
     """
@@ -18,12 +19,11 @@ class TopicModelWizard(Toplevel):
     def __init__(self, parent, state: AppState, app_controller: AppController, analysis_controller: AnalysisController):
         super().__init__(parent)
         self.title("Create New Topic Model")
-        self.geometry("700x500")
+        self.withdraw()  # keep hidden until positioned (v0.4.0, WP3)
         self.resizable(False, False)
 
         # Modal behavior
         self.transient(parent)
-        self.grab_set()
 
         self.parent = parent
         self.appState: AppState = state
@@ -32,6 +32,12 @@ class TopicModelWizard(Toplevel):
         self.current_step = 0
 
         self._build_ui()
+
+        # Position centered on the main window, then show (v0.4.0, WP3).
+        center_on_parent(self, parent, 700, 500)
+        self.deiconify()
+        self.grab_set()
+
         self._update_step()
 
     def _build_ui(self):

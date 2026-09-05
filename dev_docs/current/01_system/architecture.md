@@ -380,7 +380,7 @@ class BaseAlgorithm(ABC):
                 },
                 'embedding_model': {
                     'type': 'choice',
-                    'options': ['all-MiniLM-L6-v2', 'paraphrase-MiniLM-L6-v2'],
+                    'options': ['all-MiniLM-L6-v2'],  # MVP: single model only (v0.4.0, WP3)
                     'default': 'all-MiniLM-L6-v2',
                     'tooltip': 'Embedding model to use'
                 }

@@ -130,14 +130,14 @@ When choosing between options:
 - [x] remove `multiprocessing.freeze_support()` from `main.py`
 
 ### Metrics-tab explanations for beginners
-- [ ] add plain-language explanations for each metric gauge (NPMI, C_V, UMass, Topic Diversity) in `metric_panel.py`
+- [x] add plain-language explanations for each metric gauge (NPMI, C_V, UMass, Topic Diversity) in `metric_panel.py`
 
 ### Fix dialog placement
-- [ ] anchor the Export/Settings dialogs to the centre of the main window (`open_export_dialog` / `open_settings_dialog` in `main_window.py`)
+- [x] anchor the Export/Settings dialogs to the centre of the main window (`open_export_dialog` / `open_settings_dialog` in `main_window.py`)
 
 ### MVP option limiting
-- [ ] limit the sentence-transformer model options to `all-MiniLM-L6-v2` only (`bertopic_section.py`)
-- [ ] limit the language option to English only (`bertopic_section.py`)
+- [x] limit the sentence-transformer model options to `all-MiniLM-L6-v2` only (`bertopic_section.py`)
+- [x] limit the language option to English only (`bertopic_section.py`)
 
 ## Small Operational Tasks
 

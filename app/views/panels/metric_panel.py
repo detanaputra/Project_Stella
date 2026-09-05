@@ -30,6 +30,14 @@ _METRIC_CONFIG = {
     "topic_diversity": ("Topic Diversity", (0.0, 1.0), "#feca57"),
 }
 
+# Plain-language explanations for each metric, for beginners (v0.4.0, WP3).
+_EXPLANATIONS = [
+    "NPMI Coherence — how strongly a topic's top words co-occur. Higher = more coherent, interpretable topic.",
+    "C_V Coherence — how well a topic's words fit together in the text. Higher = better.",
+    "UMass Coherence — how often a topic's words appear in the same documents. Higher (closer to 0) = better.",
+    "Topic Diversity — how distinct the topics are from each other. Higher = topics share fewer words.",
+]
+
 
 class MetricPanel(ttk.Frame):
     """Display topic quality metrics as gauge/donut charts (one per metric)."""
@@ -50,6 +58,12 @@ class MetricPanel(ttk.Frame):
         self.figure = Figure(figsize=(6, 4), dpi=100)
         self.canvas = FigureCanvasTkAgg(self.figure, master=self)
         self.canvas.get_tk_widget().pack(fill=BOTH, expand=YES)
+
+        # Plain-language explanations for beginners (v0.4.0, WP3).
+        notes = ttk.LabelFrame(self, text="What do these mean?", padding=8)
+        notes.pack(fill=X, pady=(8, 0))
+        for line in _EXPLANATIONS:
+            ttk.Label(notes, text=line, wraplength=560, justify=LEFT).pack(anchor=W)
 
     def _on_state_changed(self, state: AppState):
         self._render()

@@ -11,18 +11,14 @@
 language
 name: language
 implementation: Combobox
-options: ["english", "multilingual"]
+options: ["english"]  # MVP: English only (v0.4.0, WP3)
 default: "english"
-behavior: if user select multilingual, only "paraphrase-multilingual-MiniLM-L12-v2" option is available in model selection below. if user select english, the model options are restored to initial option. 
+behavior: MVP-limited to English only; the multilingual model option is not offered.
 
 model
 name: model
 implementation: Combobox
-options : [
-            "all-MiniLM-L6-v2",
-            "all-mpnet-base-v2",
-            "paraphrase-multilingual-MiniLM-L12-v2"
-        ]
+options: ["all-MiniLM-L6-v2"]  # MVP: single model only (v0.4.0, WP3)
 default: "all-MiniLM-L6-v2"
 
 top_n_words
