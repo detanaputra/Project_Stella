@@ -4,6 +4,32 @@
 
 The multi-cycle roadmap. Each version/cycle entry uses the cycle_plan form (goal / outcomes / focus / success signal / status). Raw, undeveloped ideas live in `ideas.md` and are promoted here once refined.
 
+## Version 0.4.0
+
+### Main goal
+Give researchers control over their topic model — refine topics (merge/delete/label) with a clear selection UI — and close the remaining UX gaps (retire the unused pywebview route, explain the metrics, fix dialog placement, limit MVP options).
+
+### Main outcomes
+- **Topic refinement** — select topics in the results table (leading checkbox column, whole-row toggle, row highlight) → merge, delete, or label:
+  - Delete via native `model.delete_topics([t])` (documents → outlier -1); Merge via native `model.merge_topics(texts, [t1, t2, …])`; Label stores `{topic_id: label}` on the result (shown in the topics table)
+  - Re-derive pipeline after any mutation: rebuild `TopicResult` → recompute `quality_metrics` → regenerate the 5 PNGs + 5 HTMLs → update state (background thread + loading panel)
+  - Extract the "build `TopicResult` from a fitted model" logic out of `BERTopicAlgorithm.train` into a shared helper
+  - Icon-only toolbar (ttkbootstrap `icon=` + `icon_only=True`) after the basic stats, before the topics table; buttons disabled by default (delete 1+, merge 2+, label 1); merge/delete confirmation dialogs
+- **Retire pywebview** — remove `request_visualization` + `_launch_bertopic_webview`, drop the `pywebview` dependency, remove `multiprocessing.freeze_support()` from `main.py`
+- **Metrics-tab explanations for beginners** — plain-language meaning for each metric gauge
+- **Fix dialog placement** — anchor the Export/Settings dialogs to the centre of the main window
+- **MVP option limiting** — sentence-transformer model limited to `all-MiniLM-L6-v2`; language limited to English
+
+### Primary focus
+- Topic refinement (the main feature)
+- Retire pywebview (dead-code cleanup)
+
+### Success signal
+A user can select topics in the results table, merge/delete/label them (with confirmation), and see the tables, metrics, and visualisations update — with the pywebview route gone and the remaining UX gaps closed.
+
+### Status
+Planned.
+
 ## Version 0.3.0
 
 ### Main goal

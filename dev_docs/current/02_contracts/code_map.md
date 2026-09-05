@@ -7,7 +7,7 @@ Define the stable note-to-code mapping for the current implementation state. Red
 
 ## Current Code Structure
 
-- `main.py` — entry point; `multiprocessing.freeze_support()` for the webview process
+- `main.py` — entry point
 - `app/controllers/` — `app_controller.py`, `analysis_controller.py`
 - `app/models/` — `app_state.py` (observer state), `topic_result.py` (standardized output)
 - `app/models/algorithms/` — `base_algorithm.py`, `bertopic.py`

@@ -1,8 +1,3 @@
-import multiprocessing
-import os
-import tempfile
-import threading
-from tkinter import messagebox
 from typing import Any, Dict, Optional
 from app.models.app_state import AppState
 from app.models.services.data_loader import DataLoader
@@ -10,49 +5,6 @@ from app.models.services.exporter import Exporter
 from app.models.services.visualizer import TopicVisualizer
 from app.models.services.project_service import ProjectService
 from app.models.algorithms import get_algorithm
-
-
-def _launch_bertopic_webview(html_path: str, title: str) -> None:
-    """
-    Top-level function to launch the pywebview window.
-
-    Must be global (module-level) so multiprocessing can pickle it. Owned by
-    the controller so views contain no process-launch logic.
-    """
-    import webview
-
-    # OS-level DPI awareness for Windows to prevent overall window blur
-    if os.name == 'nt':
-        import ctypes
-        try:
-            # Per-Monitor V2 DPI Awareness (Windows 10 1703+)
-            ctypes.windll.user32.SetProcessDpiAwarenessContext(-4)
-        except Exception:
-            try:
-                # Per-Monitor DPI Awareness
-                ctypes.windll.shcore.SetProcessDpiAwareness(2)
-            except Exception:
-                try:
-                    # System DPI Awareness
-                    ctypes.windll.user32.SetProcessDPIAware()
-                except Exception:
-                    pass
-
-    try:
-        window = webview.create_window(
-            title,
-            url=f'file://{html_path}',
-            width=1000,
-            height=800
-        )
-        webview.start()
-    finally:
-        # Clean up the temporary file after the window is closed
-        if os.path.exists(html_path):
-            try:
-                os.remove(html_path)
-            except Exception:
-                pass
 
 
 class AppController:
@@ -114,81 +66,6 @@ class AppController:
     def get_param_schema(self, algorithm_name: str) -> Dict[str, Any]:
         """Return an algorithm's parameter schema. Views must not call the model directly."""
         return get_algorithm(algorithm_name).get_param_schema()
-
-    def request_visualization(self, method_name: str, title: str) -> None:
-        """Generate and launch a BERTopic visualization in a separate process.
-
-        Owns the loading state (analysis_in_progress) and all model/file/process
-        logic — the panel only calls this. Safe from the UI thread; the heavy
-        work runs in a background thread.
-        """
-        self.appState.analysis_in_progress = True
-        self.appState.analysis_status = f"Generating {title}..."
-        self.appState.notify()
-        threading.Thread(
-            target=self._generate_visualization,
-            args=(method_name, title),
-            daemon=True
-        ).start()
-
-    def _generate_visualization(self, method_name: str, title: str) -> None:
-        """Background task: build the Plotly HTML and launch the webview process."""
-        try:
-            # Retrieve BERTopic model from metadata
-            model = self.appState.current_result.metadata.get('model')
-            if model is None:
-                self.appState.call_on_main(
-                    lambda: messagebox.showerror("Error", "BERTopic model not found in current results.")
-                )
-                return
-
-            # Dynamically call the requested BERTopic visualization method
-            viz_func = getattr(model, method_name, None)
-            if viz_func is None:
-                self.appState.call_on_main(
-                    lambda: messagebox.showerror("Error", f"Method {method_name} not available in this model.")
-                )
-                return
-
-            # Generate the Plotly figure
-            fig = viz_func()
-
-            # plotly.js is embedded (not CDN) so the visualization works offline
-            # (audit M5). High-DPI + responsive config avoids blurry output.
-            html_content = fig.to_html(
-                include_plotlyjs=True,
-                full_html=True,
-                config={
-                    'plotGlPixelRatio': 2,  # Forces higher resolution for WebGL (Retina fix)
-                    'responsive': True      # Prevents CSS-based stretching blur
-                },
-                default_width='100%',
-                default_height='100%'
-            )
-
-            # Create a temporary file
-            with tempfile.NamedTemporaryFile('w', delete=False, suffix='.html', encoding='utf-8') as f:
-                f.write(html_content)
-                temp_path = f.name
-
-            # Launch the webview in a separate PROCESS
-            p = multiprocessing.Process(
-                target=_launch_bertopic_webview,
-                args=(temp_path, title),
-                daemon=True
-            )
-            p.start()
-
-        except Exception as e:
-            self.appState.call_on_main(
-                lambda: messagebox.showerror("Visualization Error", f"An error occurred:\n{str(e)}")
-            )
-
-        finally:
-            # Dismiss loading state
-            self.appState.analysis_in_progress = False
-            self.appState.analysis_status = ""
-            self.appState.notify()
 
     def get_static_chart_path(self, viz_name: str) -> Optional[str]:
         """Return the pre-generated static chart PNG path for a visualization,

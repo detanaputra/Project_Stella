@@ -88,7 +88,7 @@ One implementation, two surfaces; prefixes prevent key collisions between algori
 
 ### D-009: Browser-based visualizations via pywebview in a separate process
 #### Status
-active
+deprecated
 #### Context
 `WebViewException('pywebview must be run on a main thread.')` — the Tk main loop is occupied by the UI.
 #### Decision
@@ -97,6 +97,8 @@ active
 Renders BERTopic's native Plotly figures without bundling a browser engine.
 #### Review Trigger
 If packaging (PyInstaller) changes process behavior, re-verify the webview launch path.
+#### Deprecated
+Retired in Cycle 4 (v0.4.0): no view calls `request_visualization`; the localhost route (D-023) replaced it. Removed `request_visualization`/`_launch_bertopic_webview`, the `pywebview` dependency, and `multiprocessing.freeze_support()`.
 
 ### D-010: Retrain bound to the shown parameters via widget traces
 - **Status:** active
@@ -218,5 +220,5 @@ Verifying before deleting prevents silent work loss; branching fresh from `main`
 - **Context:** The user wanted the BERTopic visualisations *inside* the app as tabs, not only opened in the browser. BERTopic's `visualize_*` methods return Plotly figures only; rendering them statically in Tk requires a browser engine (kaleido needs a plotly upgrade plus an installed Chrome; embedding a browser widget is heavy) — all conflicting with the app's lightweight design. The first design (lazy generation on tab open, HTML generated on click) made the tabs slow and caused intermittent blank browser tabs.
 - **Decision:** Bring the visualisations in-app as static tabs via three coupled choices: (1) read the rendered data out of each Plotly figure with `fig.to_dict()` and re-plot it with matplotlib (already pinned), dispatching on trace type — no new dependency; (2) pre-generate all 5 static PNGs + 5 offline HTML files in the training pipeline, right after the quality metrics, so the tabs and "Open interactive" are instant and the HTML files are stable; (3) serve the interactive HTML over a tiny local HTTP server (127.0.0.1, ephemeral port, daemon thread) and open `http://localhost/<file>` in the browser — `file://` URLs intermittently open blank tabs.
 - **Rationale:** A research GUI gets the most value from an in-app static preview of every visualisation plus an "Open interactive" button for the real Plotly figure, without shipping a browser engine. Front-loading the expensive once-only work into the wait the user already endures (training) makes every interaction instant. Browsers navigate to `http://localhost` reliably.
-- **Consequences:** The pipeline takes a few extra seconds (≈2s on the sample corpus); the 5 viz tabs appear when a result exists; the pywebview separate-process route (D-009) is no longer used by any view and is kept only until the new path is confirmed working.
+- **Consequences:** The pipeline takes a few extra seconds (≈2s on the sample corpus); the 5 viz tabs appear when a result exists; the pywebview separate-process route (D-009) is no longer used by any view and was retired in Cycle 4 (v0.4.0).
 - **Review Trigger:** If training time becomes a concern for large corpora, revisit pre-generation (lazy/on-demand). If packaging (PyInstaller) changes process behavior, re-verify the localhost server.

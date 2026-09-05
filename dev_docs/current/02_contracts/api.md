@@ -287,11 +287,7 @@ class AppController:
     def get_param_schema(self, algorithm_name: str) -> Dict[str, Any]:
         """Expose an algorithm's schema to views (views never call the model directly)."""
 
-    # Visualization (owns all model/file/process logic)
-    def request_visualization(self, method_name: str, title: str) -> None:
-        """Set analysis_in_progress + status, then run _generate_visualization on a
-        background thread. Webview is launched in a separate process."""
-
+    # Visualization (static charts + interactive HTML)
     def get_static_chart_path(self, viz_name: str) -> Optional[str]:
         """Return the pre-generated static chart PNG path for a visualization,
         or None if no result/chart exists."""

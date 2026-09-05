@@ -1,6 +1,5 @@
 from app.models.app_state import AppState
 from app.views.main_window import MainWindow
-import multiprocessing
 
 def main():
     # 1. Initialize the single source of truth
@@ -13,5 +12,4 @@ def main():
     app.mainloop()
 
 if __name__ == "__main__":
-    multiprocessing.freeze_support()
     main()

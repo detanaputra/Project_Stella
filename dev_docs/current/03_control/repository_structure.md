@@ -26,7 +26,7 @@ This note is a **reusable control note**. Update it in the same change as any st
 | File | Role | Notes |
 |---|---|---|
 | `app/` (models/views/controllers/services) | Research Artefact | The implementation truth — what actually exists and runs |
-| `main.py` | Entry point | `multiprocessing.freeze_support()` for the webview process |
+| `main.py` | Entry point | — |
 | `notebooks/`, `sample_dataset.csv/.xlsx` | Explore-phase artefacts / test data | — |
 
 ### System & contracts
