@@ -4,6 +4,26 @@
 
 The multi-cycle roadmap. Each version/cycle entry uses the cycle_plan form (goal / outcomes / focus / success signal / status). Raw, undeveloped ideas live in `ideas.md` and are promoted here once refined.
 
+## Version 0.5.0
+
+### Main goal
+Harden the codebase with a committed test suite, then deliver the designed model-persistence feature so researchers can save and reload their full work (result, model, and visualisations) without retraining.
+
+### Main outcomes
+- **WP1 — Test suite** — a committed `pytest` suite for the model + controller layer (headless, no GUI): `AppState`, `DataLoader`, `BERTopicAlgorithm` (train + merge/delete on a small corpus), controllers, `Exporter`, `topic_quality`, `ProjectService` (current behavior). Adds `requirements-dev.txt` (pytest, black, flake8, isort, mypy). Reusable fixtures in `conftest.py`, including a small-corpus BERTopic model fixture.
+- **WP2 — Persistence, model layer** — `model_id` on `TopicResult`; `save_model(model, path)` / `load_model(path)` on `BaseAlgorithm`; BERTopic implementation via native `model.save()` / `BERTopic.load()`; a `save → load → compare` round-trip test that doubles as the feasibility check (embedding-model include/exclude, size).
+- **WP3 — Persistence, service + UI** — `ProjectService` reworked to a single-file zip bundle (`.stella` = archive) holding `project.json` (state + full result data) + `model/{model_id}/` + `viz/{model_id}/`; timestamp model-id + editable display name; controller save/load methods; save/load dialogs updated. Existing `ProjectService` tests updated; new round-trip tests added.
+
+### Primary focus
+- Test suite first (hardening; de-risks the persistence rework)
+- Model persistence (the user-visible feature)
+
+### Success signal
+`pytest` passes on the model/controller layer; a user can save a project, reload it, and see the same topics, metrics, and visualisations — with the trained model restored (no retrain).
+
+### Status
+Planned.
+
 ## Version 0.4.0
 
 ### Main goal
@@ -34,7 +54,7 @@ Give researchers control over their topic model — refine topics (merge/delete/
 A user can select topics in the results table, merge/delete/label them (with confirmation), and see the tables, metrics, and visualisations update — with the pywebview route gone and the remaining UX gaps closed.
 
 ### Status
-Completed and ready to close.
+Completed.
 
 ## Version 0.3.0
 

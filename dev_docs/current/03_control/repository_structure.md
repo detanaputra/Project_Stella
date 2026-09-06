@@ -27,6 +27,7 @@ This note is a **reusable control note**. Update it in the same change as any st
 |---|---|---|
 | `app/` (models/views/controllers/services) | Research Artefact | The implementation truth — what actually exists and runs |
 | `main.py` | Entry point | — |
+| `tests/` | Research Artefact (test suite) | pytest suite for the model + controller layer (v0.5.0 WP1) |
 | `notebooks/`, `sample_dataset.csv/.xlsx` | Explore-phase artefacts / test data | — |
 
 ### System & contracts

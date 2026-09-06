@@ -8,6 +8,7 @@ Define the stable note-to-code mapping for the current implementation state. Red
 ## Current Code Structure
 
 - `main.py` — entry point
+- `tests/` — pytest suite (model + controller layer, headless; v0.5.0 WP1)
 - `app/controllers/` — `app_controller.py`, `analysis_controller.py`
 - `app/models/` — `app_state.py` (observer state), `topic_result.py` (standardized output)
 - `app/models/algorithms/` — `base_algorithm.py`, `bertopic.py`

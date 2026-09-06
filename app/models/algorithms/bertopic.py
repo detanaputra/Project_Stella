@@ -172,21 +172,32 @@ class BERTopicAlgorithm(BaseAlgorithm):
                     except (TypeError, ValueError):
                         nr_topics = None  # unrecognized input -> no reduction
 
-            model = BERTopic(
-                min_topic_size=int(params.get('bertopic_min_topic_size', 10)),
-                embedding_model=params.get('bertopic_embedding_model', 'all-MiniLM-L6-v2'),
-                calculate_probabilities=bool(params.get('bertopic_calculate_probabilities', True)),
-                top_n_words=int(params.get('bertopic_top_n_words', 10)),
-                nr_topics=nr_topics,
-                low_memory=bool(params.get('bertopic_low_memory', False)),
-                umap_model=umap_model,
-                hdbscan_model=clusterer,
-                vectorizer_model=vectorizer,
-                ctfidf_model=ctfidf_model
-            )
+            def _make_model(nr_topics):
+                return BERTopic(
+                    min_topic_size=int(params.get('bertopic_min_topic_size', 10)),
+                    embedding_model=params.get('bertopic_embedding_model', 'all-MiniLM-L6-v2'),
+                    calculate_probabilities=bool(params.get('bertopic_calculate_probabilities', True)),
+                    top_n_words=int(params.get('bertopic_top_n_words', 10)),
+                    nr_topics=nr_topics,
+                    low_memory=bool(params.get('bertopic_low_memory', False)),
+                    umap_model=umap_model,
+                    hdbscan_model=clusterer,
+                    vectorizer_model=vectorizer,
+                    ctfidf_model=ctfidf_model
+                )
 
-            # Fit the model
-            model.fit_transform(texts)
+            model = _make_model(nr_topics)
+            try:
+                model.fit_transform(texts)
+            except Exception:
+                if nr_topics == 'auto':
+                    # BERTopic's 'auto' topic-reduction re-clusters the outlier
+                    # documents and crashes when there are none (all docs in real
+                    # topics); retry without reduction so training succeeds.
+                    model = _make_model(None)
+                    model.fit_transform(texts)
+                else:
+                    raise
 
             # Build the standardized result (shared with refinement).
             return _build_result(model, texts, params)

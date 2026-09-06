@@ -156,8 +156,38 @@ When choosing between options:
 - [x] update `current_state.md`
 - [x] take the cycle-4 close snapshot (`dev_docs/snapshots/cycle_4_close/`)
 - [x] write `cycle_4_review.md`
-- [ ] commit the cycle-close docs batch
-- [ ] release v0.4.0 to `main` (merge → verify → delete → fresh branch, D-017)
+- [x] commit the cycle-close docs batch (`23f5bac`)
+- [x] release v0.4.0 to `main` (merge → verify → delete → fresh branch, D-017) — PR #4 (`e951036`), branch deleted, `v0.5.0` created
+
+## Cycle 5 Opening Tasks
+
+- [x] decide Cycle 5 scope (test suite first, then model persistence — per the Cycle 4 close assessment)
+- [x] write the `cycle_plan.md` v0.5.0 section
+- [ ] update `current_state.md` for the cycle
+
+## Cycle 5 Implementation Tasks (v0.5.0)
+
+### WP1 — Test suite
+- [x] add `requirements-dev.txt` (pytest, black, flake8, isort, mypy)
+- [x] set up `tests/` + `conftest.py` with reusable fixtures (incl. a small-corpus BERTopic model fixture)
+- [x] test `AppState` (subscribe/notify/process_events, weakref pruning, `call_on_main`)
+- [x] test `DataLoader` (load_texts, load_preview, validate_file, CSV/encoding edge cases)
+- [x] test `BERTopicAlgorithm` (train on a small corpus → `TopicResult` shape; merge/delete → updated result; `_build_result`)
+- [x] test controllers (`AppController.on_file_selected`/`on_algorithm_changed`; `AnalysisController.run_analysis` against a stub state)
+- [x] test services (`Exporter`, `topic_quality`, `static_viz`, `ProjectService` current behavior)
+
+### WP2 — Persistence, model layer
+- [ ] add `model_id` to `TopicResult` (generated at training time)
+- [ ] add `save_model(model, path)` / `load_model(path)` to `BaseAlgorithm`
+- [ ] implement BERTopic `save_model`/`load_model` via native `model.save()`/`BERTopic.load()` (embedding-model include/exclude decision)
+- [ ] write the `save → load → compare` round-trip test (doubles as the feasibility check)
+
+### WP3 — Persistence, service + UI
+- [ ] rework `ProjectService` to a single-file zip bundle (`.stella` = archive): `project.json` (state + full result data) + `model/{model_id}/` + `viz/{model_id}/`
+- [ ] timestamp model-id + editable display name
+- [ ] update controller save/load methods
+- [ ] update the save/load dialogs (file → archive)
+- [ ] update existing `ProjectService` tests + add new round-trip tests
 
 ## Small Operational Tasks
 

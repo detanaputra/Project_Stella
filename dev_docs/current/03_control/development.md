@@ -48,7 +48,7 @@ gensim==4.3.3
 
 ### requirements-dev.txt
 
-Not present yet — no committed test/lint tooling exists. When added, it would extend `requirements.txt` with pytest, black, flake8, isort, and mypy.
+Pinned to the installed set (pytest, black, flake8, isort, mypy) — see `requirements-dev.txt`.
 
 ---
 
@@ -64,7 +64,7 @@ python main.py
 
 ## Testing
 
-> **Status:** no committed `tests/` suite exists yet — correctness is verified with ad-hoc headless smoke tests. The layout below is the intended structure for when the suite is added.
+> **Status:** a committed `tests/` suite exists (v0.5.0, WP1) covering the model + controller layer headless. The layout below is the structure.
 
 ### Run All Tests
 

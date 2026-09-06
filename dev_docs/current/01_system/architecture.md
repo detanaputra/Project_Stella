@@ -443,7 +443,7 @@ def get_algorithm(name: str) -> BaseAlgorithm:
 
 ## Testing Strategy (Unit Tests)
 
-> **Status:** no committed `tests/` suite exists yet. Correctness is verified with ad-hoc headless smoke tests (e.g. after the M-fix batch in the v0.1.1 audit) and the occasional live-Tk check. A proper `tests/` tree is planned; the intended layout is described below.
+> **Status:** a committed `tests/` suite exists (v0.5.0, WP1) covering the model + controller layer headless; the intended layout is described below. View testing is deferred until the suite is extended.
 
 The MODEL layer is unit-testable without a GUI (no ttkbootstrap imports), so tests can run headless:
 - **AppState** — subscription, notification, and the event-queue dispatch (`notify()` → `process_events()`).
