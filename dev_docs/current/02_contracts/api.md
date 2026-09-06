@@ -29,7 +29,9 @@ class TopicResult:
 
     metadata: Dict[str, Any]
     # Algorithm-specific metadata.
-    # BERTopic example: {'model': <BERTopic instance>, 'texts': [...], 'num_topics': 12}
+    # BERTopic example: {'model': <BERTopic instance>, 'texts': [...], 'num_topics': 12,
+    #                    'params': {...}, 'original_texts': [...],
+    #                    'static_chart_paths': {...}, 'viz_files': {...}}
 
     model_info: Dict[str, str]
     # Algorithm info for reproducibility.
@@ -40,6 +42,10 @@ class TopicResult:
     # Topic quality evaluation, computed by the pipeline after training (not by
     # the algorithm itself). One value per metric, averaged across topics.
     # Example: {'npmi': 0.12, 'c_v': 0.45, 'u_mass': -3.2, 'topic_diversity': 0.78}
+
+    topic_labels: Optional[Dict[int, str]] = None
+    # User-provided names/interpretations per topic, set via topic refinement
+    # (v0.4.0, WP1). Maps topic_id -> label; shown in the topics table.
 ```
 
 ---
@@ -123,6 +129,8 @@ class BaseAlgorithm(ABC):
 
 **Registered algorithms** (`app/models/algorithms/__init__.py`): `AVAILABLE_ALGORITHMS = {'BERTopic': BERTopicAlgorithm}`. Only BERTopic is registered today; `get_algorithm(name)` raises `ValueError` for unknown names.
 
+**BERTopic refinement** (v0.4.0, WP1): `BERTopicAlgorithm` adds `merge_topics(result, topic_ids)` and `delete_topics(result, topic_ids)` — both mutate the model via BERTopic's native `merge_topics`/`delete_topics` and return an updated `TopicResult` (documents of deleted topics → outlier -1).
+
 ---
 
 ## Services
@@ -202,8 +210,9 @@ class TopicVisualizer:
         # default: ~/.bertopic-gui/viz
 
     def visualize(self, result: TopicResult, algorithm_name: str) -> Dict[str, str]:
-        """Returns {'topics': path, 'heatmap': path, 'barchart': path, 'hierarchy': path}
-        for BERTopic (real plots); {} if unsupported. Individual failures are skipped."""
+        """Returns {'topics': path, 'heatmap': path, 'barchart': path, 'hierarchy': path,
+        'term_rank': path} for BERTopic (real plots); {} if unsupported. Individual
+        failures are skipped."""
 
     def open_visualization(self, file_path: str) -> None:
         """Open an HTML visualization in the default browser, served over a
@@ -287,11 +296,7 @@ class AppController:
     def get_param_schema(self, algorithm_name: str) -> Dict[str, Any]:
         """Expose an algorithm's schema to views (views never call the model directly)."""
 
-    # Visualization (owns all model/file/process logic)
-    def request_visualization(self, method_name: str, title: str) -> None:
-        """Set analysis_in_progress + status, then run _generate_visualization on a
-        background thread. Webview is launched in a separate process."""
-
+    # Visualization (static charts + interactive HTML)
     def get_static_chart_path(self, viz_name: str) -> Optional[str]:
         """Return the pre-generated static chart PNG path for a visualization,
         or None if no result/chart exists."""
@@ -299,6 +304,19 @@ class AppController:
     def open_interactive_viz(self, viz_name: str) -> None:
         """Open the pre-generated offline HTML for a visualization in the
         default browser (the "Open interactive" button on the static viz tabs)."""
+
+    # Topic refinement (v0.4.0, WP1)
+    def merge_topics(self, topic_ids: List[int]) -> None:
+        """Merge the selected topics into one; re-derives metrics + viz in a
+        background thread (the view shows the loading panel)."""
+
+    def delete_topics(self, topic_ids: List[int]) -> None:
+        """Delete the selected topics (documents → outlier -1); re-derives
+        metrics + viz in a background thread."""
+
+    def label_topic(self, topic_id: int, label: str) -> None:
+        """Store a user interpretation for a topic (no model mutation; the
+        topics table re-renders with the label)."""
 
     # Export
     def export_csv(self, output_path: str) -> None: ...
@@ -342,7 +360,8 @@ All views follow the same contract:
 
 | File | Class | Role |
 |---|---|---|
-| `panels/summary_panel.py` | `SummaryPanel` | Result tables (topics, doc-topics); sentinel-guarded render |
+| `panels/summary_panel.py` | `SummaryPanel` | Result tables (topics, doc-topics); sentinel-guarded render; topic refinement toolbar + checkbox selection (v0.4.0 WP1); document search + Detail window (v0.4.0 WP4) |
+| `panels/document_detail.py` | `DocumentDetailWindow` | Detail view for a document: all topic assignments + full text in a scrollable read-only Text (v0.4.0 WP4) |
 | `panels/metric_panel.py` | `MetricPanel` | 4 topic quality gauges (NPMI, C_V, UMass, Topic Diversity) from `result.quality_metrics`; sentinel-guarded render |
 | `panels/static_viz_panel.py` | `StaticVizPanel` | Displays the pre-generated static chart PNG per BERTopic visualization + "Open interactive" button (opens the pre-generated HTML) |
 | `panels/algorithm_settings_panel.py` | `AlgorithmSettingsPanel` | Persistent left column: BERTopic/UMAP/HDBSCAN param sections; Retrain button; scrollable; re-renders only on structural change |
@@ -371,7 +390,7 @@ The wizard's `_handle_train` syncs values **through the controller** (`on_file_s
 ## Summary
 
 - **Models** — `TopicResult`, `AppState` (thread-safe event-queue notifications), `BaseAlgorithm` + BERTopic.
-- **Services** — `DataLoader` (+ `ValidationResult`), `TopicProcessor`, `Exporter`, `TopicVisualizer`, `ProjectService`.
+- **Services** — `DataLoader` (+ `ValidationResult`), `TopicProcessor`, `Exporter`, `TopicVisualizer`, `StaticVizConverter`, `ProjectService`, `topic_quality` (`compute_topic_quality`).
 - **Controllers** — `AppController` (project/params/export/persistence/visualization), `AnalysisController` (background training).
 - **Views** — read-only panels that call controllers; no direct state mutation, file I/O, or algorithm calls.
 - **Extending** — implement `BaseAlgorithm` + register; forms auto-generate from the schema.

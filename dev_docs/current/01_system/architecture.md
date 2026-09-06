@@ -29,23 +29,31 @@ class AppState:
     current_result: Optional['TopicResult'] = None
     analysis_in_progress: bool = False
     analysis_progress: str = ""  # e.g., "30%"
+    analysis_status: str = ""    # e.g., "Training model..."
     analysis_error: Optional[str] = None
     
-    # Observers (views subscribe here)
-    _observers: List[Callable[['AppState'], None]] = field(
-        default_factory=list, 
-        init=False, 
-        repr=False
-    )
+    # Observer + thread-safety internals
+    _observers: List[weakref.WeakMethod] = field(default_factory=list, init=False, repr=False)
+    event_queue: queue.Queue = field(default_factory=queue.Queue, init=False, repr=False)
+    ui_callbacks: queue.Queue = field(default_factory=queue.Queue, init=False, repr=False)
     
-    def subscribe(self, callback: Callable[['AppState'], None]):
+    def subscribe(self, callback):
         """Views call this: state.subscribe(my_panel._on_state_changed)"""
-        self._observers.append(callback)
+        self._observers.append(weakref.WeakMethod(callback))
     
     def notify(self):
-        """Controllers call this after state changes"""
-        for callback in self._observers:
-            callback(self)
+        """Controllers call this after state changes; pushes "STATE_CHANGED" to the
+        event queue (observers run later on the main thread via process_events)."""
+        self.event_queue.put("STATE_CHANGED")
+    
+    def call_on_main(self, callback):
+        """Queue a callable to run on the main thread (worker threads use this)."""
+        self.ui_callbacks.put(callback)
+    
+    def process_events(self):
+        """Main-thread poll: run queued ui_callbacks, then drain event_queue and
+        invoke live observers (pruning dead weak references)."""
+        ...
 ```
 
 **Why this pattern:**
@@ -206,7 +214,7 @@ VIEW (SummaryPanel re-renders)
 **Responsibility:** Display data, listen to state changes, delegate actions to controller
 
 **What belongs here:**
-- ttkbootstrap panels (ToolboxPanel, SummaryPanel, MetricPanel, AlgorithmSettingsPanel, LoadingPanel, ExportPanel, wizard panels)
+- ttkbootstrap panels (StaticVizPanel, SummaryPanel, MetricPanel, AlgorithmSettingsPanel, LoadingPanel, ExportPanel, DocumentDetailWindow, wizard panels)
 - Layout & styling
 - Widget creation
 - Subscribe to AppState.subscribe()
@@ -371,16 +379,16 @@ class BaseAlgorithm(ABC):
             
         Example:
             {
-                'min_topic_size': {
+                'bertopic_min_topic_size': {
                     'type': 'int',
                     'min': 2,
-                    'max': 50,
-                    'default': 5,
+                    'max': 100,
+                    'default': 10,
                     'tooltip': 'Minimum documents per topic'
                 },
-                'embedding_model': {
+                'bertopic_embedding_model': {
                     'type': 'choice',
-                    'options': ['all-MiniLM-L6-v2', 'paraphrase-MiniLM-L6-v2'],
+                    'options': ['all-MiniLM-L6-v2'],  # MVP: single model only (v0.4.0, WP3)
                     'default': 'all-MiniLM-L6-v2',
                     'tooltip': 'Embedding model to use'
                 }
@@ -389,6 +397,7 @@ class BaseAlgorithm(ABC):
         pass
     
     @property
+    @abstractmethod
     def algorithm_name(self) -> str:
         """Return human-readable algorithm name"""
         pass

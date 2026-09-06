@@ -10,6 +10,58 @@ from app.models.algorithms.base_algorithm import BaseAlgorithm
 from app.models.topic_result import TopicResult
 import traceback
 
+
+def _build_result(model, texts: List[str], params: Dict[str, Any]) -> TopicResult:
+    """Build a standardized TopicResult from a fitted BERTopic model.
+
+    Shared by training and refinement so both produce identical result shapes
+    (and the doc-topic probability mapping stays correct after topic_mapper_
+    remaps ids).
+    """
+    # 1. Extract topics (term -> weight), excluding the -1 outlier topic.
+    topic_ids = sorted(t for t in model.get_topics().keys() if t != -1)
+    topics_list = []
+    for topic_id in topic_ids:
+        topic_data = model.get_topic(topic_id)
+        topics_list.append({word: weight for word, weight in topic_data})
+
+    # 2. Extract doc-topic assignments from the model's probabilities.
+    doc_topics = []
+    probs = getattr(model, "probabilities_", None)
+    if isinstance(probs, np.ndarray):
+        if probs.ndim == 1:
+            probs = probs.reshape(-1, 1)
+        topic_names = list(model.get_topics().keys())
+        filtered_topics = [t for t in topic_names if t != -1]
+        if probs.shape[1] != len(filtered_topics):
+            # Column count no longer aligns with topic ids -> hard assignments.
+            for t in model.topics_:
+                doc_topics.append({t: 1.0})
+        else:
+            for doc_prob in probs:
+                doc_map = {filtered_topics[i]: float(prob) for i, prob in enumerate(doc_prob)}
+                doc_topics.append(doc_map)
+    else:
+        for t in model.topics_:
+            doc_topics.append({t: 1.0})
+
+    # 3. Metadata & model info.
+    metadata = {
+        "model": model,
+        "texts": texts,
+        "num_topics": len(topic_ids),
+        "params": params,
+    }
+    model_info = {
+        "algorithm": "BERTopic",
+        "version": bertopic.__version__,
+        "params": str(params),
+        "num_documents": str(len(texts)),
+        "num_topics": str(len(topic_ids)),
+    }
+    return TopicResult(topics=topics_list, doc_topics=doc_topics, metadata=metadata, model_info=model_info)
+
+
 class BERTopicAlgorithm(BaseAlgorithm):
     """BERTopic implementation of the BaseAlgorithm interface"""
 
@@ -50,7 +102,7 @@ class BERTopicAlgorithm(BaseAlgorithm):
             },
             'bertopic_embedding_model': {
                 'type': 'choice',
-                'options': ['all-MiniLM-L6-v2', 'paraphrase-MiniLM-L6-v2', 'all-mpnet-base-v2'],
+                'options': ['all-MiniLM-L6-v2'],  # MVP: single model only (v0.4.0, WP3)
                 'default': 'all-MiniLM-L6-v2',
                 'tooltip': 'Sentence-transformer model for embeddings'
             }
@@ -134,70 +186,29 @@ class BERTopicAlgorithm(BaseAlgorithm):
             )
 
             # Fit the model
-            topics, probs = model.fit_transform(texts)
+            model.fit_transform(texts)
 
-            # 1. Extract Topics (term -> weight)
-            # Topic -1 is the outliers topic; exclude it. Iterate the actual
-            # topic ids rather than assuming they are contiguous integers, which
-            # breaks once nr_topics reduction is used (audit H3 robustness).
-            topic_ids = sorted(t for t in model.get_topics().keys() if t != -1)
-            topics_list = []
-            for topic_id in topic_ids:
-                topic_data = model.get_topic(topic_id)
-                # Convert [(word, weight), ...] to {word: weight, ...}
-                topics_list.append({word: weight for word, weight in topic_data})
-
-            # 2. Extract Doc-Topic assignments
-            # If calculate_probabilities=True, probs is a numpy array [n_docs, n_topics]
-            doc_topics = []
-            if isinstance(probs, np.ndarray):
-                # Ensure probs is 2D even if only one topic was found
-                if probs.ndim == 1:
-                    probs = probs.reshape(-1, 1)
-
-                # BERTopic's probs array corresponds to the topics in model.get_topics()
-                # Topic -1 is not usually in the probs array
-                topic_names = list(model.get_topics().keys())
-                filtered_topics = [t for t in topic_names if t != -1]
-
-                if probs.shape[1] != len(filtered_topics):
-                    # Column count no longer aligns with topic ids (e.g. topics
-                    # were reduced after probabilities were computed) -> fall
-                    # back to hard assignments rather than mislabel documents.
-                    for t in topics:
-                        doc_topics.append({t: 1.0})
-                else:
-                    for doc_prob in probs:
-                        # Map prob index to actual topic_id
-                        doc_map = {filtered_topics[i]: float(prob) for i, prob in enumerate(doc_prob)}
-                        doc_topics.append(doc_map)
-            else:
-                # Fallback to hard assignment
-                for t in topics:
-                    doc_topics.append({t: 1.0})
-
-            # 3. Metadata & Model Info
-            metadata = {
-                'model': model,
-                'texts': texts,
-                'num_topics': len(topic_ids)  # excludes the -1 outliers topic
-            }
-
-            model_info = {
-                'algorithm': self.algorithm_name,
-                'version': bertopic.__version__,
-                'params': str(params),
-                'num_documents': str(len(texts)),
-                'num_topics': str(len(topic_ids))
-            }
-
-            return TopicResult(
-                topics=topics_list,
-                doc_topics=doc_topics,
-                metadata=metadata,
-                model_info=model_info
-            )
+            # Build the standardized result (shared with refinement).
+            return _build_result(model, texts, params)
 
         except Exception as e:
             call_stack = traceback.format_exc()
             raise RuntimeError(f"BERTopic training failed: {str(e)}\n\n {call_stack}") from e
+
+    def merge_topics(self, result: TopicResult, topic_ids: List[int]) -> TopicResult:
+        """Merge the given topics into one; returns an updated TopicResult (v0.4.0, WP1)."""
+        model = result.metadata['model']
+        texts = result.metadata['texts']
+        model.merge_topics(texts, topic_ids)
+        new_result = _build_result(model, texts, result.metadata.get('params', {}))
+        new_result.metadata['original_texts'] = result.metadata.get('original_texts')
+        return new_result
+
+    def delete_topics(self, result: TopicResult, topic_ids: List[int]) -> TopicResult:
+        """Delete the given topics (documents → outlier -1); returns an updated TopicResult (v0.4.0, WP1)."""
+        model = result.metadata['model']
+        texts = result.metadata['texts']
+        model.delete_topics(topic_ids)
+        new_result = _build_result(model, texts, result.metadata.get('params', {}))
+        new_result.metadata['original_texts'] = result.metadata.get('original_texts')
+        return new_result

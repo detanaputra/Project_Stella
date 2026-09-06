@@ -17,7 +17,7 @@ Working notes toward the eventual research write-up. This is the **output** of t
 
 ## Observations
 
-- **Case study:** Stella, a topic-modelling GUI for non-technical social scientists, built solo with AI assistance over two cycles (v0.1.0 build + audit/release; v0.2.0 metrics).
+- **Case study:** Stella, a topic-modelling GUI for non-technical social scientists, built solo with AI assistance over four cycles (v0.1.0 build + audit/release; v0.2.0 metrics; v0.3.0 visualisation tabs + layout restructure; v0.4.0 topic refinement + document exploration).
 - **Cycle 1 (v0.1.0):** full MVC application (wizard, result tables, `.stella` save/load, pywebview visualizations, retrain); 25 SKUs after triage.
 - **Cycle 1 review (v0.1.1):** a read-only audit found 22 issues; fixes by severity, one commit per class; released.
 - **Cycle 2 (v0.2.0):** README + Apache 2.0 license, MouseWheel scrolling, topic quality metrics (NPMI, C_V, UMass, Topic Diversity) via Gensim; 4 SKUs.
@@ -41,5 +41,5 @@ Working notes toward the eventual research write-up. This is the **output** of t
 
 ## Quick Capture
 
-- Thesis positioning: the paper argues that SHAPR enables structured traceability in solo AI-assisted research software development, demonstrated through the Stella case study — where every design decision (D-001…D-022), knowledge unit (SKU-01-01…25, SKU-02-01…04), and cycle record is traceable to a documented artefact.
+- Thesis positioning: the paper argues that SHAPR enables structured traceability in solo AI-assisted research software development, demonstrated through the Stella case study — where every design decision (D-001…D-023), knowledge unit (SKU-01-01…25, SKU-02-01…04, SKU-03-01…04, SKU-04-01…06), and cycle record is traceable to a documented artefact.
 - Open question: does the audit-as-review reframing generalise, or was it specific to this project's v0.1.1 situation?

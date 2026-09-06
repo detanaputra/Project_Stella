@@ -62,6 +62,16 @@ From the audit-based review (`dev_docs/cycle_record_notes/cycle_1_review.md` §4
 - **Formalising the ideation flow gave the cycle a clean front door.** ideas.md (raw) → cycle_plan.md (refined) → tasks.md (committed) meant the scope was decided before any code.
 - **The human's cognitive workflows are worth capturing, not delegating.** The handoff/development/ideas flows in `workflow.mmd` are the real work the human does; documenting them keeps the human the epistemic authority.
 
+## Cycle 4 Consolidated Quick Capture
+
+- **Verify the library before assuming it lacks a feature.** I proposed implementing topic deletion the hard way after assuming BERTopic had no native delete — it has `delete_topics`. The same discipline caught a non-existent ttkbootstrap `git-merge` icon before it crashed at render. Reading the actual source (or glyphmap), not just the docs page, rules out both false negatives and runtime surprises.
+- **A shared builder keeps two paths identical.** Extracting "build `TopicResult` from a fitted model" out of `train()` into `_build_result` means training and refinement produce the same result shape — and the doc-topic probability mapping stays correct after BERTopic's `topic_mapper_` remaps ids on merge/delete.
+- **Refinement is "train-and-publish minus the training".** Mutating the model invalidates the metrics and the pre-generated visualisations; the re-derive pipeline reuses the existing services rather than writing new derivation logic.
+- **Treeview has no checkboxes — the pattern is a glyph column plus mirrored native selection.** `selectmode="none"` makes the click handler the single source of truth, so the native selection can't fight the checkbox.
+- **A widget's built-in search can be a trap.** Tableview's search filters *displayed* cells, so it would only match the 50-char snippet, not the full document — when the requirement is full-data search with a custom snippet, filter the data yourself.
+- **Keep the user-facing texts separate from the training texts.** The model trains on preprocessed text; the user reads the original. Storing `original_texts` (and carrying it through refinement) is the difference between search that works and search against noise.
+- **Deferring with a captured design beats cramming.** The "rename temp path" idea grew into a model-persistence design; recording it fully in `ideas.md` and deferring kept the cycle focused and gave the next cycle a ready-made spec.
+
 ## Reflection — SKU consolidation: a numbering scheme is a contract
 
 The v0.1.0/v0.1.1 SKUs were too micro (25 + 11, many trivial). Consolidating to design-changing commits only (25 across cycle 1, 4 for cycle 2) and switching to cycle-coded IDs (`SKU-01-NN`, `SKU-02-NN`) made the knowledge layer scannable and aligned with the triage rule. The cost: the merge required updating every cross-reference (cycle records, repository structure, reflection, llm_guidance) — a reminder that a numbering scheme is a contract, and changing it has a documentation ripple.

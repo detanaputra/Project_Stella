@@ -3,7 +3,7 @@
 1. implement the views/wizard/panel_hyperparams.py according to the configuration section below. Each Subsection (BERTopic, UMAP, and HDBSCAN) must be implemented in each Labelframe container and give label according to the name of its subsection. 
 2. implement each subsection in different file for easier maintainability and put it inside the same folder. 
 3. Pass the hyperparameter setting value to each object in bertopic.py, specifically in train() function. 
-4. implement these hyperparameter configuration input in views/panels/settings_panel.py. if possible, use the same files to display each subsection that you just created in the step 2.
+4. implement these hyperparameter configuration inputs in the main-window settings panel — `views/panels/algorithm_settings_panel.py`. Reuse the same subsection files from step 2 there and in the wizard's `views/wizard/panel_hyperparams.py`.
 
 
 ## Configuration:
@@ -11,18 +11,14 @@
 language
 name: language
 implementation: Combobox
-options: ["english", "multilingual"]
+options: ["english"]  # MVP: English only (v0.4.0, WP3)
 default: "english"
-behavior: if user select multilingual, only "paraphrase-multilingual-MiniLM-L12-v2" option is available in model selection below. if user select english, the model options are restored to initial option. 
+behavior: MVP-limited to English only; the multilingual model option is not offered.
 
 model
 name: model
 implementation: Combobox
-options : [
-            "all-MiniLM-L6-v2",
-            "all-mpnet-base-v2",
-            "paraphrase-multilingual-MiniLM-L12-v2"
-        ]
+options: ["all-MiniLM-L6-v2"]  # MVP: single model only (v0.4.0, WP3)
 default: "all-MiniLM-L6-v2"
 
 top_n_words
@@ -60,7 +56,7 @@ default: False
 calculate_probabilities
 name: calculate_probabilities
 implementation: Checkbutton
-default: False
+default: True
 
 ### UMAP
 n_neighbors
@@ -91,6 +87,13 @@ default: False
 ### HDBSCAN
 min_samples
 name: min_samples
+implementation: Spinbox
+min: 1
+max: 100
+default: 10
+
+min_cluster_size
+name: min_cluster_size
 implementation: Spinbox
 min: 1
 max: 100

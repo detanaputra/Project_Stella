@@ -48,7 +48,7 @@ SHAPR explicitly says *"you cannot SHAPR everything."* Write an SKU when the int
 - a refactor with observable consequences
 - a methodological learning about the human–AI process itself
 
-**Do NOT** write a SKU for: trivial tweaks (e.g. a sash thickness), housekeeping (e.g. `.gitignore`), dependency pinning, one-line fixes with no transferable lesson. Those belong in a changelog or `tasks.md`, not the knowledge layer. (The current Stella files violate this — 55 SKUs including trivial ones. Triage them when revising.)
+**Do NOT** write a SKU for: trivial tweaks (e.g. a sash thickness), housekeeping (e.g. `.gitignore`), dependency pinning, one-line fixes with no transferable lesson. Those belong in a changelog or `tasks.md`, not the knowledge layer. (Stella's SKU files were triaged to this standard: `v0.1.0.md` holds 25 design-changing SKUs (`SKU-01-01…25`) with trivial interactions demoted to an appendix; later versions are cycle-coded and design-changing-only (`v0.2.0` 4, `v0.3.0` 4, `v0.4.0` 6). Keep new SKUs to this standard.)
 
 ## Where SKUs live vs. adjacent artefacts
 

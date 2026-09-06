@@ -102,15 +102,62 @@ When choosing between options:
 - [x] write `cycle_3.md` cycle record (drafted)
 - [x] write `cycle_3_review.md` (drafted)
 - [x] take the cycle-3 close snapshot (`dev_docs/snapshots/cycle_3_close/`)
-- [ ] release v0.3.0 to `main` (merge → verify → delete → fresh branch, D-017)
+- [x] release v0.3.0 to `main` (merge → verify → delete → fresh branch, D-017) — PR #3 (`e646fe4`)
+- [x] commit the cycle-close docs batch (`be0a130`)
+
+## Cycle 4 Opening Tasks
+
+- [x] decide Cycle 4 scope (per `ideas.md` Cycle 4 candidates — retire pywebview, topic refinement, metrics-tab plain-language explanations, fix dialog placement, MVP option limiting)
+- [x] write the `cycle_plan.md` v0.4.0 section
+- [x] update `current_state.md` for the cycle
+
+## Cycle 4 Implementation Tasks (v0.4.0)
+
+### WP1 — Topic refinement
+- [x] refactor: extract "build `TopicResult` from a fitted model" out of `BERTopicAlgorithm.train` into a reusable helper (shared by training and refinement; keeps the doc-topic probability mapping correct after `topic_mapper_` remaps ids)
+- [x] implement refinement operations: delete via native `model.delete_topics([t])` (documents → outlier -1); merge via native `model.merge_topics(texts, [t1, t2, …])` (needs `result.metadata['texts']`)
+- [x] implement label support: store `{topic_id: label}` on the result; show the label in the topics table
+- [x] implement the re-derive pipeline: rebuild `TopicResult` (topics, doc_topics, `model_info`) → recompute `quality_metrics` → regenerate 5 PNGs + 5 HTMLs → update `state.current_result` (background thread + loading panel)
+- [x] add controller methods for merge/delete/label that run the re-derive pipeline
+- [x] SummaryPanel: add a leading checkbox column (☐/☑ glyph toggle) to the topics table; clicking anywhere on a row toggles; mirror into native selection (`selectmode="none"`, `selection_add`/`selection_remove`) for row highlight
+- [x] SummaryPanel: add a toolbar (ttkbootstrap `icon=` + `text=`, `icon_only=False`) after the basic stats, before the topics table — merge (`sign-merge-left`), delete (`trash`), label (`tag`)
+- [x] button enablement: all disabled by default; delete enabled when 1+ topics selected; merge enabled when 2+ topics selected; label enabled when exactly 1 topic selected
+- [x] confirmation dialogs for merge and delete; run the pipeline only after the user confirms
+
+### WP2 — Retire pywebview
+- [x] remove `request_visualization` + `_generate_visualization` + `_launch_bertopic_webview` from `app_controller.py`
+- [x] drop `pywebview==5.2.1` from `requirements.txt`
+- [x] remove `multiprocessing.freeze_support()` from `main.py`
+
+### WP3 — Metrics-tab explanations for beginners
+- [x] add plain-language explanations for each metric gauge (NPMI, C_V, UMass, Topic Diversity) in `metric_panel.py`
+
+### WP3 — Fix dialog placement
+- [x] anchor the Export/Settings dialogs to the centre of the main window (`open_export_dialog` / `open_settings_dialog` in `main_window.py`)
+
+### WP3 — MVP option limiting
+- [x] limit the sentence-transformer model options to `all-MiniLM-L6-v2` only (`bertopic_section.py`)
+- [x] limit the language option to English only (`bertopic_section.py`)
+
+### WP4 — Document exploration
+- [x] store `original_texts` in the result metadata at training time (controller sets it after processing); carry it through refinement (`_build_result` + `merge_topics`/`delete_topics` copy it)
+- [x] refactor the Document Assignments table columns to Doc Index · Document · Topic 1 · Prob 1 (drop the Topic 2/3 columns)
+- [x] Document cell: first 50 chars normally; when searching, show the substring around the query match
+- [x] add a search Entry + "Search" button above the Document Assignments table (not per-keystroke); case-insensitive substring match on the full document text; a "Clear" resets to all docs
+- [x] add a "Detail" button (enabled when exactly one doc row is selected) that opens a centered Top-Level window
+- [x] Detail window: shows Doc Index, all topic→probability pairs, and the full document in a scrollable read-only Text (paragraphs supported)
+- [x] topic filter: selecting topics in the topics table filters the Document Assignments table to docs whose Topic 1 is one of the selected topics (combines AND with the search filter)
+
+## Cycle 4 Close Tasks
+
+- [x] document SKUs (`v0.4.0.md` — SKU-04-01…06)
+- [x] write `cycle_4.md` cycle record
+- [x] update `reflection.md` (Cycle 4 consolidated quick capture)
+- [x] update `current_state.md`
+- [x] take the cycle-4 close snapshot (`dev_docs/snapshots/cycle_4_close/`)
+- [x] write `cycle_4_review.md`
 - [ ] commit the cycle-close docs batch
-
-## Deferred to Later Cycles
-
-- [ ] LDA/NMF algorithms (exercises the `BaseAlgorithm` abstraction — D-001)
-- [ ] document search/filter
-- [ ] batch processing
-- [ ] multi-model support ("Model 1", "Model 2", …) — metrics already stored per-`TopicResult` (D-021)
+- [ ] release v0.4.0 to `main` (merge → verify → delete → fresh branch, D-017)
 
 ## Small Operational Tasks
 

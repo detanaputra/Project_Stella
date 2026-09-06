@@ -95,6 +95,11 @@ class AnalysisController:
                 progress_callback=update_progress
             )
 
+            # Keep the original (unpreprocessed) texts for document exploration
+            # (v0.4.0, WP4): result.metadata['texts'] holds the preprocessed texts
+            # used for training; the original texts are needed for search + display.
+            result.metadata['original_texts'] = texts
+
             # 5. Compute topic quality metrics in the background (C_V is slow;
             #    never on the main thread). Stored on the result so each model
             #    carries its own metrics (D-021).

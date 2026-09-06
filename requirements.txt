@@ -3,8 +3,8 @@ bertopic==0.17.4
 pandas==2.2.2
 numpy==1.26.4
 matplotlib==3.9.2
+pillow==10.4.0
 seaborn==0.13.2
 plotly==5.24.1
 scikit-learn==1.7.1
 gensim==4.3.3
-pywebview==5.2.1

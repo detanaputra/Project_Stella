@@ -4,6 +4,38 @@
 
 The multi-cycle roadmap. Each version/cycle entry uses the cycle_plan form (goal / outcomes / focus / success signal / status). Raw, undeveloped ideas live in `ideas.md` and are promoted here once refined.
 
+## Version 0.4.0
+
+### Main goal
+Give researchers control over their topic model — refine topics (merge/delete/label) with a clear selection UI — and close the remaining UX gaps (retire the unused pywebview route, explain the metrics, fix dialog placement, limit MVP options).
+
+### Main outcomes
+- **Topic refinement** — select topics in the results table (leading checkbox column, whole-row toggle, row highlight) → merge, delete, or label:
+  - Delete via native `model.delete_topics([t])` (documents → outlier -1); Merge via native `model.merge_topics(texts, [t1, t2, …])`; Label stores `{topic_id: label}` on the result (shown in the topics table)
+  - Re-derive pipeline after any mutation: rebuild `TopicResult` → recompute `quality_metrics` → regenerate the 5 PNGs + 5 HTMLs → update state (background thread + loading panel)
+  - Extract the "build `TopicResult` from a fitted model" logic out of `BERTopicAlgorithm.train` into a shared helper
+  - Icon + text toolbar (ttkbootstrap `icon=` + `text=`, `icon_only=False`) after the basic stats, before the topics table; buttons disabled by default (delete 1+, merge 2+, label 1); merge/delete confirmation dialogs
+- **Retire pywebview** — remove `request_visualization` + `_launch_bertopic_webview`, drop the `pywebview` dependency, remove `multiprocessing.freeze_support()` from `main.py`
+- **Metrics-tab explanations for beginners** — plain-language meaning for each metric gauge
+- **Fix dialog placement** — anchor the Export/Settings dialogs to the centre of the main window
+- **MVP option limiting** — sentence-transformer model limited to `all-MiniLM-L6-v2`; language limited to English
+- **Document exploration** *(emerged during Cycle 4)* — find documents and see their topics:
+  - **Topic filter** — selecting topics in the topics table filters the Document Assignments table to docs whose Topic 1 (argmax) is one of the selected topics; combines AND with the search filter
+  - **Search** — a search box + "Search" button above the Document Assignments table (not per-keystroke); case-insensitive substring match on the document text; a "Clear" resets to all docs
+  - **Column refactor** — the Document Assignments table shows Doc Index · Document · Topic 1 · Prob 1; the Document cell shows the first 50 chars, or the substring around the query match when searching
+  - **Detail window** — a "Detail" button (enabled when one doc row is selected) opens a centered Top-Level window showing Doc Index, all topic→probability pairs, and the full document in a scrollable read-only Text (paragraphs supported)
+  - **Data plumbing** — store `original_texts` in the result metadata at training time (currently only preprocessed texts are kept) and carry it through refinement (`_build_result` + `merge_topics`/`delete_topics`)
+
+### Primary focus
+- Topic refinement (the main feature)
+- Retire pywebview (dead-code cleanup)
+
+### Success signal
+A user can select topics in the results table, merge/delete/label them (with confirmation), and see the tables, metrics, and visualisations update — with the pywebview route gone and the remaining UX gaps closed.
+
+### Status
+Completed and ready to close.
+
 ## Version 0.3.0
 
 ### Main goal
@@ -23,7 +55,7 @@ Bring the BERTopic visualisations into the app as in-app tabs and restructure th
 A user can open each of the 5 visualisations as a tab inside the app, see a static chart, and click "Open interactive" to get the full Plotly figure in the browser — with the toolbox gone and parameters on the left.
 
 ### Status
-Completed and ready to close.
+Completed.
 
 ## Version 0.2.0
 

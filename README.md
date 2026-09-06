@@ -19,11 +19,13 @@ Topic modelling is a powerful method, but the tools for it assume programming sk
 ## Features
 
 - Train a BERTopic model on your own CSV or TXT data
-- Guided 4-step setup wizard (file → preview → hyperparameters → summary)
+- Guided 4-step setup wizard (file → hyperparameters → preview → summary; "Default Settings" skips the hyperparameters step)
 - Configurable hyperparameters: language, embedding model, n-gram range, minimum topic size, and more
 - Topic quality metrics: NPMI, C_V, and UMass coherence plus Topic Diversity
 - Result tables: top terms per topic and per-document topic assignments
-- Interactive visualizations (topics, heatmap, barchart, hierarchy) in your browser
+- Refine topics: merge, delete, or label topics after training
+- Explore documents: search by content and view a document's full topic assignment
+- Five visualizations as in-app tabs (topics, heatmap, barchart, hierarchy, term rank), each with an "Open interactive" button for the full Plotly chart in your browser
 - Export results to CSV, JSON, and a methodology report
 - Save and reload your work as `.stella` project files
 

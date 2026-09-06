@@ -20,7 +20,7 @@ class BERTopicSection(BaseHyperparamSection):
         self.lang_combo = ttk.Combobox(
             lang_frame,
             textvariable=self.lang_var,
-            values=["english", "multilingual"],
+            values=["english"],  # MVP: English only (v0.4.0, WP3)
             state="readonly"
         )
         self.lang_combo.pack(side=LEFT, fill=X, expand=YES)
@@ -32,8 +32,7 @@ class BERTopicSection(BaseHyperparamSection):
         ttk.Label(model_frame, text="Model:", width=20).pack(side=LEFT)
 
         self.model_options = {
-            "english": ["all-MiniLM-L6-v2", "all-mpnet-base-v2"],
-            "multilingual": ["paraphrase-multilingual-MiniLM-L12-v2"]
+            "english": ["all-MiniLM-L6-v2"],  # MVP: single model only (v0.4.0, WP3)
         }
 
         self.model_var = ttk.StringVar(value=state.algorithm_params.get('bertopic_embedding_model', 'all-MiniLM-L6-v2'))
@@ -129,7 +128,7 @@ class BERTopicSection(BaseHyperparamSection):
         # --- Calculate Probabilities ---
         calc_prob_frame = ttk.Frame(self.container)
         calc_prob_frame.pack(fill=X, pady=5)
-        self.calc_prob_var = ttk.BooleanVar(value=state.algorithm_params.get('bertopic_calculate_probabilities', False))
+        self.calc_prob_var = ttk.BooleanVar(value=state.algorithm_params.get('bertopic_calculate_probabilities', True))
         self._bind_param(self.calc_prob_var, 'bertopic_calculate_probabilities')
         self.calc_prob_check = ttk.Checkbutton(calc_prob_frame, text="Calculate Probabilities", variable=self.calc_prob_var)
         self.calc_prob_check.pack(side=LEFT)

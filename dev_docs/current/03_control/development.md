@@ -39,11 +39,11 @@ bertopic==0.17.4
 pandas==2.2.2
 numpy==1.26.4
 matplotlib==3.9.2
+pillow==10.4.0
 seaborn==0.13.2
 plotly==5.24.1
 scikit-learn==1.7.1
 gensim==4.3.3
-pywebview==5.2.1
 ```
 
 ### requirements-dev.txt
@@ -58,12 +58,6 @@ Not present yet — no committed test/lint tooling exists. When added, it would 
 
 ```bash
 python main.py
-```
-
-### With Debug Logging
-
-```bash
-DEBUG=1 python main.py
 ```
 
 ---
@@ -110,9 +104,12 @@ tests/
 │   ├── test_app_controller.py
 │   └── test_analysis_controller.py
 ├── test_views/
-│   ├── test_input_panel.py
-│   ├── test_settings_panel.py
-│   └── test_results_panel.py
+│   ├── test_summary_panel.py
+│   ├── test_algorithm_settings_panel.py
+│   ├── test_metric_panel.py
+│   ├── test_static_viz_panel.py
+│   ├── test_export_panel.py
+│   └── test_document_detail.py
 └── fixtures/
     └── sample_data.csv
 ```
@@ -168,11 +165,11 @@ def test_on_algorithm_changed():
     state = AppState()
     controller = AppController(state)
     
-    controller.on_algorithm_changed("LDA")
+    controller.on_algorithm_changed("BERTopic")
     
-    assert state.selected_algorithm == "LDA"
-    # Verify LDA default params are set
-    assert 'num_topics' in state.algorithm_params
+    assert state.selected_algorithm == "BERTopic"
+    # Verify BERTopic default params are set
+    assert 'bertopic_min_topic_size' in state.algorithm_params
 ```
 
 ---
@@ -309,7 +306,7 @@ pip install -r requirements.txt
 
 ```bash
 # Reinstall with specific version
-pip install ttkbootstrap==1.6.1
+pip install ttkbootstrap==2.2.0
 ```
 
 ### BERTopic Model Download Fails

@@ -36,3 +36,9 @@ class TopicResult:
     algorithm itself). One value per metric, averaged across topics.
     Example: {'npmi': 0.12, 'c_v': 0.45, 'u_mass': -3.2, 'topic_diversity': 0.78}
     """
+
+    topic_labels: Optional[Dict[int, str]] = None
+    """
+    User-provided names/interpretations per topic, set via topic refinement
+    (v0.4.0, WP1). Maps topic_id -> label; shown in the topics table.
+    """

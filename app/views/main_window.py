@@ -11,6 +11,7 @@ from app.views.panels.loading_panel import LoadingPanel
 from app.views.panels.export_panel import ExportPanel
 from app.views.panels.metric_panel import MetricPanel
 from app.views.panels.static_viz_panel import StaticVizPanel
+from app.views.window_utils import center_on_parent
 
 # The 5 BERTopic visualisations exposed as static tabs (v0.3.0, WP1).
 _VIZ_TABS = [
@@ -102,19 +103,21 @@ class MainWindow(ttk.Window):
         """Open the Export panel in a modal dialog (v0.3.0, WP2)."""
         dialog = ttk.Toplevel(self)
         dialog.title("Export Results")
+        dialog.withdraw()  # keep hidden until positioned (v0.4.0, WP3)
         dialog.transient(self)
-        dialog.grab_set()
         panel = ExportPanel(dialog, self.appState, self.app_controller)
         panel.pack(fill=BOTH, expand=YES)
         ttk.Button(dialog, text="Close", command=dialog.destroy).pack(pady=8)
-        dialog.geometry("420x440")
+        center_on_parent(dialog, self, 420, 440)
+        dialog.deiconify()  # show centered, no position flash
+        dialog.grab_set()
 
     def open_settings_dialog(self):
         """Open the App Settings (theme switcher) in a modal dialog (v0.3.0, WP2)."""
         dialog = ttk.Toplevel(self)
         dialog.title("App Settings")
+        dialog.withdraw()  # keep hidden until positioned (v0.4.0, WP3)
         dialog.transient(self)
-        dialog.grab_set()
         frame = ttk.Frame(dialog, padding=20)
         frame.pack(fill=BOTH, expand=YES)
         ttk.Label(frame, text="App Settings", font=("Helvetica", 14, "bold")).pack(anchor=W, pady=(0, 12))
@@ -131,7 +134,9 @@ class MainWindow(ttk.Window):
         theme_combo.pack(side=LEFT, fill=X, expand=YES)
         theme_combo.bind("<<ComboboxSelected>>", lambda e: self._apply_theme(theme_var.get()))
         ttk.Button(dialog, text="Close", command=dialog.destroy).pack(pady=8)
-        dialog.geometry("360x180")
+        center_on_parent(dialog, self, 360, 180)
+        dialog.deiconify()  # show centered, no position flash
+        dialog.grab_set()
 
     def _on_state_changed(self, state: AppState):
         self._sync_metrics_tab()

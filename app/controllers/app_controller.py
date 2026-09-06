@@ -1,58 +1,14 @@
-import multiprocessing
-import os
-import tempfile
 import threading
-from tkinter import messagebox
-from typing import Any, Dict, Optional
+from dataclasses import replace
+from typing import Any, Dict, List, Optional
 from app.models.app_state import AppState
 from app.models.services.data_loader import DataLoader
 from app.models.services.exporter import Exporter
 from app.models.services.visualizer import TopicVisualizer
 from app.models.services.project_service import ProjectService
+from app.models.services.topic_quality import compute_topic_quality
+from app.models.services.static_viz import save_static_charts
 from app.models.algorithms import get_algorithm
-
-
-def _launch_bertopic_webview(html_path: str, title: str) -> None:
-    """
-    Top-level function to launch the pywebview window.
-
-    Must be global (module-level) so multiprocessing can pickle it. Owned by
-    the controller so views contain no process-launch logic.
-    """
-    import webview
-
-    # OS-level DPI awareness for Windows to prevent overall window blur
-    if os.name == 'nt':
-        import ctypes
-        try:
-            # Per-Monitor V2 DPI Awareness (Windows 10 1703+)
-            ctypes.windll.user32.SetProcessDpiAwarenessContext(-4)
-        except Exception:
-            try:
-                # Per-Monitor DPI Awareness
-                ctypes.windll.shcore.SetProcessDpiAwareness(2)
-            except Exception:
-                try:
-                    # System DPI Awareness
-                    ctypes.windll.user32.SetProcessDPIAware()
-                except Exception:
-                    pass
-
-    try:
-        window = webview.create_window(
-            title,
-            url=f'file://{html_path}',
-            width=1000,
-            height=800
-        )
-        webview.start()
-    finally:
-        # Clean up the temporary file after the window is closed
-        if os.path.exists(html_path):
-            try:
-                os.remove(html_path)
-            except Exception:
-                pass
 
 
 class AppController:
@@ -115,81 +71,6 @@ class AppController:
         """Return an algorithm's parameter schema. Views must not call the model directly."""
         return get_algorithm(algorithm_name).get_param_schema()
 
-    def request_visualization(self, method_name: str, title: str) -> None:
-        """Generate and launch a BERTopic visualization in a separate process.
-
-        Owns the loading state (analysis_in_progress) and all model/file/process
-        logic — the panel only calls this. Safe from the UI thread; the heavy
-        work runs in a background thread.
-        """
-        self.appState.analysis_in_progress = True
-        self.appState.analysis_status = f"Generating {title}..."
-        self.appState.notify()
-        threading.Thread(
-            target=self._generate_visualization,
-            args=(method_name, title),
-            daemon=True
-        ).start()
-
-    def _generate_visualization(self, method_name: str, title: str) -> None:
-        """Background task: build the Plotly HTML and launch the webview process."""
-        try:
-            # Retrieve BERTopic model from metadata
-            model = self.appState.current_result.metadata.get('model')
-            if model is None:
-                self.appState.call_on_main(
-                    lambda: messagebox.showerror("Error", "BERTopic model not found in current results.")
-                )
-                return
-
-            # Dynamically call the requested BERTopic visualization method
-            viz_func = getattr(model, method_name, None)
-            if viz_func is None:
-                self.appState.call_on_main(
-                    lambda: messagebox.showerror("Error", f"Method {method_name} not available in this model.")
-                )
-                return
-
-            # Generate the Plotly figure
-            fig = viz_func()
-
-            # plotly.js is embedded (not CDN) so the visualization works offline
-            # (audit M5). High-DPI + responsive config avoids blurry output.
-            html_content = fig.to_html(
-                include_plotlyjs=True,
-                full_html=True,
-                config={
-                    'plotGlPixelRatio': 2,  # Forces higher resolution for WebGL (Retina fix)
-                    'responsive': True      # Prevents CSS-based stretching blur
-                },
-                default_width='100%',
-                default_height='100%'
-            )
-
-            # Create a temporary file
-            with tempfile.NamedTemporaryFile('w', delete=False, suffix='.html', encoding='utf-8') as f:
-                f.write(html_content)
-                temp_path = f.name
-
-            # Launch the webview in a separate PROCESS
-            p = multiprocessing.Process(
-                target=_launch_bertopic_webview,
-                args=(temp_path, title),
-                daemon=True
-            )
-            p.start()
-
-        except Exception as e:
-            self.appState.call_on_main(
-                lambda: messagebox.showerror("Visualization Error", f"An error occurred:\n{str(e)}")
-            )
-
-        finally:
-            # Dismiss loading state
-            self.appState.analysis_in_progress = False
-            self.appState.analysis_status = ""
-            self.appState.notify()
-
     def get_static_chart_path(self, viz_name: str) -> Optional[str]:
         """Return the pre-generated static chart PNG path for a visualization,
         or None if no result/chart exists (v0.3.0, WP1)."""
@@ -207,6 +88,70 @@ class AppController:
         path = result.metadata.get("viz_files", {}).get(viz_name)
         if path:
             self.visualizer.open_visualization(path)
+
+    # Topic refinement (v0.4.0, WP1)
+    def merge_topics(self, topic_ids: List[int]) -> None:
+        """Merge the selected topics into one; re-derives metrics + viz."""
+        result = self.appState.current_result
+        if result is None:
+            return
+        self._start_refinement(
+            lambda: get_algorithm(self.appState.selected_algorithm).merge_topics(result, topic_ids)
+        )
+
+    def delete_topics(self, topic_ids: List[int]) -> None:
+        """Delete the selected topics (documents → outlier -1); re-derives metrics + viz."""
+        result = self.appState.current_result
+        if result is None:
+            return
+        self._start_refinement(
+            lambda: get_algorithm(self.appState.selected_algorithm).delete_topics(result, topic_ids)
+        )
+
+    def label_topic(self, topic_id: int, label: str) -> None:
+        """Store a user interpretation for a topic (no model mutation)."""
+        result = self.appState.current_result
+        if result is None:
+            return
+        labels = dict(result.topic_labels or {})
+        labels[topic_id] = label
+        self.appState.current_result = replace(result, topic_labels=labels)
+        self.appState.notify()
+
+    def _start_refinement(self, mutate) -> None:
+        """Run a refinement (mutate model → re-derive metrics + viz) in a background thread."""
+        self.appState.analysis_in_progress = True
+        self.appState.analysis_status = "Refining topics..."
+        self.appState.notify()
+        threading.Thread(target=self._refine_worker, args=(mutate,), daemon=True).start()
+
+    def _refine_worker(self, mutate) -> None:
+        """Background: mutate the model, rebuild the result, re-derive metrics + viz."""
+        try:
+            new_result = mutate()
+            try:
+                top_n = int(self.appState.algorithm_params.get('bertopic_top_n_words', 10))
+                new_result.quality_metrics = compute_topic_quality(
+                    new_result.topics, new_result.metadata.get('texts', []), top_n=top_n)
+            except Exception:
+                new_result.quality_metrics = None
+            try:
+                new_result.metadata['static_chart_paths'] = save_static_charts(
+                    new_result.metadata.get('model'), self.visualizer.output_dir)
+                new_result.metadata['viz_files'] = self.visualizer.visualize(
+                    new_result, self.appState.selected_algorithm)
+            except Exception:
+                new_result.metadata['static_chart_paths'] = {}
+                new_result.metadata['viz_files'] = {}
+            self.appState.current_result = new_result
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            self.appState.analysis_error = f"Refinement failed: {str(e)}"
+        finally:
+            self.appState.analysis_in_progress = False
+            self.appState.analysis_status = ""
+            self.appState.notify()
 
     def export_csv(self, output_path: str) -> None:
         """Export the current TopicResult to CSV."""

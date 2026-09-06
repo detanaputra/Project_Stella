@@ -3,6 +3,7 @@ from ttkbootstrap.constants import *
 from tkinter import Toplevel
 from app.models.app_state import AppState
 from app.controllers.app_controller import AppController
+from app.views.window_utils import center_on_parent
 
 class LoadingPanel(Toplevel):
     """
@@ -12,17 +13,21 @@ class LoadingPanel(Toplevel):
     def __init__(self, parent, state: AppState, controller: AppController):
         super().__init__(parent)
         self.title("Processing...")
-        self.geometry("400x200")
+        self.withdraw()  # keep hidden until positioned (v0.4.0, WP3)
         self.resizable(False, False)
 
         # Modal behavior
         self.transient(parent)
-        self.grab_set()
 
         self.appState: AppState = state
         self.controller = controller
 
         self._build_ui()
+
+        # Position centered on the main window, then show (v0.4.0, WP3).
+        center_on_parent(self, parent, 400, 200)
+        self.deiconify()
+        self.grab_set()
 
         # Subscribe to state changes to update status and check for completion
         self.appState.subscribe(self._on_state_changed)
