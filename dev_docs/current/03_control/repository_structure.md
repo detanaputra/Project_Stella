@@ -35,6 +35,9 @@ This note is a **reusable control note**. Update it in the same change as any st
 | `dev_docs/current/01_system/architecture.md` | `01_system` — design/spec | Moved from root; MVC structure, data flows, patterns |
 | `dev_docs/current/02_contracts/api.md` | `02_contracts` — function + data contracts | Moved from root; BaseAlgorithm, AppState, TopicResult contracts |
 | `dev_docs/current/02_contracts/bertopic_hyperparams.md` | `02_contracts` — parameter contract | Moved from root; hyperparameter reference |
+| `dev_docs/current/02_contracts/code_map.md` | `02_contracts` — note↔code mapping | Created in Cycle 1 Close |
+| `dev_docs/current/02_contracts/naming_conventions.md` | `02_contracts` — naming rules | Created in Cycle 1 Close |
+| `dev_docs/current/02_contracts/README.md` | `02_contracts` — role index | Contract role assignments |
 
 ### Control (03)
 | File | SHAPR role | Notes |
@@ -60,6 +63,7 @@ This note is a **reusable control note**. Update it in the same change as any st
 | `dev_docs/current/05_knowledge/skus/v0.1.0.md` | SKU knowledge units | 25 SKUs (SKU-01-01…25, cycle-coded; combined from 36 original; v0.1.1 merged here) |
 | `dev_docs/current/05_knowledge/skus/v0.2.0.md` | SKU knowledge units | 4 SKUs (SKU-02-01…04, cycle-coded; from the design-changing commits of Cycle 2) |
 | `dev_docs/current/05_knowledge/skus/v0.3.0.md` | SKU knowledge units | 4 SKUs (SKU-03-01…04, cycle-coded; WP1 visualisation tabs + WP2 layout restructure) |
+| `dev_docs/current/05_knowledge/skus/v0.4.0.md` | SKU knowledge units | 6 SKUs (SKU-04-01…06, cycle-coded; WP1 topic refinement + WP4 document exploration) |
 | `dev_docs/current/05_knowledge/reflection.md` | reflection | Created from cycle learnings |
 | `dev_docs/current/05_knowledge/references.md` | references | SHAPR papers + project guides |
 | `dev_docs/current/05_knowledge/paper.md` | paper | Working draft toward the research write-up |
@@ -74,6 +78,8 @@ This note is a **reusable control note**. Update it in the same change as any st
 | `dev_docs/cycle_record_notes/cycle_2_review.md` | cycle review | Review of the v0.2.0 build (verdict: Release) |
 | `dev_docs/cycle_record_notes/cycle_3.md` | cycle record | Build cycle (v0.3.0) |
 | `dev_docs/cycle_record_notes/cycle_3_review.md` | cycle review | Review of the v0.3.0 build (verdict: Release) |
+| `dev_docs/cycle_record_notes/cycle_4.md` | cycle record | Build cycle (v0.4.0) |
+| `dev_docs/cycle_record_notes/cycle_4_review.md` | cycle review | Review of the v0.4.0 build (verdict: Release) |
 | `dev_docs/snapshots/cycle_1_close/audit.md` | Review evidence (archived) | The findings behind `cycle_1_review.md` (linked as its Evidence) |
 
 ### Evidence / raw data
@@ -102,4 +108,4 @@ This note is a **reusable control note**. Update it in the same change as any st
 6. ~~`claude.md` duplicate~~ — resolved: single tracked file (lowercase `claude.md`), no duplicate.
 7. SKU files triaged + cycle-coded IDs applied; v0.1.0 evidence links added (build SKUs → `7b88c71`/`f0573ff`; audit-fix SKUs → their own commits).
 8. ~~`naming_conventions.md` (contracts)~~ and ~~`paper.md` (knowledge)~~ — resolved: created in `02_contracts/` and `05_knowledge/`.
-9. ~~Snapshots taken so far~~ — resolved: `dev_docs/snapshots/cycle_1_close/`, `cycle_2_close/`, and `cycle_3_close/` exist (cycle-3 close snapshot taken at the v0.3.0 release); subsequent cycles follow `snapshot_workflow.md`.
+9. ~~Snapshots taken so far~~ — resolved: `dev_docs/snapshots/cycle_1_close/`, `cycle_2_close/`, `cycle_3_close/`, and `cycle_4_close/` exist; subsequent cycles follow `snapshot_workflow.md`.

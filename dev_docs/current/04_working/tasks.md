@@ -109,7 +109,7 @@ When choosing between options:
 
 - [x] decide Cycle 4 scope (per `ideas.md` Cycle 4 candidates — retire pywebview, topic refinement, metrics-tab plain-language explanations, fix dialog placement, MVP option limiting)
 - [x] write the `cycle_plan.md` v0.4.0 section
-- [ ] update `current_state.md` for the cycle
+- [x] update `current_state.md` for the cycle
 
 ## Cycle 4 Implementation Tasks (v0.4.0)
 
@@ -147,6 +147,17 @@ When choosing between options:
 - [x] add a "Detail" button (enabled when exactly one doc row is selected) that opens a centered Top-Level window
 - [x] Detail window: shows Doc Index, all topic→probability pairs, and the full document in a scrollable read-only Text (paragraphs supported)
 - [x] topic filter: selecting topics in the topics table filters the Document Assignments table to docs whose Topic 1 is one of the selected topics (combines AND with the search filter)
+
+## Cycle 4 Close Tasks
+
+- [x] document SKUs (`v0.4.0.md` — SKU-04-01…06)
+- [x] write `cycle_4.md` cycle record
+- [x] update `reflection.md` (Cycle 4 consolidated quick capture)
+- [x] update `current_state.md`
+- [x] take the cycle-4 close snapshot (`dev_docs/snapshots/cycle_4_close/`)
+- [x] write `cycle_4_review.md`
+- [ ] commit the cycle-close docs batch
+- [ ] release v0.4.0 to `main` (merge → verify → delete → fresh branch, D-017)
 
 ## Small Operational Tasks
 

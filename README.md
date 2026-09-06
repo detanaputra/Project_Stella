@@ -23,6 +23,8 @@ Topic modelling is a powerful method, but the tools for it assume programming sk
 - Configurable hyperparameters: language, embedding model, n-gram range, minimum topic size, and more
 - Topic quality metrics: NPMI, C_V, and UMass coherence plus Topic Diversity
 - Result tables: top terms per topic and per-document topic assignments
+- Refine topics: merge, delete, or label topics after training
+- Explore documents: search by content and view a document's full topic assignment
 - Five visualizations as in-app tabs (topics, heatmap, barchart, hierarchy, term rank), each with an "Open interactive" button for the full Plotly chart in your browser
 - Export results to CSV, JSON, and a methodology report
 - Save and reload your work as `.stella` project files

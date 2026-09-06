@@ -34,7 +34,7 @@ Give researchers control over their topic model — refine topics (merge/delete/
 A user can select topics in the results table, merge/delete/label them (with confirmation), and see the tables, metrics, and visualisations update — with the pywebview route gone and the remaining UX gaps closed.
 
 ### Status
-Planned.
+Completed and ready to close.
 
 ## Version 0.3.0
 

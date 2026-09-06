@@ -29,7 +29,9 @@ class TopicResult:
 
     metadata: Dict[str, Any]
     # Algorithm-specific metadata.
-    # BERTopic example: {'model': <BERTopic instance>, 'texts': [...], 'num_topics': 12}
+    # BERTopic example: {'model': <BERTopic instance>, 'texts': [...], 'num_topics': 12,
+    #                    'params': {...}, 'original_texts': [...],
+    #                    'static_chart_paths': {...}, 'viz_files': {...}}
 
     model_info: Dict[str, str]
     # Algorithm info for reproducibility.
@@ -208,8 +210,9 @@ class TopicVisualizer:
         # default: ~/.bertopic-gui/viz
 
     def visualize(self, result: TopicResult, algorithm_name: str) -> Dict[str, str]:
-        """Returns {'topics': path, 'heatmap': path, 'barchart': path, 'hierarchy': path}
-        for BERTopic (real plots); {} if unsupported. Individual failures are skipped."""
+        """Returns {'topics': path, 'heatmap': path, 'barchart': path, 'hierarchy': path,
+        'term_rank': path} for BERTopic (real plots); {} if unsupported. Individual
+        failures are skipped."""
 
     def open_visualization(self, file_path: str) -> None:
         """Open an HTML visualization in the default browser, served over a
@@ -387,7 +390,7 @@ The wizard's `_handle_train` syncs values **through the controller** (`on_file_s
 ## Summary
 
 - **Models** — `TopicResult`, `AppState` (thread-safe event-queue notifications), `BaseAlgorithm` + BERTopic.
-- **Services** — `DataLoader` (+ `ValidationResult`), `TopicProcessor`, `Exporter`, `TopicVisualizer`, `ProjectService`.
+- **Services** — `DataLoader` (+ `ValidationResult`), `TopicProcessor`, `Exporter`, `TopicVisualizer`, `StaticVizConverter`, `ProjectService`, `topic_quality` (`compute_topic_quality`).
 - **Controllers** — `AppController` (project/params/export/persistence/visualization), `AnalysisController` (background training).
 - **Views** — read-only panels that call controllers; no direct state mutation, file I/O, or algorithm calls.
 - **Extending** — implement `BaseAlgorithm` + register; forms auto-generate from the schema.

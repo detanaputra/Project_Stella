@@ -30,6 +30,7 @@ Define the stable note-to-code mapping for the current implementation state. Red
 | `dev_docs/current/05_knowledge/skus/v0.1.0.md` (SKUs) | Knowledge units; refer to the files named in each SKU's Context/Decision |
 | `dev_docs/current/05_knowledge/skus/v0.2.0.md` (SKUs) | Knowledge units for the v0.2.0 metrics feature; refer to the files named in each SKU's Context/Decision |
 | `dev_docs/current/05_knowledge/skus/v0.3.0.md` (SKUs) | Knowledge units for the v0.3.0 visualisation-tabs feature; refer to the files named in each SKU's Context/Decision |
+| `dev_docs/current/05_knowledge/skus/v0.4.0.md` (SKUs) | Knowledge units for the v0.4.0 topic-refinement + document-exploration features; refer to the files named in each SKU's Context/Decision |
 | `dev_docs/snapshots/cycle_1_close/audit.md` | Audit evidence (archived); findings reference files across `app/` |
 | `dev_docs/current/04_working/cycle_plan.md` | Feature-level plan; not tied to specific files |
 
@@ -37,7 +38,7 @@ Define the stable note-to-code mapping for the current implementation state. Red
 
 - **Function contracts:** authoritative in `dev_docs/current/02_contracts/api.md` — callable signatures for `BaseAlgorithm`, `AppState`, services.
 - **Data contracts:** authoritative in `dev_docs/current/02_contracts/api.md` + `app/models/topic_result.py` (`TopicResult`), `app/models/app_state.py` (`AppState`).
-- **Parameter contract:** authoritative in `dev_docs/current/02_contracts/bertopic_hyperparams.md` — the 14 documented hyperparameters wired into `train()`.
+- **Parameter contract:** authoritative in `dev_docs/current/02_contracts/bertopic_hyperparams.md` — the 15 documented hyperparameters wired into `train()`.
 
 If code and contract disagree → treat as **drift**; explicitly decide whether to update code, contract, or both (see `dev_docs/current/04_working/source_of_truth.md`).
 

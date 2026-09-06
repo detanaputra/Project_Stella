@@ -59,7 +59,7 @@ Define the naming rules for this project — files, modules, classes, functions,
 
 - **Do not shadow Tk widget properties with instance attributes** — `self.state` clobbers the widget `state` property; use `self.appState` (SKU-01-12).
 - **Keep the algorithm registry key distinct from the class name** — the registry key is the display name (`"BERTopic"`); the class is `BERTopicAlgorithm`.
-- **Spelling is not normalized** — `BERTopicVisualisation` uses the British spelling; match the existing name rather than "correcting" it.
+- **Spelling is not normalized** — match the existing name rather than "correcting" it (e.g. the `visualisation` spelling used across the codebase and docs).
 
 ## Authority
 

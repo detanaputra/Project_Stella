@@ -19,7 +19,6 @@ Raw capture of undeveloped ideas — no format pressure; a holding area. Ideas h
   - LDA/NMF algorithms (exercises the `BaseAlgorithm` abstraction — D-001)
   - Multi-model support ("Model 1", "Model 2", …) — metrics already stored per-`TopicResult` (D-021)
   - Embedded matplotlib charts
-  - Document search/filter
   - Batch processing
 
 ## Housekeeping / engineering
@@ -28,6 +27,3 @@ Raw capture of undeveloped ideas — no format pressure; a holding area. Ideas h
 - PyInstaller packaging / distribution — planned in `CLAUDE.md` (Week 5 optional, GitHub Releases for researchers); no `.spec`/`dist/` build exists
 - CI workflow — documented in `development.md` (GitHub Actions); no `.github/workflows/` exists
 - `data_contracts.md` extraction — `02_contracts/README.md` open gap: currently folded into `api.md`; consider extracting if it grows
-
-## Raw Ideas
-- change the behavior of Document Assignment tables: display the records only when user select one or two records in topic table. the displayed record will be filtered based on the Topic 1 column in Document Assignment. so when user select Topic ID 0 in topic table, the document assignment table will display records with Topic 1 column equal to Topic ID 0. if user select two or more, Topic ID 0 and 4, then the document assignment table will display records with Topic 1 column equal to Topic ID 0 or Topic ID 4.

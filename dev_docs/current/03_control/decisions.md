@@ -71,10 +71,10 @@ active
 #### Rationale
 One implementation, two surfaces; prefixes prevent key collisions between algorithm parameter families.
 
-### D-006: Results as 7-column tables
-- **Status:** active
-- **Decision:** Topics table `("Topic ID", "Word 1", "Weight 1", …, "Word 3", "Weight 3")`; doc-topics table `("Doc Index", "Topic 1", "Prob 1", …, "Topic 3", "Prob 3")`, shown only when a result exists.
-- **Rationale:** Interleaved term/weight (and topic/probability) columns keep data scannable and the two tables consistent.
+### D-006: Results as tables (topics + document assignments)
+- **Status:** revised
+- **Decision:** Topics table `("✓", "Topic ID", "Word 1", "Weight 1", …, "Word 3", "Weight 3")` with a leading checkbox column (v0.4.0 WP1); doc-topics table `("Doc Index", "Document", "Topic 1", "Prob 1")` (v0.4.0 WP4), shown only when a result exists.
+- **Rationale:** Interleaved term/weight columns keep data scannable; the checkbox column drives topic-refinement selection; the Document column + single Topic 1 keep the assignments table scannable, with full detail in the Detail window.
 
 ### D-007: `.stella` project file via `ProjectService`
 - **Status:** active
@@ -83,7 +83,7 @@ One implementation, two surfaces; prefixes prevent key collisions between algori
 
 ### D-008: Pinned requirements
 - **Status:** active
-- **Decision:** All dependency versions pinned to the installed set (ttkbootstrap==2.2.0, bertopic==0.17.4, pandas==2.2.2, numpy==1.26.4, matplotlib==3.9.2, seaborn==0.13.2, plotly==5.24.1).
+- **Decision:** All dependency versions pinned to the installed set (ttkbootstrap==2.2.0, bertopic==0.17.4, pandas==2.2.2, numpy==1.26.4, matplotlib==3.9.2, pillow==10.4.0, seaborn==0.13.2, plotly==5.24.1, scikit-learn==1.7.1, gensim==4.3.3).
 - **Rationale:** Reproducibility is non-negotiable for a tool shipped to researchers.
 
 ### D-009: Browser-based visualizations via pywebview in a separate process

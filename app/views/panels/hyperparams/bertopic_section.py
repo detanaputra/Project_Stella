@@ -128,7 +128,7 @@ class BERTopicSection(BaseHyperparamSection):
         # --- Calculate Probabilities ---
         calc_prob_frame = ttk.Frame(self.container)
         calc_prob_frame.pack(fill=X, pady=5)
-        self.calc_prob_var = ttk.BooleanVar(value=state.algorithm_params.get('bertopic_calculate_probabilities', False))
+        self.calc_prob_var = ttk.BooleanVar(value=state.algorithm_params.get('bertopic_calculate_probabilities', True))
         self._bind_param(self.calc_prob_var, 'bertopic_calculate_probabilities')
         self.calc_prob_check = ttk.Checkbutton(calc_prob_frame, text="Calculate Probabilities", variable=self.calc_prob_var)
         self.calc_prob_check.pack(side=LEFT)
