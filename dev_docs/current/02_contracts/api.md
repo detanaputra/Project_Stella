@@ -357,7 +357,8 @@ All views follow the same contract:
 
 | File | Class | Role |
 |---|---|---|
-| `panels/summary_panel.py` | `SummaryPanel` | Result tables (topics, doc-topics); sentinel-guarded render |
+| `panels/summary_panel.py` | `SummaryPanel` | Result tables (topics, doc-topics); sentinel-guarded render; topic refinement toolbar + checkbox selection (v0.4.0 WP1); document search + Detail window (v0.4.0 WP4) |
+| `panels/document_detail.py` | `DocumentDetailWindow` | Detail view for a document: all topic assignments + full text in a scrollable read-only Text (v0.4.0 WP4) |
 | `panels/metric_panel.py` | `MetricPanel` | 4 topic quality gauges (NPMI, C_V, UMass, Topic Diversity) from `result.quality_metrics`; sentinel-guarded render |
 | `panels/static_viz_panel.py` | `StaticVizPanel` | Displays the pre-generated static chart PNG per BERTopic visualization + "Open interactive" button (opens the pre-generated HTML) |
 | `panels/algorithm_settings_panel.py` | `AlgorithmSettingsPanel` | Persistent left column: BERTopic/UMAP/HDBSCAN param sections; Retrain button; scrollable; re-renders only on structural change |

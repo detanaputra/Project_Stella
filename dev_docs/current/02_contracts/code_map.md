@@ -14,7 +14,7 @@ Define the stable note-to-code mapping for the current implementation state. Red
 - `app/models/services/` — `data_loader.py`, `processor.py`, `exporter.py`, `visualizer.py`, `project_service.py`, `topic_quality.py`, `static_viz.py`
 - `app/views/` — `main_window.py`, `menu_manager.py`, `window_utils.py`
 - `app/views/menus/` — `base_menu.py`, `file_menu.py`, `edit_menu.py`
-- `app/views/panels/` — `summary_panel.py`, `metric_panel.py`, `static_viz_panel.py`, `algorithm_settings_panel.py`, `loading_panel.py`, `export_panel.py`
+- `app/views/panels/` — `summary_panel.py`, `metric_panel.py`, `static_viz_panel.py`, `algorithm_settings_panel.py`, `loading_panel.py`, `export_panel.py`, `document_detail.py`
 - `app/views/panels/hyperparams/` — `base_section.py`, `bertopic_section.py`, `umap_section.py`, `hdbscan_section.py`
 - `app/views/wizard/` — `wizard_main.py`, `panel_algorithm.py`, `panel_preview.py`, `panel_hyperparams.py`, `panel_summary.py`
 

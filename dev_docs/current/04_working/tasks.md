@@ -140,12 +140,13 @@ When choosing between options:
 - [x] limit the language option to English only (`bertopic_section.py`)
 
 ### WP4 — Document exploration
-- [ ] store `original_texts` in the result metadata at training time (controller sets it after processing); carry it through refinement (`_build_result` + `merge_topics`/`delete_topics` copy it)
-- [ ] refactor the Document Assignments table columns to Doc Index · Document · Topic 1 · Prob 1 (drop the Topic 2/3 columns)
-- [ ] Document cell: first 50 chars normally; when searching, show the substring around the query match
-- [ ] add a search Entry + "Search" button above the Document Assignments table (not per-keystroke); case-insensitive substring match on the full document text; a "Clear" resets to all docs
-- [ ] add a "Detail" button (enabled when exactly one doc row is selected) that opens a centered Top-Level window
-- [ ] Detail window: shows Doc Index, all topic→probability pairs, and the full document in a scrollable read-only Text (paragraphs supported)
+- [x] store `original_texts` in the result metadata at training time (controller sets it after processing); carry it through refinement (`_build_result` + `merge_topics`/`delete_topics` copy it)
+- [x] refactor the Document Assignments table columns to Doc Index · Document · Topic 1 · Prob 1 (drop the Topic 2/3 columns)
+- [x] Document cell: first 50 chars normally; when searching, show the substring around the query match
+- [x] add a search Entry + "Search" button above the Document Assignments table (not per-keystroke); case-insensitive substring match on the full document text; a "Clear" resets to all docs
+- [x] add a "Detail" button (enabled when exactly one doc row is selected) that opens a centered Top-Level window
+- [x] Detail window: shows Doc Index, all topic→probability pairs, and the full document in a scrollable read-only Text (paragraphs supported)
+- [x] topic filter: selecting topics in the topics table filters the Document Assignments table to docs whose Topic 1 is one of the selected topics (combines AND with the search filter)
 
 ## Small Operational Tasks
 

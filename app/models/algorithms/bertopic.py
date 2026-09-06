@@ -200,11 +200,15 @@ class BERTopicAlgorithm(BaseAlgorithm):
         model = result.metadata['model']
         texts = result.metadata['texts']
         model.merge_topics(texts, topic_ids)
-        return _build_result(model, texts, result.metadata.get('params', {}))
+        new_result = _build_result(model, texts, result.metadata.get('params', {}))
+        new_result.metadata['original_texts'] = result.metadata.get('original_texts')
+        return new_result
 
     def delete_topics(self, result: TopicResult, topic_ids: List[int]) -> TopicResult:
         """Delete the given topics (documents → outlier -1); returns an updated TopicResult (v0.4.0, WP1)."""
         model = result.metadata['model']
         texts = result.metadata['texts']
         model.delete_topics(topic_ids)
-        return _build_result(model, texts, result.metadata.get('params', {}))
+        new_result = _build_result(model, texts, result.metadata.get('params', {}))
+        new_result.metadata['original_texts'] = result.metadata.get('original_texts')
+        return new_result

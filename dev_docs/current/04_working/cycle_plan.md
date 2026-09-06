@@ -20,6 +20,7 @@ Give researchers control over their topic model — refine topics (merge/delete/
 - **Fix dialog placement** — anchor the Export/Settings dialogs to the centre of the main window
 - **MVP option limiting** — sentence-transformer model limited to `all-MiniLM-L6-v2`; language limited to English
 - **Document exploration** *(emerged during Cycle 4)* — find documents and see their topics:
+  - **Topic filter** — selecting topics in the topics table filters the Document Assignments table to docs whose Topic 1 (argmax) is one of the selected topics; combines AND with the search filter
   - **Search** — a search box + "Search" button above the Document Assignments table (not per-keystroke); case-insensitive substring match on the document text; a "Clear" resets to all docs
   - **Column refactor** — the Document Assignments table shows Doc Index · Document · Topic 1 · Prob 1; the Document cell shows the first 50 chars, or the substring around the query match when searching
   - **Detail window** — a "Detail" button (enabled when one doc row is selected) opens a centered Top-Level window showing Doc Index, all topic→probability pairs, and the full document in a scrollable read-only Text (paragraphs supported)

@@ -4,6 +4,7 @@ from tkinter import Scrollbar, messagebox, simpledialog
 from app.models.app_state import AppState
 from app.controllers.app_controller import AppController
 from app.models.topic_result import TopicResult
+from app.views.panels.document_detail import DocumentDetailWindow
 
 class SummaryPanel(ttk.Frame):
     """Panel for displaying summary information and key metrics."""
@@ -24,6 +25,16 @@ class SummaryPanel(ttk.Frame):
         self._btn_merge = None
         self._btn_delete = None
         self._btn_label = None
+        # Document exploration state (v0.4.0, WP4).
+        self._search_query = ""
+        self._search_var = None
+        self._search_entry = None
+        self._btn_search = None
+        self._btn_clear = None
+        self._btn_detail = None
+        self._doc_table_frame = None
+        self._doc_tree = None
+        self._doc_filter_label = None
 
         self.appState.subscribe(self._on_state_changed)
         self._build_ui()
@@ -53,6 +64,8 @@ class SummaryPanel(ttk.Frame):
         # Selection resets when the result changes (topic ids change after a
         # refinement, so a stale selection would be meaningless).
         self._selected_topics = set()
+        # Search resets when the result changes.
+        self._search_query = ""
 
         # Clear current content
         for widget in self.content_frame.winfo_children():
@@ -85,9 +98,8 @@ class SummaryPanel(ttk.Frame):
         ttk.Label(self.content_frame, text="Top Topics", font=("Helvetica", 11, "bold")).pack(anchor=W)
         self._create_topics_table(self.content_frame, result)
 
-        # 4. Doc-Topic Assignments Table
-        ttk.Label(self.content_frame, text="Document Assignments", font=("Helvetica", 11, "bold")).pack(anchor=W, pady=(20, 0))
-        self._create_doc_topics_table(self.content_frame, result.doc_topics)
+        # 4. Document Assignments (search + detail + table)
+        self._create_doc_topics_section(self.content_frame, result)
 
         # Force UI layout update
         self.update_idletasks()
@@ -240,16 +252,59 @@ class SummaryPanel(ttk.Frame):
             tree.set(row_id, "✓", "☑")
             tree.selection_add(row_id)
         self._update_toolbar_state()
+        # Re-filter the Document Assignments table by the selected topics.
+        self._rebuild_doc_table()
 
-    def _create_doc_topics_table(self, parent, data):
-        """Doc-topic assignments table."""
+    def _create_doc_topics_section(self, parent, result: TopicResult):
+        """Document Assignments section: search box + Detail button + table (v0.4.0, WP4)."""
+        section = ttk.Frame(parent)
+        section.pack(fill=BOTH, expand=YES, pady=(20, 0))
+
+        # Header row: title + Detail button
+        header = ttk.Frame(section)
+        header.pack(fill=X)
+        ttk.Label(header, text="Document Assignments", font=("Helvetica", 11, "bold")).pack(side=LEFT)
+        self._btn_detail = ttk.Button(header, icon="info-circle-fill", text="Detail", bootstyle="info", command=self._on_detail)
+        self._btn_detail.pack(side=RIGHT)
+        self._btn_detail.config(state="disabled")
+
+        # Search row: entry + Search + Clear
+        search_row = ttk.Frame(section)
+        search_row.pack(fill=X, pady=(4, 0))
+        self._search_var = ttk.StringVar()
+        self._search_entry = ttk.Entry(search_row, textvariable=self._search_var, width=40)
+        self._search_entry.pack(side=LEFT, padx=(0, 4))
+        self._search_entry.bind("<Return>", lambda e: self._on_search())
+        self._btn_search = ttk.Button(search_row, icon="search", text="Search", bootstyle="primary", command=self._on_search)
+        self._btn_search.pack(side=LEFT, padx=(0, 4))
+        self._btn_clear = ttk.Button(search_row, icon="x-circle-fill", text="Clear", bootstyle="secondary", command=self._on_clear_search)
+        self._btn_clear.pack(side=LEFT)
+
+        # Table frame (rebuilt on search/clear/topic selection)
+        self._doc_table_frame = ttk.Frame(section)
+        self._doc_table_frame.pack(fill=BOTH, expand=YES)
+        self._build_doc_table(self._doc_table_frame, result)
+
+        # Filter status label
+        self._doc_filter_label = ttk.Label(section, text="", bootstyle="secondary")
+        self._doc_filter_label.pack(anchor=W, pady=(2, 0))
+
+    def _build_doc_table(self, parent, result: TopicResult):
+        """Build the Document Assignments table with the current search filter.
+
+        Columns: Doc Index · Document · Topic 1 · Prob 1. The Document cell shows
+        the first 50 chars, or a window around the query match when searching.
+        """
+        for widget in parent.winfo_children():
+            widget.destroy()
+
         container = ttk.Frame(parent)
         container.pack(fill=BOTH, expand=YES, pady=5)
 
         tree_frame = ttk.Frame(container)
         tree_frame.pack(fill=BOTH, expand=YES)
 
-        columns = ("Doc Index", "Topic 1", "Prob 1", "Topic 2", "Prob 2", "Topic 3", "Prob 3")
+        columns = ("Doc Index", "Document", "Topic 1", "Prob 1")
         tree = ttk.Treeview(
             tree_frame,
             columns=columns,
@@ -266,35 +321,116 @@ class SummaryPanel(ttk.Frame):
 
         for col in columns:
             tree.heading(col, text=col)
-            # Center IDs and Weights, left-align words
-            alignment = CENTER if "ID" in col or "Weight" in col or "Prob" in col else W
+            alignment = CENTER if "Index" in col or "Prob" in col else W
             tree.column(col, width=100, anchor=alignment)
+        tree.column("Document", width=300)
+
+        doc_topics = result.doc_topics
+        original_texts = result.metadata.get('original_texts') or []
+        query = self._search_query or ""
+        query_lower = query.lower()
+
+        # Matching doc indices (full-text, case-insensitive)
+        if query_lower:
+            matching = [
+                i for i, d in enumerate(doc_topics)
+                if i < len(original_texts) and query_lower in original_texts[i].lower()
+            ]
+        else:
+            matching = list(range(len(doc_topics)))
+
+        # Topic filter: when topics are selected in the topics table, show only
+        # docs whose Topic 1 (argmax) is one of the selected topics.
+        if self._selected_topics:
+            matching = [
+                i for i in matching
+                if doc_topics[i]
+                and max(doc_topics[i], key=doc_topics[i].get) in self._selected_topics
+            ]
 
         # Cap the per-document table so a large corpus does not render
         # tens of thousands of Treeview rows (audit M3).
         max_rows = 200
-        for i, doc_dict in enumerate(data[:max_rows]):
-            if not doc_dict:
-                tree.insert("", END, values=(i, "N/A", "0.00", "N/A", "0.00", "N/A", "0.00"))
-                continue
+        for i in matching[:max_rows]:
+            doc_dict = doc_topics[i]
+            text = original_texts[i] if i < len(original_texts) else ""
+            snippet = self._doc_snippet(text, query_lower)
+            if doc_dict:
+                topic_id = max(doc_dict, key=doc_dict.get)
+                prob = doc_dict[topic_id]
+                tree.insert("", END, iid=str(i), values=(i, snippet, f"Topic {topic_id}", f"{prob:.4f}"))
+            else:
+                tree.insert("", END, iid=str(i), values=(i, snippet, "N/A", "0.0000"))
 
-            # Get top 3 topics sorted by probability
-            sorted_topics = sorted(doc_dict.items(), key=lambda x: x[1], reverse=True)[:3]
-
-            # Create a list of 6 values (topic_id, prob) x 3
-            row_values = []
-            for j in range(3):
-                if j < len(sorted_topics):
-                    topic_id, prob = sorted_topics[j]
-                    row_values.extend([f"Topic {topic_id}", f"{prob:.4f}"])
-                else:
-                    row_values.extend(["N/A", "0.0000"])
-
-            tree.insert("", END, values=(i, *row_values))
-
-        if len(data) > max_rows:
+        if len(matching) > max_rows:
             ttk.Label(
                 container,
-                text=f"Showing first {max_rows} of {len(data)} documents.",
+                text=f"Showing first {max_rows} of {len(matching)} documents.",
                 bootstyle="secondary"
             ).pack(pady=2)
+
+        # Filter status
+        if self._doc_filter_label is not None:
+            parts = []
+            if self._selected_topics:
+                parts.append(f"{len(self._selected_topics)} selected topic(s)")
+            if query_lower:
+                parts.append(f"matching '{self._search_query}'")
+            self._doc_filter_label.config(
+                text=("Filtered by " + " and ".join(parts) + ".") if parts else "")
+
+        self._doc_tree = tree
+        tree.bind("<<TreeviewSelect>>", self._on_doc_select)
+        self._update_detail_state()
+
+    def _doc_snippet(self, text: str, query_lower: str) -> str:
+        """First 50 chars, or a window around the query match when searching."""
+        if not text:
+            return ""
+        if query_lower:
+            idx = text.lower().find(query_lower)
+            if idx != -1:
+                start = max(0, idx - 20)
+                end = min(len(text), idx + len(query_lower) + 20)
+                snippet = text[start:end]
+                if start > 0:
+                    snippet = "…" + snippet
+                if end < len(text):
+                    snippet = snippet + "…"
+                return snippet
+        return text[:50]
+
+    def _rebuild_doc_table(self):
+        """Rebuild the Document Assignments table with the current filters
+        (search query + selected topics)."""
+        if self._doc_table_frame is not None and self.appState.current_result is not None:
+            self._build_doc_table(self._doc_table_frame, self.appState.current_result)
+
+    def _on_search(self):
+        self._search_query = self._search_var.get().strip()
+        self._rebuild_doc_table()
+
+    def _on_clear_search(self):
+        self._search_query = ""
+        self._search_var.set("")
+        self._rebuild_doc_table()
+
+    def _on_doc_select(self, event):
+        self._update_detail_state()
+
+    def _update_detail_state(self):
+        if self._btn_detail is not None:
+            n = len(self._doc_tree.selection()) if self._doc_tree is not None else 0
+            self._btn_detail.config(state="normal" if n == 1 else "disabled")
+
+    def _on_detail(self):
+        if self._doc_tree is None:
+            return
+        selection = self._doc_tree.selection()
+        if len(selection) != 1:
+            return
+        result = self.appState.current_result
+        if result is None:
+            return
+        root = self.winfo_toplevel()
+        DocumentDetailWindow(root, result, int(selection[0]))
