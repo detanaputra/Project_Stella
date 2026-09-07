@@ -46,6 +46,11 @@ class TopicResult:
     topic_labels: Optional[Dict[int, str]] = None
     # User-provided names/interpretations per topic, set via topic refinement
     # (v0.4.0, WP1). Maps topic_id -> label; shown in the topics table.
+
+    model_id: Optional[str] = None
+    # Unique id for the trained model, generated at training time (v0.5.0, WP2).
+    # Timestamp-based; names the per-model persistence subfolders. Preserved
+    # across refinement.
 ```
 
 ---
@@ -125,11 +130,22 @@ class BaseAlgorithm(ABC):
     @abstractmethod
     def algorithm_name(self) -> str:
         """Human-readable name, e.g. "BERTopic"."""
+
+    @abstractmethod
+    def save_model(self, model, path: str) -> None:
+        """Persist a trained model to a directory (path) — the per-model
+        directory is the unit; each algorithm writes its native serialization."""
+
+    @abstractmethod
+    def load_model(self, path: str):
+        """Load a trained model from a directory (path)."""
 ```
 
 **Registered algorithms** (`app/models/algorithms/__init__.py`): `AVAILABLE_ALGORITHMS = {'BERTopic': BERTopicAlgorithm}`. Only BERTopic is registered today; `get_algorithm(name)` raises `ValueError` for unknown names.
 
 **BERTopic refinement** (v0.4.0, WP1): `BERTopicAlgorithm` adds `merge_topics(result, topic_ids)` and `delete_topics(result, topic_ids)` — both mutate the model via BERTopic's native `merge_topics`/`delete_topics` and return an updated `TopicResult` (documents of deleted topics → outlier -1).
+
+**BERTopic persistence** (v0.5.0, WP2): `save_model(model, path)` / `load_model(path)` use BERTopic's native `save()`/`load()` (`save_embedding_model=False` — the embedding model is re-instantiated by name from the local cache).
 
 ---
 

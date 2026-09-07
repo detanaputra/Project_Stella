@@ -177,10 +177,10 @@ When choosing between options:
 - [x] test services (`Exporter`, `topic_quality`, `static_viz`, `ProjectService` current behavior)
 
 ### WP2 — Persistence, model layer
-- [ ] add `model_id` to `TopicResult` (generated at training time)
-- [ ] add `save_model(model, path)` / `load_model(path)` to `BaseAlgorithm`
-- [ ] implement BERTopic `save_model`/`load_model` via native `model.save()`/`BERTopic.load()` (embedding-model include/exclude decision)
-- [ ] write the `save → load → compare` round-trip test (doubles as the feasibility check)
+- [x] add `model_id` to `TopicResult` (generated at training time)
+- [x] add `save_model(model, path)` / `load_model(path)` to `BaseAlgorithm`
+- [x] implement BERTopic `save_model`/`load_model` via native `model.save()`/`BERTopic.load()` (embedding-model include/exclude decision)
+- [x] write the `save → load → compare` round-trip test (doubles as the feasibility check)
 
 ### WP3 — Persistence, service + UI
 - [ ] rework `ProjectService` to a single-file zip bundle (`.stella` = archive): `project.json` (state + full result data) + `model/{model_id}/` + `viz/{model_id}/`

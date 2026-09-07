@@ -14,7 +14,7 @@ Cycle 1 (v0.1.0), Cycle 2 (v0.2.0), Cycle 3 (v0.3.0), and Cycle 4 (v0.4.0) are *
 - **Cycle 5 (v0.5.0) on the `v0.5.0` branch (in progress):** committed `pytest` suite (WP1) — 33 tests over the model + controller layer; persistence (WP2/WP3) planned.
 - `cycle_plan.md` documents v0.1.0–v0.4.0 (completed) and v0.5.0 (planned); `ideas.md` is the raw idea capture area.
 - Cycle records: `cycle_0.md` (retrospective), `cycle_1.md` + `cycle_1_review.md`, `cycle_2.md` + `cycle_2_review.md`, `cycle_3.md` + `cycle_3_review.md`, `cycle_4.md` + `cycle_4_review.md`.
-- Control layer: `decisions.md` (D-001..D-023), `repository_structure.md`, `snapshot_workflow.md`.
+- Control layer: `decisions.md` (D-001..D-024), `repository_structure.md`, `snapshot_workflow.md`.
 - Working layer: `source_of_truth.md`, `current_state.md`, `tasks.md`, `cycle_plan.md`, `ideas.md`.
 - Knowledge layer: `reflection.md`, SKU files under `dev_docs/current/05_knowledge/skus/` (cycle-coded: `v0.1.0.md` SKU-01-01…25 with v0.1.1 merged, `v0.2.0.md` SKU-02-01…04, `v0.3.0.md` SKU-03-01…04, `v0.4.0.md` SKU-04-01…06).
 - GitHub remote `origin` → github.com/detanaputra/Project_Stella.
