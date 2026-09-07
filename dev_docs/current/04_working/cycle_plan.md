@@ -22,7 +22,7 @@ Harden the codebase with a committed test suite, then deliver the designed model
 `pytest` passes on the model/controller layer; a user can save a project, reload it, and see the same topics, metrics, and visualisations — with the trained model restored (no retrain).
 
 ### Status
-Planned.
+Completed and ready to close.
 
 ## Version 0.4.0
 

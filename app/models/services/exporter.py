@@ -1,30 +1,68 @@
 import json
 import pandas as pd
-from typing import Any
+from typing import Any, Dict, Iterator, Tuple
+from app.models.app_state import AppState
 from app.models.topic_result import TopicResult
 
-class Exporter:
-    """Export results to CSV, JSON, and academic methodology reports."""
 
-    def to_csv(self, result: TopicResult, output_path: str) -> str:
-        """Export topics to CSV."""
-        topics_df = pd.DataFrame([
-            {"topic": i, **topic_weights}
-            for i, topic_weights in enumerate(result.topics)
-        ])
-        topics_df.to_csv(output_path, index=False)
+class Exporter:
+    """Export results to CSV, JSON, and academic methodology reports.
+
+    Exports are multi-model-ready: they iterate over every model in the state
+    (single today) and tag each row/entry with its ``model_id``. The JSON record
+    mimics the ``models`` dict of ``project.json`` (minus the input texts).
+    """
+
+    def to_json(self, state: AppState, output_path: str) -> str:
+        """Export all models as a JSON record (models dict, no texts)."""
+        models = {}
+        for model_id, result, algo, params in self._iter_models(state):
+            models[model_id] = {
+                "selected_algorithm": algo,
+                "algorithm_params": params,
+                "result": self._serialize_result(result),
+            }
+        with open(output_path, 'w', encoding='utf-8') as f:
+            json.dump({"models": models}, f, indent=4)
         return output_path
 
-    def to_json(self, result: TopicResult, output_path: str) -> str:
-        """Export full result to JSON."""
-        # Handle TopicResult dataclass serialization
-        data = {
-            "model_info": result.model_info,
-            "topics": result.topics,
-            "doc_topics": result.doc_topics
-        }
-        with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=4)
+    def to_csv_topics(self, state: AppState, output_path: str) -> str:
+        """Export the topics table for all models (with a model_id column)."""
+        rows = []
+        for model_id, result, _, _ in self._iter_models(state):
+            labels = result.topic_labels or {}
+            for i, topic_dict in enumerate(result.topics):
+                sorted_words = sorted(topic_dict.items(), key=lambda x: x[1], reverse=True)[:3]
+                row = {"Model ID": model_id, "Topic ID": i, "Label": labels.get(i, "")}
+                for j in range(3):
+                    if j < len(sorted_words):
+                        word, weight = sorted_words[j]
+                        row[f"Word {j + 1}"] = word
+                        row[f"Weight {j + 1}"] = f"{weight:.2f}"
+                    else:
+                        row[f"Word {j + 1}"] = ""
+                        row[f"Weight {j + 1}"] = ""
+                rows.append(row)
+        pd.DataFrame(rows).to_csv(output_path, index=False)
+        return output_path
+
+    def to_csv_assignments(self, state: AppState, output_path: str) -> str:
+        """Export the doc-topic assignments for all models (with a model_id column)."""
+        rows = []
+        for model_id, result, _, _ in self._iter_models(state):
+            for i, doc_dict in enumerate(result.doc_topics):
+                sorted_topics = sorted(doc_dict.items(), key=lambda x: x[1], reverse=True)[:3]
+                row = {"Model ID": model_id, "Doc Index": i}
+                for j in range(3):
+                    if j < len(sorted_topics):
+                        topic_id, prob = sorted_topics[j]
+                        row[f"Topic {j + 1}"] = topic_id
+                        row[f"Prob {j + 1}"] = f"{prob:.4f}"
+                    else:
+                        row[f"Topic {j + 1}"] = ""
+                        row[f"Prob {j + 1}"] = ""
+                rows.append(row)
+        pd.DataFrame(rows).to_csv(output_path, index=False)
         return output_path
 
     def generate_methodology_report(self, result: TopicResult, output_path: str) -> str:
@@ -55,3 +93,20 @@ class Exporter:
             f.write("\n".join(report))
 
         return output_path
+
+    def _iter_models(self, state: AppState) -> Iterator[Tuple[str, TopicResult, str, Dict[str, Any]]]:
+        """Yield (model_id, result, algorithm, params) for every model in the
+        state. Single-model today; multi-model will iterate state.models."""
+        result = state.current_result
+        if result is not None:
+            yield result.model_id or "model", result, state.selected_algorithm, state.algorithm_params
+
+    def _serialize_result(self, result: TopicResult) -> Dict[str, Any]:
+        return {
+            "topics": result.topics,
+            "doc_topics": result.doc_topics,
+            "model_info": result.model_info,
+            "quality_metrics": result.quality_metrics,
+            "topic_labels": result.topic_labels,
+            "model_id": result.model_id,
+        }

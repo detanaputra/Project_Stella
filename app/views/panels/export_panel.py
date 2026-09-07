@@ -27,8 +27,9 @@ class ExportPanel(ttk.Frame):
         btn_frame = ttk.Frame(self)
         btn_frame.pack(anchor=W)
 
-        ttk.Button(btn_frame, text="Export CSV", bootstyle="outline-secondary", command=self._on_export_csv).pack(fill=X, pady=5)
-        ttk.Button(btn_frame, text="Export JSON", bootstyle="outline-secondary", command=self._on_export_json).pack(fill=X, pady=5)
+        ttk.Button(btn_frame, text="Export Topics", bootstyle="outline-secondary", command=self._on_export_csv_topics).pack(fill=X, pady=5)
+        ttk.Button(btn_frame, text="Export Document Assignments", bootstyle="outline-secondary", command=self._on_export_csv_assignments).pack(fill=X, pady=5)
+        ttk.Button(btn_frame, text="Export Model Record (JSON)", bootstyle="outline-secondary", command=self._on_export_json).pack(fill=X, pady=5)
         ttk.Button(btn_frame, text="Export Methodology Report", bootstyle="outline-secondary", command=self._on_export_report).pack(fill=X, pady=5)
         self._viz_btn = ttk.Button(
             btn_frame,
@@ -48,14 +49,23 @@ class ExportPanel(ttk.Frame):
             return False
         return True
 
-    def _on_export_csv(self):
+    def _on_export_csv_topics(self):
         if not self._require_result():
             return
         path = filedialog.asksaveasfilename(
             parent=self, defaultextension=".csv", filetypes=[("CSV files", "*.csv")]
         )
         if path:
-            self.controller.export_csv(path)
+            self.controller.export_csv_topics(path)
+
+    def _on_export_csv_assignments(self):
+        if not self._require_result():
+            return
+        path = filedialog.asksaveasfilename(
+            parent=self, defaultextension=".csv", filetypes=[("CSV files", "*.csv")]
+        )
+        if path:
+            self.controller.export_csv_assignments(path)
 
     def _on_export_json(self):
         if not self._require_result():

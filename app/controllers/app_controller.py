@@ -153,15 +153,20 @@ class AppController:
             self.appState.analysis_status = ""
             self.appState.notify()
 
-    def export_csv(self, output_path: str) -> None:
-        """Export the current TopicResult to CSV."""
+    def export_csv_topics(self, output_path: str) -> None:
+        """Export the topics table for all models to CSV (v0.5.0, WP3)."""
         if self.appState.current_result:
-            self.exporter.to_csv(self.appState.current_result, output_path)
+            self.exporter.to_csv_topics(self.appState, output_path)
+
+    def export_csv_assignments(self, output_path: str) -> None:
+        """Export the doc-topic assignments for all models to CSV (v0.5.0, WP3)."""
+        if self.appState.current_result:
+            self.exporter.to_csv_assignments(self.appState, output_path)
 
     def export_json(self, output_path: str) -> None:
-        """Export the current TopicResult to JSON (audit M4)."""
+        """Export all models as a JSON record (v0.5.0, WP3)."""
         if self.appState.current_result:
-            self.exporter.to_json(self.appState.current_result, output_path)
+            self.exporter.to_json(self.appState, output_path)
 
     def export_methodology_report(self, output_path: str) -> None:
         """Export the methodology report for the current TopicResult."""

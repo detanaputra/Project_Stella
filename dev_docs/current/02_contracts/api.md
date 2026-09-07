@@ -274,13 +274,13 @@ def save_static_charts(model, output_dir: str) -> Dict[str, str]:
 ```python
 class ProjectService:
     def save_project(self, state: AppState, output_path: str) -> str:
-        """Serialize selected_file_path, selected_algorithm, algorithm_params, and
-        result_metadata (NOT the model) to a JSON `.stella` file."""
+        """Serialize state + full result data into a single-file zip bundle
+        (`.stella` = archive): project.json + model/{model_id}/ + viz/{model_id}/."""
 
     def load_project(self, input_path: str, state: AppState) -> None:
-        """Deserialize into state; validates the algorithm name (falls back to
-        BERTopic), merges params over defaults, clears non-existent file paths,
-        and resets current_result to None (the model object cannot be restored)."""
+        """Restore state + result from a zip bundle; validates the algorithm name
+        (falls back to BERTopic), merges params over defaults, clears non-existent
+        file paths, and rebuilds current_result with the model + viz restored."""
 ```
 
 ---

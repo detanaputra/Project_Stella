@@ -183,11 +183,11 @@ When choosing between options:
 - [x] write the `save → load → compare` round-trip test (doubles as the feasibility check)
 
 ### WP3 — Persistence, service + UI
-- [ ] rework `ProjectService` to a single-file zip bundle (`.stella` = archive): `project.json` (state + full result data) + `model/{model_id}/` + `viz/{model_id}/`
-- [ ] timestamp model-id + editable display name
-- [ ] update controller save/load methods
-- [ ] update the save/load dialogs (file → archive)
-- [ ] update existing `ProjectService` tests + add new round-trip tests
+- [x] rework `ProjectService` to a single-file zip bundle (`.stella` = archive): `project.json` (state + full result data) + `model/{model_id}/` + `viz/{model_id}/`
+- [x] timestamp model-id + editable display name (model-id done; display name deferred to a future cycle per the design)
+- [x] update controller save/load methods (verified: delegate unchanged, ProjectService signature stable)
+- [x] update the save/load dialogs (file → archive) (verified: `.stella` file UX unchanged; the format is internal)
+- [x] update existing `ProjectService` tests + add new round-trip tests
 
 ## Small Operational Tasks
 

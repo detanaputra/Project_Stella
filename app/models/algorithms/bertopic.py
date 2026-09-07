@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from datetime import datetime
 from typing import List, Dict, Any, Optional
@@ -235,12 +236,14 @@ class BERTopicAlgorithm(BaseAlgorithm):
     def save_model(self, model, path: str) -> None:
         """Persist a trained BERTopic model to a directory (v0.5.0, WP2).
 
-        ``save_embedding_model=False`` keeps the bundle small; the embedding
-        model is re-instantiated by name from the local sentence-transformers
-        cache on load (offline after the first download).
+        BERTopic's native ``save()`` writes a single pickle file; we place it
+        inside the per-model directory as ``model.pt``. ``save_embedding_model=
+        False`` keeps the bundle small — the embedding model is re-instantiated
+        by name from the local sentence-transformers cache on load.
         """
-        model.save(path, save_embedding_model=False)
+        os.makedirs(path, exist_ok=True)
+        model.save(os.path.join(path, "model.pt"), save_embedding_model=False)
 
     def load_model(self, path: str):
         """Load a trained BERTopic model from a directory (v0.5.0, WP2)."""
-        return BERTopic.load(path)
+        return BERTopic.load(os.path.join(path, "model.pt"))
