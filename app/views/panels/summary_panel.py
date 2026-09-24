@@ -283,10 +283,10 @@ class SummaryPanel(ttk.Frame):
         # Table frame (rebuilt on search/clear/topic selection)
         self._doc_table_frame = ttk.Frame(section)
         self._doc_table_frame.pack(fill=BOTH, expand=YES)
-        self._build_doc_table(self._doc_table_frame, result)
-
-        # Filter status label
+        # Filter status label — created before the table so _build_doc_table can
+        # update it without referencing a stale, destroyed label on re-render.
         self._doc_filter_label = ttk.Label(section, text="", bootstyle="secondary")
+        self._build_doc_table(self._doc_table_frame, result)
         self._doc_filter_label.pack(anchor=W, pady=(2, 0))
 
     def _build_doc_table(self, parent, result: TopicResult):

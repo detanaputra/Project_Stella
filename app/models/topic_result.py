@@ -42,3 +42,10 @@ class TopicResult:
     User-provided names/interpretations per topic, set via topic refinement
     (v0.4.0, WP1). Maps topic_id -> label; shown in the topics table.
     """
+
+    model_id: Optional[str] = None
+    """
+    Unique id for the trained model, generated at training time (v0.5.0, WP2).
+    Timestamp-based (e.g. '20260905-193012'); names the per-model persistence
+    subfolders (model/{model_id}/, viz/{model_id}/). Preserved across refinement.
+    """

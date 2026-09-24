@@ -60,3 +60,20 @@ class BaseAlgorithm(ABC):
         Returns: String like "BERTopic", "LDA", "NMF"
         """
         pass
+
+    @abstractmethod
+    def save_model(self, model, path: str) -> None:
+        """
+        Persist a trained model to a directory (path).
+
+        The per-model directory (e.g. model/{model_id}/) is the unit; each
+        algorithm writes its library's native serialization inside it.
+        """
+        pass
+
+    @abstractmethod
+    def load_model(self, path: str):
+        """
+        Load a trained model from a directory (path).
+        """
+        pass

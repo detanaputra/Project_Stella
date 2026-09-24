@@ -46,6 +46,11 @@ class TopicResult:
     topic_labels: Optional[Dict[int, str]] = None
     # User-provided names/interpretations per topic, set via topic refinement
     # (v0.4.0, WP1). Maps topic_id -> label; shown in the topics table.
+
+    model_id: Optional[str] = None
+    # Unique id for the trained model, generated at training time (v0.5.0, WP2).
+    # Timestamp-based; names the per-model persistence subfolders. Preserved
+    # across refinement.
 ```
 
 ---
@@ -125,11 +130,22 @@ class BaseAlgorithm(ABC):
     @abstractmethod
     def algorithm_name(self) -> str:
         """Human-readable name, e.g. "BERTopic"."""
+
+    @abstractmethod
+    def save_model(self, model, path: str) -> None:
+        """Persist a trained model to a directory (path) — the per-model
+        directory is the unit; each algorithm writes its native serialization."""
+
+    @abstractmethod
+    def load_model(self, path: str):
+        """Load a trained model from a directory (path)."""
 ```
 
 **Registered algorithms** (`app/models/algorithms/__init__.py`): `AVAILABLE_ALGORITHMS = {'BERTopic': BERTopicAlgorithm}`. Only BERTopic is registered today; `get_algorithm(name)` raises `ValueError` for unknown names.
 
 **BERTopic refinement** (v0.4.0, WP1): `BERTopicAlgorithm` adds `merge_topics(result, topic_ids)` and `delete_topics(result, topic_ids)` — both mutate the model via BERTopic's native `merge_topics`/`delete_topics` and return an updated `TopicResult` (documents of deleted topics → outlier -1).
+
+**BERTopic persistence** (v0.5.0, WP2): `save_model(model, path)` / `load_model(path)` use BERTopic's native `save()`/`load()` (`save_embedding_model=False` — the embedding model is re-instantiated by name from the local cache).
 
 ---
 
@@ -190,8 +206,15 @@ class TopicProcessor:
 
 ```python
 class Exporter:
-    def to_csv(self, result: TopicResult, output_path: str) -> str:  ...
-    def to_json(self, result: TopicResult, output_path: str) -> str: ...
+    def to_json(self, state: AppState, output_path: str) -> str:
+        """Export all models as a JSON record (models dict, no texts)."""
+
+    def to_csv_topics(self, state: AppState, output_path: str) -> str:
+        """Export the topics table for all models (with a model_id column)."""
+
+    def to_csv_assignments(self, state: AppState, output_path: str) -> str:
+        """Export the doc-topic assignments for all models (with a model_id column)."""
+
     def generate_methodology_report(self, result: TopicResult, output_path: str) -> str:
         """Markdown report for academic reproducibility from result.model_info."""
 ```
@@ -258,13 +281,13 @@ def save_static_charts(model, output_dir: str) -> Dict[str, str]:
 ```python
 class ProjectService:
     def save_project(self, state: AppState, output_path: str) -> str:
-        """Serialize selected_file_path, selected_algorithm, algorithm_params, and
-        result_metadata (NOT the model) to a JSON `.stella` file."""
+        """Serialize state + full result data into a single-file zip bundle
+        (`.stella` = archive): project.json + model/{model_id}/ + viz/{model_id}/."""
 
     def load_project(self, input_path: str, state: AppState) -> None:
-        """Deserialize into state; validates the algorithm name (falls back to
-        BERTopic), merges params over defaults, clears non-existent file paths,
-        and resets current_result to None (the model object cannot be restored)."""
+        """Restore state + result from a zip bundle; validates the algorithm name
+        (falls back to BERTopic), merges params over defaults, clears non-existent
+        file paths, and rebuilds current_result with the model + viz restored."""
 ```
 
 ---
@@ -319,7 +342,8 @@ class AppController:
         topics table re-renders with the label)."""
 
     # Export
-    def export_csv(self, output_path: str) -> None: ...
+    def export_csv_topics(self, output_path: str) -> None: ...
+    def export_csv_assignments(self, output_path: str) -> None: ...
     def export_json(self, output_path: str) -> None: ...
     def export_methodology_report(self, output_path: str) -> None: ...
     def export_visualizations(self) -> Optional[str]:
@@ -366,7 +390,7 @@ All views follow the same contract:
 | `panels/static_viz_panel.py` | `StaticVizPanel` | Displays the pre-generated static chart PNG per BERTopic visualization + "Open interactive" button (opens the pre-generated HTML) |
 | `panels/algorithm_settings_panel.py` | `AlgorithmSettingsPanel` | Persistent left column: BERTopic/UMAP/HDBSCAN param sections; Retrain button; scrollable; re-renders only on structural change |
 | `panels/loading_panel.py` | `LoadingPanel` | Modal overlay; auto-closes when `analysis_in_progress` → false |
-| `panels/export_panel.py` | `ExportPanel` | CSV/JSON/report export + browser visualizations; shown in a File → Export dialog (v0.3.0 WP2) |
+| `panels/export_panel.py` | `ExportPanel` | Topics/assignments CSV + model-record JSON + report export + browser visualizations; shown in a File → Export dialog (v0.3.0 WP2) |
 | `wizard/wizard_main.py` + `panel_*.py` | `TopicModelWizard` etc. | 4-step setup wizard (algorithm/file → hyperparameters → preview → summary) |
 
 The wizard's `_handle_train` syncs values **through the controller** (`on_file_selected`, `on_algorithm_changed`, `set_params`) before calling `analysis_controller.run_analysis()`.

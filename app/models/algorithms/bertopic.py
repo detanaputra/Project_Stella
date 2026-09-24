@@ -1,5 +1,7 @@
+import os
 import numpy as np
-from typing import List, Dict, Any
+from datetime import datetime
+from typing import List, Dict, Any, Optional
 from bertopic import BERTopic
 import bertopic
 from hdbscan import HDBSCAN
@@ -11,12 +13,14 @@ from app.models.topic_result import TopicResult
 import traceback
 
 
-def _build_result(model, texts: List[str], params: Dict[str, Any]) -> TopicResult:
+def _build_result(model, texts: List[str], params: Dict[str, Any],
+                  model_id: Optional[str] = None) -> TopicResult:
     """Build a standardized TopicResult from a fitted BERTopic model.
 
     Shared by training and refinement so both produce identical result shapes
     (and the doc-topic probability mapping stays correct after topic_mapper_
-    remaps ids).
+    remaps ids). ``model_id`` is generated at training time (timestamp-based)
+    and preserved across refinement.
     """
     # 1. Extract topics (term -> weight), excluding the -1 outlier topic.
     topic_ids = sorted(t for t in model.get_topics().keys() if t != -1)
@@ -59,7 +63,10 @@ def _build_result(model, texts: List[str], params: Dict[str, Any]) -> TopicResul
         "num_documents": str(len(texts)),
         "num_topics": str(len(topic_ids)),
     }
-    return TopicResult(topics=topics_list, doc_topics=doc_topics, metadata=metadata, model_info=model_info)
+    if model_id is None:
+        model_id = datetime.now().strftime("%Y%m%d-%H%M%S")
+    return TopicResult(topics=topics_list, doc_topics=doc_topics, metadata=metadata,
+                       model_info=model_info, model_id=model_id)
 
 
 class BERTopicAlgorithm(BaseAlgorithm):
@@ -172,21 +179,32 @@ class BERTopicAlgorithm(BaseAlgorithm):
                     except (TypeError, ValueError):
                         nr_topics = None  # unrecognized input -> no reduction
 
-            model = BERTopic(
-                min_topic_size=int(params.get('bertopic_min_topic_size', 10)),
-                embedding_model=params.get('bertopic_embedding_model', 'all-MiniLM-L6-v2'),
-                calculate_probabilities=bool(params.get('bertopic_calculate_probabilities', True)),
-                top_n_words=int(params.get('bertopic_top_n_words', 10)),
-                nr_topics=nr_topics,
-                low_memory=bool(params.get('bertopic_low_memory', False)),
-                umap_model=umap_model,
-                hdbscan_model=clusterer,
-                vectorizer_model=vectorizer,
-                ctfidf_model=ctfidf_model
-            )
+            def _make_model(nr_topics):
+                return BERTopic(
+                    min_topic_size=int(params.get('bertopic_min_topic_size', 10)),
+                    embedding_model=params.get('bertopic_embedding_model', 'all-MiniLM-L6-v2'),
+                    calculate_probabilities=bool(params.get('bertopic_calculate_probabilities', True)),
+                    top_n_words=int(params.get('bertopic_top_n_words', 10)),
+                    nr_topics=nr_topics,
+                    low_memory=bool(params.get('bertopic_low_memory', False)),
+                    umap_model=umap_model,
+                    hdbscan_model=clusterer,
+                    vectorizer_model=vectorizer,
+                    ctfidf_model=ctfidf_model
+                )
 
-            # Fit the model
-            model.fit_transform(texts)
+            model = _make_model(nr_topics)
+            try:
+                model.fit_transform(texts)
+            except Exception:
+                if nr_topics == 'auto':
+                    # BERTopic's 'auto' topic-reduction re-clusters the outlier
+                    # documents and crashes when there are none (all docs in real
+                    # topics); retry without reduction so training succeeds.
+                    model = _make_model(None)
+                    model.fit_transform(texts)
+                else:
+                    raise
 
             # Build the standardized result (shared with refinement).
             return _build_result(model, texts, params)
@@ -200,7 +218,8 @@ class BERTopicAlgorithm(BaseAlgorithm):
         model = result.metadata['model']
         texts = result.metadata['texts']
         model.merge_topics(texts, topic_ids)
-        new_result = _build_result(model, texts, result.metadata.get('params', {}))
+        new_result = _build_result(model, texts, result.metadata.get('params', {}),
+                                   model_id=result.model_id)
         new_result.metadata['original_texts'] = result.metadata.get('original_texts')
         return new_result
 
@@ -209,6 +228,22 @@ class BERTopicAlgorithm(BaseAlgorithm):
         model = result.metadata['model']
         texts = result.metadata['texts']
         model.delete_topics(topic_ids)
-        new_result = _build_result(model, texts, result.metadata.get('params', {}))
+        new_result = _build_result(model, texts, result.metadata.get('params', {}),
+                                   model_id=result.model_id)
         new_result.metadata['original_texts'] = result.metadata.get('original_texts')
         return new_result
+
+    def save_model(self, model, path: str) -> None:
+        """Persist a trained BERTopic model to a directory (v0.5.0, WP2).
+
+        BERTopic's native ``save()`` writes a single pickle file; we place it
+        inside the per-model directory as ``model.pt``. ``save_embedding_model=
+        False`` keeps the bundle small — the embedding model is re-instantiated
+        by name from the local sentence-transformers cache on load.
+        """
+        os.makedirs(path, exist_ok=True)
+        model.save(os.path.join(path, "model.pt"), save_embedding_model=False)
+
+    def load_model(self, path: str):
+        """Load a trained BERTopic model from a directory (v0.5.0, WP2)."""
+        return BERTopic.load(os.path.join(path, "model.pt"))

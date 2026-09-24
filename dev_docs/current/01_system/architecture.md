@@ -34,6 +34,7 @@ class AppState:
     
     # Observer + thread-safety internals
     _observers: List[weakref.WeakMethod] = field(default_factory=list, init=False, repr=False)
+    # Bound methods are wrapped in WeakMethod; plain callables (lambdas) are stored as-is.
     event_queue: queue.Queue = field(default_factory=queue.Queue, init=False, repr=False)
     ui_callbacks: queue.Queue = field(default_factory=queue.Queue, init=False, repr=False)
     
@@ -317,7 +318,7 @@ class AppController:
     
     def on_algorithm_changed(self, algorithm_name: str):
         """Handle algorithm switch"""
-        from algorithms import get_algorithm
+        from app.models.algorithms import get_algorithm
         
         algo = get_algorithm(algorithm_name)
         self.state.selected_algorithm = algorithm_name
@@ -401,6 +402,17 @@ class BaseAlgorithm(ABC):
     def algorithm_name(self) -> str:
         """Return human-readable algorithm name"""
         pass
+    
+    @abstractmethod
+    def save_model(self, model, path: str) -> None:
+        """Persist a trained model to a directory (path) — the per-model
+        directory is the unit; each algorithm writes its native serialization."""
+        pass
+    
+    @abstractmethod
+    def load_model(self, path: str):
+        """Load a trained model from a directory (path)."""
+        pass
 ```
 
 ### Registry Pattern
@@ -443,7 +455,7 @@ def get_algorithm(name: str) -> BaseAlgorithm:
 
 ## Testing Strategy (Unit Tests)
 
-> **Status:** no committed `tests/` suite exists yet. Correctness is verified with ad-hoc headless smoke tests (e.g. after the M-fix batch in the v0.1.1 audit) and the occasional live-Tk check. A proper `tests/` tree is planned; the intended layout is described below.
+> **Status:** a committed `tests/` suite exists (v0.5.0, WP1) covering the model + controller layer headless; the intended layout is described below. View testing is deferred until the suite is extended.
 
 The MODEL layer is unit-testable without a GUI (no ttkbootstrap imports), so tests can run headless:
 - **AppState** — subscription, notification, and the event-queue dispatch (`notify()` → `process_events()`).

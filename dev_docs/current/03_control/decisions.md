@@ -222,3 +222,18 @@ Verifying before deleting prevents silent work loss; branching fresh from `main`
 - **Rationale:** A research GUI gets the most value from an in-app static preview of every visualisation plus an "Open interactive" button for the real Plotly figure, without shipping a browser engine. Front-loading the expensive once-only work into the wait the user already endures (training) makes every interaction instant. Browsers navigate to `http://localhost` reliably.
 - **Consequences:** The pipeline takes a few extra seconds (≈2s on the sample corpus); the 5 viz tabs appear when a result exists; the pywebview separate-process route (D-009) is no longer used by any view and was retired in Cycle 4 (v0.4.0).
 - **Review Trigger:** If training time becomes a concern for large corpora, revisit pre-generation (lazy/on-demand). If packaging (PyInstaller) changes process behavior, re-verify the localhost server.
+
+---
+
+## Cycle 5 Decisions
+
+### D-024: Design-changing implementations must be accompanied by automated tests
+- **Status:** active
+- **Context:** Cycle 5 introduced the first committed test suite (WP1). The cycle-4 review flagged "no automated tests" as the top risk, and the suite immediately caught a real bug (the `nr_topics='auto'` crash on no-outlier corpora). For the suite to keep its value, it must stay in lockstep with the code.
+- **Decision:** Every design-changing implementation must be accompanied by automated testing whenever appropriate:
+  - a feature addition must add a corresponding test;
+  - retiring/removing a code path must modify or remove the corresponding test (if any);
+  - a contract or interface change must update the tests that exercise it.
+- **Rationale:** A test suite that lags the code silently loses its value — it stops catching regressions and gives false confidence. Keeping tests in the same change as the code makes each change a self-contained, verifiable unit.
+- **Consequences:** Code changes and their tests land in the same commit; the suite grows with the codebase; review can check that a change is accompanied by its test.
+- **Review Trigger:** If the suite becomes a bottleneck (e.g. slow BERTopic training in CI), revisit the tooling — but the principle (tests travel with the change) stands.
