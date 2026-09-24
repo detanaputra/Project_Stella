@@ -28,7 +28,7 @@ This note is a **reusable control note**. Update it in the same change as any st
 | `app/` (models/views/controllers/services) | Research Artefact | The implementation truth — what actually exists and runs |
 | `main.py` | Entry point | — |
 | `tests/` | Research Artefact (test suite) | pytest suite for the model + controller layer (v0.5.0 WP1) |
-| `notebooks/`, `sample_dataset.csv/.xlsx` | Explore-phase artefacts / test data | — |
+| `notebooks/`, `sample_dataset.csv` | Explore-phase artefacts / test data | — |
 
 ### System & contracts
 | File | SHAPR role | Notes |
@@ -91,7 +91,7 @@ This note is a **reusable control note**. Update it in the same change as any st
 ### Reference
 | File | SHAPR role | Notes |
 |---|---|---|
-| `dev_docs/example_docs/` | Reference vault | The SHAPR example these conventions come from; not part of this project's own docs |
+| `dev_docs/example_docs/` | Reference vault (not present) | The SHAPR example these conventions come from; not in this repo — the conventions are distilled in `dev_docs/llm_guidance/` |
 
 ## Authority notes
 

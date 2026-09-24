@@ -34,6 +34,7 @@ class AppState:
     
     # Observer + thread-safety internals
     _observers: List[weakref.WeakMethod] = field(default_factory=list, init=False, repr=False)
+    # Bound methods are wrapped in WeakMethod; plain callables (lambdas) are stored as-is.
     event_queue: queue.Queue = field(default_factory=queue.Queue, init=False, repr=False)
     ui_callbacks: queue.Queue = field(default_factory=queue.Queue, init=False, repr=False)
     
@@ -317,7 +318,7 @@ class AppController:
     
     def on_algorithm_changed(self, algorithm_name: str):
         """Handle algorithm switch"""
-        from algorithms import get_algorithm
+        from app.models.algorithms import get_algorithm
         
         algo = get_algorithm(algorithm_name)
         self.state.selected_algorithm = algorithm_name
@@ -400,6 +401,17 @@ class BaseAlgorithm(ABC):
     @abstractmethod
     def algorithm_name(self) -> str:
         """Return human-readable algorithm name"""
+        pass
+    
+    @abstractmethod
+    def save_model(self, model, path: str) -> None:
+        """Persist a trained model to a directory (path) — the per-model
+        directory is the unit; each algorithm writes its native serialization."""
+        pass
+    
+    @abstractmethod
+    def load_model(self, path: str):
+        """Load a trained model from a directory (path)."""
         pass
 ```
 

@@ -163,7 +163,7 @@ When choosing between options:
 
 - [x] decide Cycle 5 scope (test suite first, then model persistence — per the Cycle 4 close assessment)
 - [x] write the `cycle_plan.md` v0.5.0 section
-- [ ] update `current_state.md` for the cycle
+- [x] update `current_state.md` for the cycle
 
 ## Cycle 5 Implementation Tasks (v0.5.0)
 

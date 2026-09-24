@@ -75,6 +75,7 @@ pytest
 ### Run with Coverage
 
 ```bash
+# Requires pytest-cov (not in requirements-dev.txt yet)
 pytest --cov=. --cov-report=html
 # Open htmlcov/index.html to see coverage report
 ```
@@ -89,30 +90,27 @@ pytest tests/test_models/test_app_state.py -v
 
 ```
 tests/
+├── conftest.py
+├── fixtures/
+│   ├── sample_data.csv
+│   ├── sample_data.txt
+│   └── notes.md
 ├── test_models/
 │   ├── test_app_state.py
-│   ├── test_algorithms/
-│   │   ├── test_base_algorithm.py
-│   │   ├── test_bertopic.py
-│   │   └── test_lda.py
-│   └── test_services/
-│       ├── test_data_loader.py
-│       ├── test_processor.py
-│       ├── test_exporter.py
-│       └── test_visualizer.py
+│   ├── test_data_loader.py
+│   └── test_algorithms/
+│       └── test_bertopic.py
 ├── test_controllers/
 │   ├── test_app_controller.py
 │   └── test_analysis_controller.py
-├── test_views/
-│   ├── test_summary_panel.py
-│   ├── test_algorithm_settings_panel.py
-│   ├── test_metric_panel.py
-│   ├── test_static_viz_panel.py
-│   ├── test_export_panel.py
-│   └── test_document_detail.py
-└── fixtures/
-    └── sample_data.csv
+└── test_services/
+    ├── test_exporter.py
+    ├── test_project_service.py
+    ├── test_static_viz.py
+    └── test_topic_quality.py
 ```
+
+View testing is deferred (the model + controller layer is covered headless).
 
 ### Example Unit Test
 
@@ -136,6 +134,7 @@ def test_app_state_subscribe():
     state.subscribe(lambda s: called.append(s))
     state.selected_file_path = "test.csv"
     state.notify()
+    state.process_events()  # observers run on the main-thread poll
     
     assert len(called) == 1
     assert called[0].selected_file_path == "test.csv"
@@ -145,19 +144,23 @@ def test_app_state_subscribe():
 
 ```python
 # tests/test_controllers/test_app_controller.py
-import pytest
+import os
 from app.models.app_state import AppState
 from app.controllers.app_controller import AppController
-from tests.fixtures import sample_csv_path
+
+FIXTURES = os.path.join(os.path.dirname(__file__), "..", "fixtures")
+
+def _path(name):
+    return os.path.join(FIXTURES, name)
 
 def test_on_file_selected():
     """Test file selection updates state"""
     state = AppState()
     controller = AppController(state)
     
-    controller.on_file_selected(sample_csv_path())
+    controller.on_file_selected(_path("sample_data.csv"))
     
-    assert state.selected_file_path == sample_csv_path()
+    assert state.selected_file_path == _path("sample_data.csv")
     assert len(state.file_preview) > 0
 
 def test_on_algorithm_changed():

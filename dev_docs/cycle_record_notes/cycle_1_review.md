@@ -42,16 +42,9 @@ Thread-safe UI dispatch (`AppState.call_on_main`), training re-entrancy guard, m
 - **No committed `.gitignore`** — the `.claude` folder was "tracked" only because nothing ignored it. Root cause fixed and compiled artifacts untracked — `baa3443`.
 - **`audit.md` drifted from truth** — L2 was already fixed but the status was not recorded; the doc is now updated in the same change as each fix.
 
-## 4. Key Learnings Confirmed
+## 4. Key Learning Confirmed
 
-- **Audit before you fix.** A read-only, verified audit turns "review the whole codebase" into a prioritized, tractable fix list.
-- **The parameter boundary is the risk surface.** The audit's core finding matched the painful bugs of Cycle 1 — validate types at the algorithm boundary.
-- **Distinguish structural from value changes** — a form that rebuilds on every keystroke destroys itself mid-edit.
-- **A committed ignore file is half the fix** — already-tracked artifacts need explicit untracking.
-- **`--force-with-lease` makes force-pushes safe** when rebasing shared branches.
-- **Thread-safe UI dispatch is the linchpin** — several M-fixes only became safe once state changes reached the UI on the main thread.
-- **A guard on `None` collides with "no result yet"** — use a distinct sentinel and initialise before the code that reads it.
-- **A status doc is only truth if it's current** — update `audit.md` in the same change as the fix.
+To allow topic model practitioners to control and reproduce their topic models when doing topic modelling analysis, develop functionality that exposes the algorithm's hyperparameters to the user through the interface, because the ability to set and adjust the model parameters is essential for researchers to tailor the automated topic extraction to their data and document the configuration for reproducibility.
 
 ## 5. Risks to Watch Moving Forward
 

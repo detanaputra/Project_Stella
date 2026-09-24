@@ -16,11 +16,13 @@ class ExportPanel(ttk.Frame):
         self._build_ui()
 
     def _build_ui(self):
-        ttk.Label(self, text="Export Results", font=("Helvetica", 14, "bold")).pack(anchor=W, pady=(0, 8))
+        desc_frame = ttk.Frame(self)
+        desc_frame.pack(anchor=W)
+        ttk.Label(desc_frame, text="Export Results", font=("Helvetica", 14, "bold")).pack(anchor=W, pady=(0, 8))
         ttk.Label(
-            self,
+            desc_frame,
             text="Export the current analysis for sharing, publication, and reproducibility.",
-            wraplength=520,
+            wraplength=250,
             justify=LEFT,
         ).pack(anchor=W, pady=(0, 24))
 

@@ -12,7 +12,7 @@ Harden the codebase with a committed test suite, then deliver the designed model
 ### Main outcomes
 - **WP1 — Test suite** — a committed `pytest` suite for the model + controller layer (headless, no GUI): `AppState`, `DataLoader`, `BERTopicAlgorithm` (train + merge/delete on a small corpus), controllers, `Exporter`, `topic_quality`, `ProjectService` (current behavior). Adds `requirements-dev.txt` (pytest, black, flake8, isort, mypy). Reusable fixtures in `conftest.py`, including a small-corpus BERTopic model fixture.
 - **WP2 — Persistence, model layer** — `model_id` on `TopicResult`; `save_model(model, path)` / `load_model(path)` on `BaseAlgorithm`; BERTopic implementation via native `model.save()` / `BERTopic.load()`; a `save → load → compare` round-trip test that doubles as the feasibility check (embedding-model include/exclude, size).
-- **WP3 — Persistence, service + UI** — `ProjectService` reworked to a single-file zip bundle (`.stella` = archive) holding `project.json` (state + full result data) + `model/{model_id}/` + `viz/{model_id}/`; timestamp model-id + editable display name; controller save/load methods; save/load dialogs updated. Existing `ProjectService` tests updated; new round-trip tests added.
+- **WP3 — Persistence, service + UI** — `ProjectService` reworked to a single-file zip bundle (`.stella` = archive) holding `project.json` (state + full result data) + `model/{model_id}/` + `viz/{model_id}/`; timestamp model-id (editable display name deferred to a future cycle); controller save/load methods; save/load dialogs updated. Existing `ProjectService` tests updated; new round-trip tests added.
 
 ### Primary focus
 - Test suite first (hardening; de-risks the persistence rework)

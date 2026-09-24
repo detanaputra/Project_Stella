@@ -1,16 +1,100 @@
-block-beta
-columns 1
-    main
-    MainWindow
-    block
-        AppState
-        AppController
-        AnalysisController
-        MenuManager
+flowchart LR
+    %% ============================================================
+    %% Stella — MVC + Observer architecture
+    %% Solid edge  = method call / data flow (MVC)
+    %% Dashed edge = Observer: views subscribe → controller notify() → re-render
+    %% ============================================================
+
+    subgraph V["VIEW layer — display only (app/views/)"]
+        direction TB
+        %% MainWindow["MainWindow"]
+        %% Wizard["Wizard<br/>(algorithm · hyperparams · preview · summary)"]
+        %% MenuManager["MenuManager (File / Edit)"]
+        %% SettingsPanel["AlgorithmSettingsPanel"]
+        %% SummaryPanel["SummaryPanel (topics · refinement · documents)"]
+        %% MetricPanel["MetricPanel"]
+        %% StaticVizPanel["StaticVizPanel"]
+        %% LoadingPanel["LoadingPanel"]
+        %% ExportPanel["ExportPanel"]
+        %% DocDetail["DocumentDetailWindow"]
     end
 
-  
+    subgraph C["CONTROLLER layer — orchestration"]
+        direction TB
+        AppController["AppController"]
+        AnalysisController["AnalysisController"]
+    end
 
-  
-  
-  %%style B fill:#969,stroke:#333,stroke-width:4px
+    subgraph M["MODEL layer — data & logic"]
+        direction TB
+        AppState["AppState"]
+        subgraph Algo["Algorithms"]
+            %% direction TB
+            %% BaseAlgo["BaseAlgorithm (abstract contract)"]
+            %% BERTopic["BERTopicAlgorithm"]
+        end
+        subgraph Serv["Services"]
+            %% direction LR
+            %% DataLoader["DataLoader"]
+            %% TopicProcessor["TopicProcessor"]
+            %% TopicQuality["TopicQuality"]
+            %% StaticViz["StaticViz (matplotlib PNG)"]
+            %% Visualizer["Visualizer (plotly HTML)"]
+            %% Exporter["Exporter"]
+            %% ProjectService["ProjectService (.stella bundle)"]
+        end
+        TopicResult["TopicResult"]
+    end
+
+    %% User(["👤 Researcher"]) --> MainWindow
+
+    %% %% --- view → controller ---
+    %% MainWindow --> Wizard
+    %% MainWindow --> MenuManager
+    %% Wizard -->|"file select · algorithm"| AppController
+    %% Wizard -->|"run analysis"| AnalysisController
+    %% SettingsPanel -->|"tune params · retrain"| AppController
+    %% SettingsPanel -->|"retrain"| AnalysisController
+    %% SummaryPanel -->|"merge · delete · label · search · filter · detail"| AppController
+    %% SummaryPanel -->|"opens"| DocDetail
+    %% ExportPanel -->|"export CSV · JSON · report · open viz"| AppController
+    %% MenuManager -->|"new · save · load · exit"| AppController
+
+    %% %% --- controller → model services ---
+    %% AppController -->|"validate + load preview"| DataLoader
+    %% AppController -->|"save / load project"| ProjectService
+    %% AppController -->|"export"| Exporter
+    %% AppController -->|"recompute metrics"| TopicQuality
+    %% AppController -->|"re-generate charts"| StaticViz
+    %% AppController -->|"re-generate plots"| Visualizer
+    %% AppController -->|"update state + notify()"| AppState
+
+    %% AnalysisController -->|"load texts"| DataLoader
+    %% AnalysisController -->|"train / process"| TopicProcessor
+    %% AnalysisController -->|"quality metrics"| TopicQuality
+    %% AnalysisController -->|"static charts"| StaticViz
+    %% AnalysisController -->|"plotly figures"| Visualizer
+    %% AnalysisController -->|"update state + notify()"| AppState
+
+    %% TopicProcessor -->|"uses"| BERTopic
+    %% BERTopic -->|"standardised output"| TopicResult
+
+    %% %% --- observer pattern: AppState notifies every subscribed view ---
+    %% AppState -.->|"subscribe → notify → re-render"| MainWindow
+    %% AppState -.->|"subscribe → notify"| Wizard
+    %% AppState -.->|"subscribe → notify"| SettingsPanel
+    %% AppState -.->|"subscribe → notify"| SummaryPanel
+    %% AppState -.->|"subscribe → notify"| MetricPanel
+    %% AppState -.->|"subscribe → notify"| StaticVizPanel
+    %% AppState -.->|"subscribe → notify"| LoadingPanel
+    %% AppState -.->|"subscribe → notify"| ExportPanel
+
+    %% classDef view fill:#fce8e6,stroke:#c5221f,stroke-width:1.5px;
+    %% classDef ctrl fill:#e6f4ea,stroke:#137333,stroke-width:1.5px;
+    %% classDef model fill:#e8f0fe,stroke:#1a73e8,stroke-width:1.5px;
+    %% classDef focus fill:#fef7e0,stroke:#f9ab00,stroke-width:2px;
+
+    %% class MainWindow,Wizard,MenuManager,SettingsPanel,SummaryPanel,MetricPanel,StaticVizPanel,LoadingPanel,ExportPanel,DocDetail view;
+    %% class AppController,AnalysisController ctrl;
+    %% class AppState,TopicResult,BaseAlgo,BERTopic,DataLoader,TopicProcessor,TopicQuality,StaticViz,Visualizer,Exporter,ProjectService,Algo,Serv model;
+    %% class AppState focus;
